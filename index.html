@@ -1,109 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>K_K Fashion — Online Clothing Store</title>
-  <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy ordering on WhatsApp." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KK Fashion | Premium Quality</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@200;400&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            background-image: radial-gradient(circle, #151515 0%, #050505 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Cinzel', serif;
+        }
+
+        /* मेन कंटेनर एनीमेशन */
+        .splash-container {
+            text-align: center;
+            animation: fadeInScale 1.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        /* गोल्डन बॉर्डर बॉक्स */
+        .logo-card {
+            width: 280px;
+            height: 280px;
+            border: 2px solid #b3924e;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #111111, #1a1a1a);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 0 30px rgba(179, 146, 78, 0.2), inset 0 0 15px rgba(0,0,0,0.5);
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        /* चमकता हुआ इनर बॉर्डर */
+        .logo-card::after {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border: 1px solid rgba(179, 146, 78, 0.3);
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        /* KK लोगो डिज़ाइन */
+        .logo-text-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-logo {
+            font-size: 90px;
+            font-weight: 700;
+            letter-spacing: -5px;
+            background: linear-gradient(to bottom, #ffe596 0%, #b3924e 50%, #876520 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.8));
+        }
+
+        /* बीच की सुई/लाइन (Sleek Needle) */
+        .center-line {
+            position: absolute;
+            width: 2px;
+            height: 130px;
+            background: linear-gradient(to bottom, transparent, #b3924e, #ffe596, #b3924e, transparent);
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 8px #ffe596;
+        }
+
+        /* FASHION टेक्स्ट */
+        .brand-sub {
+            font-size: 14px;
+            letter-spacing: 7px;
+            color: #d1b46a;
+            margin-top: 15px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 400;
+            text-transform: uppercase;
+            border-top: 1px solid rgba(179, 146, 78, 0.4);
+            border-bottom: 1px solid rgba(179, 146, 78, 0.4);
+            padding: 5px 15px;
+        }
+
+        /* PREMIUM QUALITY टेक्स्ट */
+        .premium-tag {
+            font-size: 16px;
+            color: #b3924e;
+            letter-spacing: 6px;
+            font-weight: 400;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: textGlowFade 2s ease-out 1s forwards;
+        }
+
+        /* KEYFRAMES ANIMATIONS */
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+                filter: blur(5px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+
+        @keyframes textGlowFade {
+            0% {
+                opacity: 0;
+                letter-spacing: 2px;
+            }
+            100% {
+                opacity: 1;
+                letter-spacing: 6px;
+                text-shadow: 0 0 10px rgba(179, 146, 78, 0.5);
+            }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- Splash -->
-  <div id="splash" class="splash">
-    <div class="splash-glow"></div>
-    <div class="splash-oval">
-      <div class="splash-brand">K_K</div>
-      <div class="splash-sub">FASHION</div>
-    </div>
-    <div class="splash-line"></div>
-    <p class="splash-tagline">Premium Quality</p>
-  </div>
-
-  <!-- App -->
-  <div id="app" class="app hidden">
-    <header class="header">
-      <button id="logoBtn" class="logo-btn" aria-label="Store logo">
-        <span class="brand-mark">K_K</span>
-        <span class="brand-name">Fashion</span>
-      </button>
-      <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        <span id="cartCount" class="badge hidden">0</span>
-      </button>
-    </header>
-    <div class="cats-wrap"><div id="cats" class="cats"></div></div>
-    <main class="main">
-      <h2 id="activeTitle" class="section-title">All</h2>
-      <div id="products" class="grid"></div>
-    </main>
-  </div>
-
-  <!-- Cart drawer -->
-  <div id="cartOverlay" class="overlay hidden">
-    <div class="drawer">
-      <div class="drawer-head">
-        <h2>Your Cart</h2>
-        <button id="cartClose" class="icon-btn" aria-label="Close cart">✕</button>
-      </div>
-      <div id="cartItems" class="drawer-body"></div>
-      <div id="cartFooter" class="drawer-foot hidden">
-        <div class="total"><span>Total</span><span id="cartTotal">₹0</span></div>
-        <button id="checkoutBtn" class="btn-primary full">Order on WhatsApp</button>
-        <button id="clearCartBtn" class="link">Clear cart</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Admin PIN -->
-  <div id="adminPin" class="overlay center hidden">
-    <div class="pin-box">
-      <button id="pinClose" class="icon-btn close-abs" aria-label="Close">✕</button>
-      <div class="lock">🔒</div>
-      <h2>Admin Login</h2>
-      <p>Enter PIN to continue</p>
-      <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" class="pin-input" />
-      <div id="pinError" class="error hidden">Wrong PIN</div>
-      <button id="pinUnlock" class="btn-primary full">Unlock</button>
-    </div>
-  </div>
-
-  <!-- Admin Panel -->
-  <div id="adminPanel" class="admin hidden">
-    <div class="admin-inner">
-      <div class="drawer-head">
-        <h2>Admin Panel</h2>
-        <button id="adminClose" class="icon-btn" aria-label="Close admin">✕</button>
-      </div>
-      <section class="card">
-        <h3>Categories</h3>
-        <div id="adminCats" class="chips"></div>
-        <div class="row">
-          <input id="newCat" class="field" placeholder="New category" />
-          <button id="addCatBtn" class="btn-primary">+ Add</button>
+    <div class="splash-container">
+        <div class="logo-card">
+            <div class="logo-text-wrapper">
+                <div class="center-line"></div>
+                <h1 class="main-logo">KK</h1>
+            </div>
+            <div class="brand-sub">Fashion</div>
         </div>
-      </section>
-      <section class="card">
-        <h3>Add Product</h3>
-        <input id="pName" class="field" placeholder="Product name" />
-        <input id="pImage" class="field" placeholder="Image URL" />
-        <div class="row3">
-          <input id="pPrice" class="field" type="number" placeholder="Price" />
-          <input id="pDiscount" class="field" type="number" placeholder="Discount %" />
-          <input id="pExtra" class="field" type="number" placeholder="Extra ₹" />
-        </div>
-        <select id="pCategory" class="field"></select>
-        <button id="addProductBtn" class="btn-primary full">Add Product</button>
-      </section>
-      <section class="card">
-        <h3 id="adminProdTitle">Products</h3>
-        <div id="adminProducts"></div>
-      </section>
-    </div>
-  </div>
 
-  <script src="app.js"></script>
+        <p class="premium-tag">Premium Quality</p>
+    </div>
+
 </body>
 </html>
