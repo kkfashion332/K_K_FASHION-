@@ -3,155 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KK Fashion | Premium Quality</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Montserrat:wght@200;400&display=swap" rel="stylesheet">
+    <title>KK Fashion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0a0a0a; font-family: 'Cinzel', serif; color: white; overflow-x: hidden; }
+
+        /* 1. SPLASH SCREEN STYLES */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: radial-gradient(circle, #151515 0%, #050505 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s;
         }
 
-        body {
-            background-color: #0a0a0a;
-            background-image: radial-gradient(circle, #151515 0%, #050505 100%);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            font-family: 'Cinzel', serif;
-        }
-
-        /* मेन कंटेनर एनीमेशन */
-        .splash-container {
-            text-align: center;
-            animation: fadeInScale 1.8s ease-out forwards;
-            opacity: 0;
-        }
-
-        /* गोल्डन बॉर्डर बॉक्स */
+        .splash-container { text-align: center; animation: fadeInScale 1.5s ease-out forwards; }
+        
         .logo-card {
-            width: 280px;
-            height: 280px;
-            border: 2px solid #b3924e;
-            border-radius: 25px;
+            width: 280px; height: 280px; border: 2px solid #b3924e; border-radius: 25px;
             background: linear-gradient(135deg, #111111, #1a1a1a);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 0 30px rgba(179, 146, 78, 0.2), inset 0 0 15px rgba(0,0,0,0.5);
-            margin-bottom: 40px;
-            padding: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; box-shadow: 0 0 30px rgba(179, 146, 78, 0.2); margin-bottom: 40px;
         }
 
-        /* चमकता हुआ इनर बॉर्डर */
-        .logo-card::after {
-            content: '';
-            position: absolute;
-            top: 5px; left: 5px; right: 5px; bottom: 5px;
-            border: 1px solid rgba(179, 146, 78, 0.3);
-            border-radius: 20px;
-            pointer-events: none;
-        }
-
-        /* KK लोगो डिज़ाइन */
-        .logo-text-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
+        .logo-text-wrapper { position: relative; display: flex; align-items: center; justify-content: center; }
+        
         .main-logo {
-            font-size: 90px;
-            font-weight: 700;
-            letter-spacing: -5px;
+            font-size: 90px; font-weight: 700; letter-spacing: -5px;
             background: linear-gradient(to bottom, #ffe596 0%, #b3924e 50%, #876520 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.8));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* बीच की सुई/लाइन (Sleek Needle) */
         .center-line {
-            position: absolute;
-            width: 2px;
-            height: 130px;
+            position: absolute; width: 2px; height: 130px; left: 50%; transform: translateX(-50%);
             background: linear-gradient(to bottom, transparent, #b3924e, #ffe596, #b3924e, transparent);
-            left: 50%;
-            transform: translateX(-50%);
-            box-shadow: 0 0 8px #ffe596;
         }
 
-        /* FASHION टेक्स्ट */
         .brand-sub {
-            font-size: 14px;
-            letter-spacing: 7px;
-            color: #d1b46a;
-            margin-top: 15px;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 400;
-            text-transform: uppercase;
-            border-top: 1px solid rgba(179, 146, 78, 0.4);
-            border-bottom: 1px solid rgba(179, 146, 78, 0.4);
-            padding: 5px 15px;
+            font-size: 14px; letter-spacing: 7px; color: #d1b46a; margin-top: 15px;
+            font-family: 'Montserrat', sans-serif; text-transform: uppercase;
+            border-top: 1px solid rgba(179, 146, 78, 0.4); border-bottom: 1px solid rgba(179, 146, 78, 0.4); padding: 5px 15px;
         }
 
-        /* PREMIUM QUALITY टेक्स्ट */
         .premium-tag {
-            font-size: 16px;
-            color: #b3924e;
-            letter-spacing: 6px;
-            font-weight: 400;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: textGlowFade 2s ease-out 1s forwards;
+            font-size: 16px; color: #b3924e; letter-spacing: 6px; text-transform: uppercase;
+            opacity: 0; animation: textGlowFade 1.5s ease-out 0.5s forwards;
         }
 
-        /* KEYFRAMES ANIMATIONS */
-        @keyframes fadeInScale {
-            0% {
-                opacity: 0;
-                transform: scale(0.9);
-                filter: blur(5px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-                filter: blur(0);
-            }
-        }
+        /* गायब होने वाली क्लास (JavaScript से लगेगी) */
+        .fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
 
-        @keyframes textGlowFade {
-            0% {
-                opacity: 0;
-                letter-spacing: 2px;
-            }
-            100% {
-                opacity: 1;
-                letter-spacing: 6px;
-                text-shadow: 0 0 10px rgba(179, 146, 78, 0.5);
-            }
+        @keyframes fadeInScale { 0% { opacity: 0; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes textGlowFade { 0% { opacity: 0; } 100% { opacity: 1; text-shadow: 0 0 10px rgba(179, 146, 78, 0.5); } }
+
+
+        /* 2. MAIN WEBSITE CONTENT STYLES */
+        /* एनीमेशन हटने के बाद जो आपकी असली वेबसाइट दिखेगी, उसका कोड यहाँ आएगा */
+        .main-website {
+            padding: 40px 20px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
         }
+        .main-website h2 { color: #b3924e; margin-bottom: 20px; font-size: 32px; }
     </style>
 </head>
 <body>
 
-    <div class="splash-container">
-        <div class="logo-card">
-            <div class="logo-text-wrapper">
-                <div class="center-line"></div>
-                <h1 class="main-logo">KK</h1>
+    <!-- ये है आपका एनीमेशन जो पहले दिखेगा -->
+    <div id="splash-screen">
+        <div class="splash-container">
+            <div class="logo-card">
+                <div class="logo-text-wrapper">
+                    <div class="center-line"></div>
+                    <h1 class="main-logo">KK</h1>
+                </div>
+                <div class="brand-sub">Fashion</div>
             </div>
-            <div class="brand-sub">Fashion</div>
+            <p class="premium-tag">Premium Quality</p>
         </div>
-
-        <p class="premium-tag">Premium Quality</p>
     </div>
+
+    <!-- ये है आपकी असली वेबसाइट का कंटेंट जो एनीमेशन के बाद खुलेगा -->
+    <div class="main-website">
+        <h2>Welcome to KK Fashion Website</h2>
+        <p>यहाँ आप अपनी बाकी वेबसाइट का पूरा कोड (Navbar, Products, Images आदि) डाल सकते हैं।</p>
+    </div>
+
+    <!-- JavaScript: जो 3 सेकंड बाद एनीमेशन को हटा देगी -->
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('fade-out'); // एनीमेशन स्क्रीन को छुपा देगा
+            }, 3000); // 3000 मतलब 3 सेकंड का होल्ड
+        });
+    </script>
 
 </body>
 </html>
