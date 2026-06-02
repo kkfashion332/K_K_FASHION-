@@ -3,34 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>T-Shop — Online Clothing Store</title>
+  <title>KNK Fashion — Online Clothing Store</title>
   <meta name="description" content="Shop t-shirts, shirts, pants and combos online. Easy ordering on WhatsApp." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+
   <!-- Splash -->
   <div id="splash" class="splash">
-    <div class="logo-mark">🛍️<span>T</span></div>
-    <h1>Welcome</h1>
-    <p>to T-Shop</p>
+    <div class="splash-glow"></div>
+    <div class="splash-logo-wrap">
+      <div class="splash-ring"></div>
+      <div class="splash-brand">KNK</div>
+    </div>
+    <div class="splash-sub">FASHION</div>
+    <div class="splash-line"></div>
+    <p class="splash-tagline">Premium Quality</p>
   </div>
 
   <!-- App -->
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
-        <span class="logo-mark sm">🛍️<span>T</span></span>
-        <span class="brand">T-Shop</span>
+        <span class="brand-mark">KNK</span>
+        <span class="brand-name">Fashion</span>
       </button>
-      <button id="cartBtn" class="icon-btn" aria-label="Open cart">
-        🛒<span id="cartCount" class="badge hidden">0</span>
+      <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span id="cartCount" class="badge hidden">0</span>
       </button>
     </header>
 
-    <div class="cats-wrap"><div id="cats" class="cats"></div></div>
+    <div class="cats-wrap">
+      <div id="cats" class="cats"></div>
+    </div>
 
     <main class="main">
-      <h2 id="activeTitle">All</h2>
+      <h2 id="activeTitle" class="section-title">All</h2>
       <div id="products" class="grid"></div>
     </main>
   </div>
@@ -71,7 +82,6 @@
         <h2>Admin Panel</h2>
         <button id="adminClose" class="icon-btn" aria-label="Close admin">✕</button>
       </div>
-
       <section class="card">
         <h3>Categories</h3>
         <div id="adminCats" class="chips"></div>
@@ -80,7 +90,6 @@
           <button id="addCatBtn" class="btn-primary">+ Add</button>
         </div>
       </section>
-
       <section class="card">
         <h3>Add Product</h3>
         <input id="pName" class="field" placeholder="Product name" />
@@ -93,7 +102,6 @@
         <select id="pCategory" class="field"></select>
         <button id="addProductBtn" class="btn-primary full">Add Product</button>
       </section>
-
       <section class="card">
         <h3 id="adminProdTitle">Products</h3>
         <div id="adminProducts"></div>
@@ -104,4 +112,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
