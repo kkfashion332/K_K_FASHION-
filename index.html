@@ -11,14 +11,23 @@
 </head>
 <body>
 
+  <!-- Splash -->
   <div id="splash" class="splash">
-    <img src="YOUR_SPLASH_IMAGE_URL" alt="Welcome" class="splash-img" />
+    <div class="splash-glow"></div>
+    <div class="splash-oval">
+      <div class="splash-brand">K_K</div>
+      <div class="splash-sub">FASHION</div>
+    </div>
+    <div class="splash-line"></div>
+    <p class="splash-tagline">Premium Quality</p>
   </div>
 
+  <!-- App -->
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
-        <img src="YOUR_LOGO_IMAGE_URL" alt="K_K Fashion Logo" class="header-logo-img" />
+        <span class="brand-mark">K_K</span>
+        <span class="brand-name">Fashion</span>
       </button>
       <button id="cartBtn" class="icon-btn cart-btn" aria-label="Open cart">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
@@ -32,6 +41,7 @@
     </main>
   </div>
 
+  <!-- Cart drawer -->
   <div id="cartOverlay" class="overlay hidden">
     <div class="drawer">
       <div class="drawer-head">
@@ -47,6 +57,7 @@
     </div>
   </div>
 
+  <!-- Admin PIN -->
   <div id="adminPin" class="overlay center hidden">
     <div class="pin-box">
       <button id="pinClose" class="icon-btn close-abs" aria-label="Close">✕</button>
@@ -59,6 +70,7 @@
     </div>
   </div>
 
+  <!-- Admin Panel -->
   <div id="adminPanel" class="admin hidden">
     <div class="admin-inner">
       <div class="drawer-head">
@@ -95,4 +107,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
