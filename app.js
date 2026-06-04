@@ -1,8 +1,6 @@
-// ===== Config =====
 const WHATSAPP_NUMBER = "9950701758";
 const ADMIN_PIN = "8619";
 
-// ===== Default data =====
 const DEFAULT_CATEGORIES = ["Combos", "T-Shirt", "Shirt", "Pant"];
 const SAMPLE_PRODUCTS = [
   { id: "p1", name: "Classic White T-Shirt", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80", price: 599, discount: 20, extra: 0, category: "T-Shirt" },
@@ -11,7 +9,6 @@ const SAMPLE_PRODUCTS = [
   { id: "p4", name: "Shirt + Pant Combo", image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=600&q=80", price: 1999, discount: 25, extra: 99, category: "Combos" },
 ];
 
-// ===== State =====
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
@@ -24,20 +21,15 @@ const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + p.
 const uid = () => "p" + Date.now() + Math.floor(Math.random() * 1000);
 const $ = (id) => document.getElementById(id);
 
-// ===== Splash =====
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     const splash = $("splash");
     splash.style.transition = "opacity 0.5s ease";
     splash.style.opacity = "0";
-    setTimeout(() => {
-      splash.classList.add("hidden");
-      $("app").classList.remove("hidden");
-    }, 500);
+    setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); }, 500);
   }, 2500);
 });
 
-// ===== Categories =====
 function renderCats() {
   const wrap = $("cats"); wrap.innerHTML = "";
   ["All", ...categories].forEach((c, i) => {
@@ -51,7 +43,6 @@ function renderCats() {
   });
 }
 
-// ===== Products =====
 function renderProducts() {
   $("activeTitle").textContent = activeCat;
   const grid = $("products");
@@ -85,7 +76,6 @@ function renderProducts() {
   });
 }
 
-// ===== Cart =====
 function addToCart(p) {
   const found = cart.find((i) => i.product.id === p.id);
   if (found) found.qty += 1; else cart.push({ product: p, qty: 1 });
@@ -130,7 +120,6 @@ $("checkoutBtn").onclick = () => {
   window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=Hello! My order:%0A${lines}%0A%0ATotal: ₹${total}`, "_blank");
 };
 
-// ===== Admin 7-tap =====
 let tapCount = 0, tapTimer = null;
 $("logoBtn").onclick = () => {
   tapCount++; if (tapTimer) clearTimeout(tapTimer);
@@ -138,7 +127,6 @@ $("logoBtn").onclick = () => {
   tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
 };
 
-// ===== PIN =====
 function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); $("pinInput").focus(); }
 $("pinClose").onclick = () => $("adminPin").classList.add("hidden");
 $("pinUnlock").onclick = tryUnlock;
@@ -148,7 +136,6 @@ function tryUnlock() {
   else { $("pinError").classList.remove("hidden"); $("pinInput").style.borderColor = "#e05555"; setTimeout(() => { $("pinInput").style.borderColor = ""; }, 800); }
 }
 
-// ===== Admin Panel =====
 function openAdmin() { renderAdmin(); $("adminPanel").classList.remove("hidden"); }
 $("adminClose").onclick = () => $("adminPanel").classList.add("hidden");
 function renderAdmin() {
@@ -179,14 +166,5 @@ $("addCatBtn").onclick = () => {
   save("knk_categories", categories); $("newCat").value = "";
   renderCats(); renderProducts(); renderAdmin();
 };
-$("addProductBtn").onclick = () => {
-  const name = $("pName").value.trim(); const image = $("pImage").value.trim(); const price = Number($("pPrice").value);
-  if (!name || !image || !price) return;
-  products.unshift({ id: uid(), name, image, price, discount: Number($("pDiscount").value) || 0, extra: Number($("pExtra").value) || 0, category: $("pCategory").value || categories[0] || "Other" });
-  save("knk_products", products);
-  ["pName","pImage","pPrice","pDiscount","pExtra"].forEach((id) => ($(id).value = ""));
-  renderProducts(); renderAdmin();
-};
 
-// ===== Init =====
 renderCats(); renderProducts(); renderCartCount();
