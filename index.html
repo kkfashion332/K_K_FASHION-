@@ -83,10 +83,7 @@
       <section class="card">
         <h3>Add Product</h3>
         <input id="pName" class="field" placeholder="Product name" />
-        
-        <!-- Changed to File Input for Firebase Upload -->
-        <input id="pImage" class="field" type="file" accept="image/*" />
-        
+        <input id="pImage" class="field" placeholder="Image URL" />
         <div class="row3">
           <input id="pPrice" class="field" type="number" placeholder="Price" />
           <input id="pDiscount" class="field" type="number" placeholder="Discount %" />
@@ -102,7 +99,6 @@
     </div>
   </div>
 
-  <!-- Loaded as module to support Firebase imports -->
-  <script type="module" src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
