@@ -1,20 +1,26 @@
 const WHATSAPP_NUMBER = "9950701758";
 const ADMIN_PIN = "8619";
 
-const DEFAULT_CATEGORIES = ["Combos", "T-Shirt", "Shirt", "Pant"];
-
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 
-let categories = load("knk_categories", DEFAULT_CATEGORIES);
-let products   = []; // Data Firebase se aayega
-let cart       = load("knk_cart",       []);
+let categories = []; 
+let products   = []; 
+let cart       = load("knk_cart", []);
 let activeCat  = "All";
+
+// 🔥 Edit ke liye tracker
+let editingProductId = null;
 
 const finalPrice = (p) => Math.round(p.price - (p.price * p.discount) / 100 + (p.extra || 0));
 const $ = (id) => document.getElementById(id);
 
-// HTML wali file Firebase se data lakar yaha bhejegi
+window.updateCategoriesFromFirebase = function(firebaseCategories) {
+  categories = firebaseCategories;
+  renderCats();
+  if(!$("adminPanel").classList.contains("hidden")) renderAdmin();
+};
+
 window.updateProductsFromFirebase = function(firebaseProducts) {
   products = firebaseProducts;
   renderProducts();
@@ -146,41 +152,89 @@ function renderAdmin() {
   categories.forEach((c) => {
     const el = document.createElement("span"); el.className = "chip";
     el.innerHTML = `${c} <button>🗑️</button>`;
-    el.querySelector("button").onclick = () => { categories = categories.filter((x) => x !== c); save("knk_categories", categories); renderCats(); renderProducts(); renderAdmin(); };
+    el.querySelector("button").onclick = () => { 
+      categories = categories.filter((x) => x !== c); 
+      if(window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(categories);
+      renderCats(); renderProducts(); renderAdmin(); 
+    };
     chips.appendChild(el);
   });
   const sel = $("pCategory"); sel.innerHTML = "";
   categories.forEach((c) => { const o = document.createElement("option"); o.value = c; o.textContent = c; sel.appendChild(o); });
   $("adminProdTitle").textContent = `Products (${products.length})`;
   const list = $("adminProducts"); list.innerHTML = "";
+  
   products.forEach((p) => {
     const el = document.createElement("div"); el.className = "admin-prod";
     el.innerHTML = `
       <img src="${p.image}" alt="${p.name}" />
       <div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${p.category} · ₹${p.price}</div></div>
-      <button class="trash">🗑️</button>`;
+      <div style="display:flex; gap: 8px;">
+        <button class="edit-btn" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">✏️</button>
+        <button class="trash" style="background: none; border: none; font-size: 1.2rem; cursor: pointer;">🗑️</button>
+      </div>`;
       
-    // 🔥 NAYA: Delete Confirm & Firebase Trigger 🔥
+    // Edit Button Logic
+    el.querySelector(".edit-btn").onclick = () => {
+      editingProductId = p.id;
+      $("editPName").textContent = p.name;
+      $("editPPrice").value = p.price;
+      $("editPDiscount").value = p.discount || 0;
+      $("editPExtra").value = p.extra || 0;
+      $("editModal").classList.remove("hidden");
+    };
+
+    // Trash Button Logic
     el.querySelector(".trash").onclick = () => { 
        if(confirm("Kya aap sach me is product ko delete karna chahte hain?")) {
-         // Pehle app se screen se hata do
          products = products.filter((x) => x.id !== p.id); 
-         renderProducts(); 
-         renderAdmin(); 
-         
-         // Fir Firebase ko batao permanently delete karne ke liye
-         if(window.deleteProductFromFirebase) {
-            window.deleteProductFromFirebase(p.id);
-         }
+         renderProducts(); renderAdmin(); 
+         if(window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); }
        }
     };
     list.appendChild(el);
   });
 }
+
+// 🔥 Edit Modal Controls 🔥
+$("editClose").onclick = () => $("editModal").classList.add("hidden");
+$("saveEditBtn").onclick = () => {
+  if(!editingProductId) return;
+  
+  const newPrice = Number($("editPPrice").value);
+  const newDiscount = Number($("editPDiscount").value) || 0;
+  const newExtra = Number($("editPExtra").value) || 0;
+
+  // Local data update karo
+  const prodIndex = products.findIndex(p => p.id === editingProductId);
+  if(prodIndex > -1) {
+    products[prodIndex].price = newPrice;
+    products[prodIndex].discount = newDiscount;
+    products[prodIndex].extra = newExtra;
+    renderProducts();
+    renderAdmin();
+  }
+
+  // Firebase me update bhej do
+  if(window.updateProductInFirebase) {
+    window.updateProductInFirebase(editingProductId, {
+      price: newPrice,
+      discount: newDiscount,
+      extra: newExtra
+    });
+  }
+
+  $("editModal").classList.add("hidden");
+  editingProductId = null;
+};
+
 $("addCatBtn").onclick = () => {
   const v = $("newCat").value.trim(); if (!v) return;
-  if (!categories.some((x) => x.toLowerCase() === v.toLowerCase())) categories.push(v);
-  save("knk_categories", categories); $("newCat").value = "";
+  if (!categories.some((x) => x.toLowerCase() === v.toLowerCase())) {
+    categories.push(v);
+    if(window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(categories);
+  }
+  $("newCat").value = "";
   renderCats(); renderProducts(); renderAdmin();
 };
 
