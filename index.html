@@ -62,7 +62,7 @@
       </div>
     </div>
 
-    <!-- SUB-CATEGORY BAR (Only shown for GEN-Z PREMIUM) -->
+    <!-- SUB-CATEGORY BAR (shown for both GENZ and OTHER) -->
     <div id="subCatsWrap" class="sub-cats-wrap">
       <div id="subCats" class="cats"></div>
     </div>
@@ -143,14 +143,25 @@
         <button id="adminClose" class="icon-btn" aria-label="Close admin">✕</button>
       </div>
 
-      <!-- SUB-CATEGORY MANAGEMENT -->
+      <!-- GEN-Z PREMIUM SUB-CATEGORIES -->
       <section class="card">
-        <h3>Sub-Category Management</h3>
-        <p class="section-hint">These sub-categories appear under <strong>GEN-Z PREMIUM</strong></p>
-        <div id="adminSubCats" class="chips"></div>
+        <h3>GEN-Z PREMIUM — Sub-Categories</h3>
+        <p class="section-hint">Ye sub-categories <strong>GEN-Z PREMIUM</strong> ke andar dikhti hain</p>
+        <div id="adminGenzSubCats" class="chips"></div>
         <div class="row">
-          <input id="newSubCat" class="field" placeholder="New sub-category (e.g. PUMA COMBO)" />
-          <button id="addSubCatBtn" class="btn-primary">+ Add</button>
+          <input id="newGenzSubCat" class="field" placeholder="New sub-category (e.g. PUMA COMBO)" />
+          <button id="addGenzSubCatBtn" class="btn-primary">+ Add</button>
+        </div>
+      </section>
+
+      <!-- OTHER SUB-CATEGORIES -->
+      <section class="card">
+        <h3>OTHER — Sub-Categories</h3>
+        <p class="section-hint">Ye sub-categories <strong>OTHER</strong> ke andar dikhti hain</p>
+        <div id="adminOtherSubCats" class="chips"></div>
+        <div class="row">
+          <input id="newOtherSubCat" class="field" placeholder="New sub-category (e.g. ACCESSORIES)" />
+          <button id="addOtherSubCatBtn" class="btn-primary">+ Add</button>
         </div>
       </section>
 
@@ -262,12 +273,17 @@
         const catDoc = await getDoc(doc(db, "settings", "storeData"));
         if (catDoc.exists()) {
           const data = catDoc.data();
-          const subCats = data.subCategories || data.categories || ["PUMA COMBO", "PREMIUM COMBO"];
-          if (window.updateSubCategoriesFromFirebase) window.updateSubCategoriesFromFirebase(subCats);
+          const genzSubs  = data.subCategories      || data.categories || ["PUMA COMBO", "PREMIUM COMBO"];
+          const otherSubs = data.otherSubCategories || [];
+          if (window.updateSettingsFromFirebase) window.updateSettingsFromFirebase(genzSubs, otherSubs);
         } else {
-          const defaultSubCats = ["PUMA COMBO", "PREMIUM COMBO"];
-          await setDoc(doc(db, "settings", "storeData"), { subCategories: defaultSubCats });
-          if (window.updateSubCategoriesFromFirebase) window.updateSubCategoriesFromFirebase(defaultSubCats);
+          const defaultGenz  = ["PUMA COMBO", "PREMIUM COMBO"];
+          const defaultOther = [];
+          await setDoc(doc(db, "settings", "storeData"), {
+            subCategories: defaultGenz,
+            otherSubCategories: defaultOther
+          });
+          if (window.updateSettingsFromFirebase) window.updateSettingsFromFirebase(defaultGenz, defaultOther);
         }
       } catch (error) {
         console.error("Error fetching settings:", error);
@@ -277,11 +293,14 @@
     fetchProducts();
     fetchSettings();
 
-    window.saveSubCategoriesToFirebase = async function(updatedSubCats) {
+    window.saveSettingsToFirebase = async function(genzSubs, otherSubs) {
       try {
-        await setDoc(doc(db, "settings", "storeData"), { subCategories: updatedSubCats }, { merge: true });
+        await setDoc(doc(db, "settings", "storeData"), {
+          subCategories: genzSubs,
+          otherSubCategories: otherSubs
+        }, { merge: true });
       } catch(error) {
-        console.error("Error saving sub-categories:", error);
+        console.error("Error saving settings:", error);
       }
     };
 
