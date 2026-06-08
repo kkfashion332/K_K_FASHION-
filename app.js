@@ -1,15 +1,12 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js
-   Dynamic categories + LIVE SEARCH + PRODUCT DETAIL PAGE
+   K_K FASHION — app.js (Full Update with Checkout Step 1)
 ═══════════════════════════════════════════════════════ */
-
-const WHATSAPP_NUMBER = "9950701758";
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
 const $    = id      => document.getElementById(id);
 
-let ADMIN_PIN            = load("admin_pin", "9672"); // PIN ab local storage se aayega
+let ADMIN_PIN            = load("admin_pin", "9672");
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
@@ -196,21 +193,16 @@ function renderProducts() {
         <span class="stock-badge ${inStock ? 'in' : 'out'}">${inStock ? '● In Stock' : '● Out of Stock'}</span>
         <div class="btn-row">
           <button class="btn-outline btn-cart-grid" ${!inStock ? 'disabled' : ''}>🛒 Cart</button>
-          <button class="btn-primary btn-buy-grid"  ${!inStock ? 'disabled' : ''}>💬 Buy</button>
+          <button class="btn-primary btn-buy-grid"  ${!inStock ? 'disabled' : ''}>💳 Buy</button>
         </div>
       </div>`;
 
-    /* Image / naam click → detail page open */
     el.querySelector("img").onclick   = () => openProductDetail(p);
     el.querySelector(".name").onclick = () => openProductDetail(p);
 
     if (inStock) {
       el.querySelector(".btn-cart-grid").onclick = (e) => { e.stopPropagation(); addToCart(p); };
-      el.querySelector(".btn-buy-grid").onclick  = (e) => {
-        e.stopPropagation();
-        const text = encodeURIComponent(`Hello! I want to buy:\n${p.name}\nPrice: ₹${price}`);
-        window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=${text}`, "_blank");
-      };
+      el.querySelector(".btn-buy-grid").onclick  = (e) => { e.stopPropagation(); directBuyCheckout(p); };
     }
     grid.appendChild(el);
   });
@@ -252,7 +244,7 @@ function openProductDetail(p) {
   const addBtn = $("pdAddCart");
   const buyBtn = $("pdBuyNow");
   addBtn.textContent = "🛒 Add to Cart";
-  buyBtn.textContent = "💬 Buy Now";
+  buyBtn.textContent = "💳 Buy Now";
 
   if (inStock) {
     addBtn.disabled = false;
@@ -262,10 +254,7 @@ function openProductDetail(p) {
       addBtn.textContent = "✅ Added!";
       setTimeout(() => { addBtn.textContent = "🛒 Add to Cart"; }, 1200);
     };
-    buyBtn.onclick = () => {
-      const text = encodeURIComponent(`Hello! I want to buy:\n${p.name}\nPrice: ₹${price}`);
-      window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=${text}`, "_blank");
-    };
+    buyBtn.onclick = () => directBuyCheckout(p);
   } else {
     addBtn.disabled = true;
     buyBtn.disabled = true;
@@ -287,7 +276,7 @@ function closeProductDetail() {
     detail.classList.remove("closing");
     currentDetailProduct   = null;
     $("pdAddCart").textContent = "🛒 Add to Cart";
-    $("pdBuyNow").textContent  = "💬 Buy Now";
+    $("pdBuyNow").textContent  = "💳 Buy Now";
     $("pdAddCart").disabled    = false;
     $("pdBuyNow").disabled     = false;
   }, { once: true });
@@ -304,18 +293,11 @@ function renderHorizSections(currentProduct) {
   container.innerHTML = "";
 
   if (currentProduct.subCategory) {
-    const subList = products.filter(p =>
-      p.id !== currentProduct.id && p.subCategory === currentProduct.subCategory
-    );
-    if (subList.length > 0)
-      container.appendChild(buildHorizSection("More from " + currentProduct.subCategory, subList));
+    const subList = products.filter(p => p.id !== currentProduct.id && p.subCategory === currentProduct.subCategory);
+    if (subList.length > 0) container.appendChild(buildHorizSection("More from " + currentProduct.subCategory, subList));
   }
 
-  const sameMainList = products.filter(p =>
-    p.id !== currentProduct.id &&
-    p.mainCategoryId === currentProduct.mainCategoryId &&
-    (currentProduct.subCategory ? p.subCategory !== currentProduct.subCategory : true)
-  );
+  const sameMainList = products.filter(p => p.id !== currentProduct.id && p.mainCategoryId === currentProduct.mainCategoryId && (currentProduct.subCategory ? p.subCategory !== currentProduct.subCategory : true));
   if (sameMainList.length > 0) {
     const cat = getCat(currentProduct.mainCategoryId);
     container.appendChild(buildHorizSection("More from " + (cat ? cat.name : "This Category"), sameMainList));
@@ -346,9 +328,7 @@ function buildHorizSection(title, list) {
 
   const head = document.createElement("div");
   head.className = "horiz-section-head";
-  head.innerHTML = `
-    <span class="horiz-section-title">${title}</span>
-    <span class="horiz-section-count">${list.length} items</span>`;
+  head.innerHTML = `<span class="horiz-section-title">${title}</span><span class="horiz-section-count">${list.length} items</span>`;
   section.appendChild(head);
 
   const row = document.createElement("div");
@@ -387,7 +367,6 @@ function buildHorizSection(title, list) {
     }
     row.appendChild(card);
   });
-
   section.appendChild(row);
   return section;
 }
@@ -463,11 +442,50 @@ $("cartBtn").onclick      = () => { renderCart(); $("cartOverlay").classList.rem
 $("cartClose").onclick    = () => $("cartOverlay").classList.add("hidden");
 $("cartOverlay").onclick  = e => { if (e.target === $("cartOverlay")) $("cartOverlay").classList.add("hidden"); };
 $("clearCartBtn").onclick = clearCart;
-$("checkoutBtn").onclick  = () => {
+
+/* ════════════════════════════════════
+   NEW CHECKOUT OVERLAY LOGIC
+════════════════════════════════════ */
+function directBuyCheckout(p) {
+  // Clear cart and add only this item for direct checkout
+  cart = [{ product: p, qty: 1 }];
+  save("knk_cart", cart);
+  renderCartCount();
+  openCheckout();
+}
+
+$("checkoutBtn").onclick = () => {
   if (!cart.length) return;
+  $("cartOverlay").classList.add("hidden");
+  openCheckout();
+};
+
+function openCheckout() {
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
-  const lines = cart.map(i => `${i.product.name} x${i.qty} = ₹${finalPrice(i.product) * i.qty}`).join("%0A");
-  window.open(`https://wa.me/91${WHATSAPP_NUMBER}?text=Hello! My order:%0A${lines}%0A%0ATotal: ₹${total}`, "_blank");
+  $("chkTotalAmt").textContent = "₹" + total;
+  $("checkoutOverlay").classList.remove("hidden");
+}
+
+$("closeCheckout").onclick = () => $("checkoutOverlay").classList.add("hidden");
+
+$("step1NextBtn").onclick = () => {
+  const name    = $("chkName").value.trim();
+  const mobile  = $("chkMobile").value.trim();
+  const address = $("chkAddress").value.trim();
+  const state   = $("chkState").value.trim();
+  const pincode = $("chkPincode").value.trim();
+  
+  if(!name || !mobile || !address || !state || !pincode) {
+    alert("Kripya sabhi zaroori jankari (Name, Mobile, Address, State, Pincode) bharein!");
+    return;
+  }
+  
+  if(mobile.length < 10 || isNaN(mobile)) {
+    alert("Mobile number galat hai! Kripya 10-digit ka sahi number daalein.");
+    return;
+  }
+
+  alert("Step 1 Complete! Data Sahi Hai.\n\nStep 2 (Payment & Confirm) baad me aayega.");
 };
 
 /* ════════════════════════════════════
@@ -477,8 +495,8 @@ let tapCount = 0, tapTimer = null;
 $("logoBtn").onclick = () => {
   tapCount++;
   if (tapTimer) clearTimeout(tapTimer);
-  if (tapCount >= 20) { tapCount = 0; openPin(); return; } // Tap count 20 kar diya hai
-  tapTimer = setTimeout(() => { tapCount = 0; }, 3000); // 3 seconds ka time diya hai
+  if (tapCount >= 20) { tapCount = 0; openPin(); return; }
+  tapTimer = setTimeout(() => { tapCount = 0; }, 3000);
 };
 
 function openPin() {
@@ -680,7 +698,6 @@ window.renderAdmin = function() {
   syncFilterDropdown();
   renderAdminProducts();
   
-  // Bind change PIN button event here so it's always ready
   if ($("updatePinBtn")) {
     $("updatePinBtn").onclick = () => {
       const newPin = $("newAdminPin").value.trim();
