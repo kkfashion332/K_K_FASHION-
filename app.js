@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════ */
 
 const WHATSAPP_NUMBER = "9950701758";
-const ADMIN_PIN       = "9999";
+const ADMIN_PIN       = "9672";
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
