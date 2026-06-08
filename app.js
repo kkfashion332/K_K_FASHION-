@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════
    K_K FASHION — app.js
-   Nested Category: GEN-Z PREMIUM (sub-cats) | OTHER
+   GEN-Z PREMIUM (sub-cats) | OTHER (sub-cats)
 ═══════════════════════════════════════════════════════ */
 
 const WHATSAPP_NUMBER = "9950701758";
@@ -10,19 +10,20 @@ const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JS
 const save = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const $    = (id) => document.getElementById(id);
 
-/* ─── State ─────────────────────────────────────────── */
-let subCategories    = [];
-let products         = [];
-let cart             = load("knk_cart", []);
-let activeMainCat    = "GENZ";
-let activeSubCat     = "All";
-let editingProductId = null;
+let genzSubCategories  = [];
+let otherSubCategories = [];
+let products           = [];
+let cart               = load("knk_cart", []);
+let activeMainCat      = "GENZ";
+let activeSubCat       = "All";
+let editingProductId   = null;
 
 const finalPrice = (p) => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
 
 /* ── Firebase Callbacks ── */
-window.updateSubCategoriesFromFirebase = function(fbSubCats) {
-  subCategories = Array.isArray(fbSubCats) ? fbSubCats : [];
+window.updateSettingsFromFirebase = function(genzSubs, otherSubs) {
+  genzSubCategories  = Array.isArray(genzSubs)  ? genzSubs  : [];
+  otherSubCategories = Array.isArray(otherSubs) ? otherSubs : [];
   renderSubCats();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
@@ -49,27 +50,32 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 2500);
 });
 
-/* ── Main Category Toggle (GEN-Z PREMIUM | OTHER) ── */
+/* ── Main Category Toggle ── */
 window.selectMainCat = function(cat) {
   activeMainCat = cat;
   activeSubCat  = "All";
-  $("btnGenz").classList.toggle("active", cat === "GENZ");
+  $("btnGenz").classList.toggle("active",  cat === "GENZ");
   $("btnOther").classList.toggle("active", cat === "OTHER");
-  const subWrap = $("subCatsWrap");
-  if (cat === "GENZ") {
-    subWrap.classList.remove("hidden-bar");
-  } else {
-    subWrap.classList.add("hidden-bar");
-  }
   renderSubCats();
   renderProducts();
 };
 
 /* ── Sub-Category Bar ── */
 function renderSubCats() {
-  const wrap = $("subCats");
+  const wrap    = $("subCats");
+  const subWrap = $("subCatsWrap");
   wrap.innerHTML = "";
-  ["All", ...subCategories].forEach((c, i) => {
+
+  const list = activeMainCat === "GENZ" ? genzSubCategories : otherSubCategories;
+
+  if (list.length === 0) {
+    subWrap.classList.add("hidden-bar");
+    return;
+  }
+
+  subWrap.classList.remove("hidden-bar");
+
+  ["All", ...list].forEach((c, i) => {
     const b = document.createElement("button");
     b.className = "cat" + (c === activeSubCat ? " active" : "");
     b.textContent = c;
@@ -83,13 +89,15 @@ function renderSubCats() {
 /* ── Product Grid ── */
 function renderProducts() {
   let list = [];
+
   if (activeMainCat === "GENZ") {
     $("activeTitle").textContent = activeSubCat === "All" ? "GEN-Z PREMIUM" : activeSubCat;
-    const genzProds = products.filter(p => p.mainCategory === "GENZ");
-    list = activeSubCat === "All" ? genzProds : genzProds.filter(p => p.subCategory === activeSubCat);
+    const pool = products.filter(p => p.mainCategory === "GENZ");
+    list = activeSubCat === "All" ? pool : pool.filter(p => p.subCategory === activeSubCat);
   } else {
-    $("activeTitle").textContent = "OTHER";
-    list = products.filter(p => p.mainCategory === "OTHER");
+    $("activeTitle").textContent = activeSubCat === "All" ? "OTHER" : activeSubCat;
+    const pool = products.filter(p => p.mainCategory === "OTHER");
+    list = activeSubCat === "All" ? pool : pool.filter(p => p.subCategory === activeSubCat);
   }
 
   const grid = $("products");
@@ -229,30 +237,36 @@ function tryUnlock() {
 function openAdmin() { renderAdmin(); $("adminPanel").classList.remove("hidden"); }
 $("adminClose").onclick = () => $("adminPanel").classList.add("hidden");
 
-window.renderAdmin = function renderAdmin() {
-  /* Sub-Category chips */
-  const chips = $("adminSubCats");
-  chips.innerHTML = "";
-  subCategories.forEach(c => {
+function renderChips(containerId, arr, type) {
+  const container = $(containerId);
+  container.innerHTML = "";
+  arr.forEach(c => {
     const el = document.createElement("span");
     el.className = "chip";
     el.innerHTML = `${c} <button title="Delete">✕</button>`;
     el.querySelector("button").onclick = () => {
-      if (!confirm(`"${c}" sub-category delete karein?`)) return;
-      subCategories = subCategories.filter(x => x !== c);
-      if (window.saveSubCategoriesToFirebase) window.saveSubCategoriesToFirebase(subCategories);
+      if (!confirm(`"${c}" delete karein?`)) return;
+      if (type === "GENZ") {
+        genzSubCategories = genzSubCategories.filter(x => x !== c);
+      } else {
+        otherSubCategories = otherSubCategories.filter(x => x !== c);
+      }
+      if (window.saveSettingsToFirebase) window.saveSettingsToFirebase(genzSubCategories, otherSubCategories);
       renderSubCats();
       renderProducts();
       renderAdmin();
     };
-    chips.appendChild(el);
+    container.appendChild(el);
   });
+}
 
-  populateSubCatDropdown($("pSubCat"), "");
+window.renderAdmin = function renderAdmin() {
+  renderChips("adminGenzSubCats",  genzSubCategories,  "GENZ");
+  renderChips("adminOtherSubCats", otherSubCategories, "OTHER");
+
   onMainCatChange();
 
   $("adminProdTitle").textContent = `Products (${products.length})`;
-
   const filterMain = $("adminFilterMain").value || "ALL";
   const list = $("adminProducts");
   list.innerHTML = "";
@@ -261,8 +275,8 @@ window.renderAdmin = function renderAdmin() {
     products.filter(p => p.mainCategory === filterMain);
 
   filtered.forEach(p => {
-    const price   = finalPrice(p);
-    const inStock = p.inStock !== false;
+    const price     = finalPrice(p);
+    const inStock   = p.inStock !== false;
     const mainLabel = p.mainCategory === "GENZ" ? "GEN-Z PREMIUM" : "OTHER";
     const subLabel  = p.subCategory ? ` · ${p.subCategory}` : "";
 
@@ -292,50 +306,49 @@ window.renderAdmin = function renderAdmin() {
   });
 };
 
-/* Sub-Category add */
-$("addSubCatBtn").onclick = () => {
-  const v = $("newSubCat").value.trim().toUpperCase();
+/* ── Add GEN-Z sub-category ── */
+$("addGenzSubCatBtn").onclick = () => {
+  const v = $("newGenzSubCat").value.trim().toUpperCase();
   if (!v) return;
-  if (subCategories.some(x => x.toUpperCase() === v)) {
-    alert("Yeh sub-category pehle se exist karti hai!");
-    return;
-  }
-  subCategories.push(v);
-  if (window.saveSubCategoriesToFirebase) window.saveSubCategoriesToFirebase(subCategories);
-  $("newSubCat").value = "";
-  renderSubCats();
-  renderProducts();
-  renderAdmin();
+  if (genzSubCategories.some(x => x.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; }
+  genzSubCategories.push(v);
+  if (window.saveSettingsToFirebase) window.saveSettingsToFirebase(genzSubCategories, otherSubCategories);
+  $("newGenzSubCat").value = "";
+  renderSubCats(); renderProducts(); renderAdmin();
 };
 
-/* Main category change in Add Product form */
+/* ── Add OTHER sub-category ── */
+$("addOtherSubCatBtn").onclick = () => {
+  const v = $("newOtherSubCat").value.trim().toUpperCase();
+  if (!v) return;
+  if (otherSubCategories.some(x => x.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; }
+  otherSubCategories.push(v);
+  if (window.saveSettingsToFirebase) window.saveSettingsToFirebase(genzSubCategories, otherSubCategories);
+  $("newOtherSubCat").value = "";
+  renderSubCats(); renderProducts(); renderAdmin();
+};
+
+/* ── Main category change → sync sub-cat dropdown ── */
 window.onMainCatChange = function() {
   const val   = $("pMainCat").value;
   const group = $("subCatGroup");
-  if (val === "GENZ") {
-    group.style.display = "";
-    populateSubCatDropdown($("pSubCat"), "");
-  } else {
+  const list  = val === "GENZ" ? genzSubCategories : otherSubCategories;
+
+  if (list.length === 0) {
     group.style.display = "none";
+  } else {
+    group.style.display = "";
+    const sel = $("pSubCat");
+    sel.innerHTML = "";
+    list.forEach(c => {
+      const o = document.createElement("option");
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    });
   }
 };
 
-function populateSubCatDropdown(sel, selected) {
-  sel.innerHTML = "";
-  subCategories.forEach(c => {
-    const o = document.createElement("option");
-    o.value = c; o.textContent = c;
-    if (c === selected) o.selected = true;
-    sel.appendChild(o);
-  });
-  if (subCategories.length === 0) {
-    const o = document.createElement("option");
-    o.value = ""; o.textContent = "— No sub-categories —";
-    sel.appendChild(o);
-  }
-}
-
-/* Stock toggle in Add Product form */
+/* ── Stock toggle in Add Product form ── */
 $("pInStock").addEventListener("change", function() {
   const lbl = $("pStockLabel");
   lbl.textContent = this.checked ? "In Stock" : "Out of Stock";
@@ -344,7 +357,7 @@ $("pInStock").addEventListener("change", function() {
 
 /* ── Edit Product Modal ── */
 function openEditModal(p) {
-  editingProductId          = p.id;
+  editingProductId           = p.id;
   $("editPName").textContent = p.name;
   $("editPPrice").value      = p.price;
   $("editPDiscount").value   = p.discount || 0;
@@ -386,10 +399,7 @@ $("saveEditBtn").onclick = () => {
 
   if (window.updateProductInFirebase) {
     window.updateProductInFirebase(editingProductId, {
-      price:    newPrice,
-      discount: newDiscount,
-      extra:    newExtra,
-      inStock:  newInStock
+      price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock
     });
   }
 
