@@ -20,7 +20,6 @@
 </head>
 <body>
 
-  <!-- SPLASH -->
   <div id="splash" class="splash">
     <div class="splash-glow"></div>
     <div class="splash-oval">
@@ -31,7 +30,6 @@
     <p class="splash-tagline">Premium Quality</p>
   </div>
 
-  <!-- MAIN APP -->
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
@@ -71,9 +69,6 @@
     </main>
   </div>
 
-  <!-- ═══════════════════════════════════════
-       PRODUCT DETAIL PAGE
-  ═══════════════════════════════════════ -->
   <div id="prodDetail" class="prod-detail hidden">
     <div class="pd-header">
       <button id="pdBackBtn" class="pd-back">
@@ -103,18 +98,15 @@
         </div>
       </div>
 
-      <!-- Horizontal sections for all categories & subcategories -->
       <div id="pdHorizSections" class="horiz-sections"></div>
     </div>
 
-    <!-- Sticky bottom buttons -->
     <div class="pd-action-bar">
       <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
       <button id="pdBuyNow" class="btn-primary">💬 Buy Now</button>
     </div>
   </div>
 
-  <!-- CART DRAWER -->
   <div id="cartOverlay" class="overlay hidden">
     <div class="drawer">
       <div class="drawer-head">
@@ -130,7 +122,6 @@
     </div>
   </div>
 
-  <!-- ADMIN PIN MODAL -->
   <div id="adminPin" class="overlay center hidden">
     <div class="pin-box">
       <button id="pinClose" class="icon-btn close-abs">✕</button>
@@ -143,7 +134,6 @@
     </div>
   </div>
 
-  <!-- EDIT PRODUCT MODAL -->
   <div id="editModal" class="overlay center hidden">
     <div class="pin-box wide-box">
       <button id="editClose" class="icon-btn close-abs">✕</button>
@@ -175,7 +165,6 @@
     </div>
   </div>
 
-  <!-- ADMIN PANEL -->
   <div id="adminPanel" class="admin hidden">
     <div class="admin-inner">
       <div class="drawer-head">
@@ -241,10 +230,19 @@
         </div>
         <div id="adminProducts"></div>
       </section>
+
+      <section class="card">
+        <h3>Change Admin PIN</h3>
+        <p class="section-hint">Apna naya PIN set karein (Kam se kam 4 digit).</p>
+        <div class="inline-row" style="margin-top:8px;">
+          <input id="newAdminPin" type="number" class="field" placeholder="Naya PIN daalein" />
+          <button id="updatePinBtn" class="btn-primary sm-btn">Save PIN</button>
+        </div>
+      </section>
+
     </div>
   </div>
 
-  <!-- FIREBASE -->
   <script type="module">
     import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
