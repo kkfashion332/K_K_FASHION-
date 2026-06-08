@@ -108,7 +108,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 /* ════════════════════════════════════
    CART DRAWER
 ════════════════════════════════════ */
-.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,0.7); display: flex; justify-content: flex-end; animation: overlayFade 0.25s ease; backdrop-filter: blur(2px); }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: flex-end; animation: overlayFade 0.25s ease; backdrop-filter: blur(2px); }
 .overlay.center { align-items: center; justify-content: center; }
 .drawer { width: 100%; max-width: 360px; height: 100%; background: var(--card); display: flex; flex-direction: column; animation: drawerSlide 0.3s cubic-bezier(0.16,1,0.3,1); border-left: 1px solid var(--border); }
 .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
@@ -124,7 +124,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 .trash { background: none; border: none; color: var(--destructive); cursor: pointer; font-size: 16px; padding: 4px; }
 
 /* ════════════════════════════════════
-   MODALS
+   MODALS & ADMIN
 ════════════════════════════════════ */
 .pin-box { position: relative; background: var(--card); width: 100%; max-width: 320px; margin: 0 20px; border-radius: 20px; padding: 36px 28px; text-align: center; display: flex; flex-direction: column; align-items: center; border: 1px solid var(--border2); box-shadow: 0 0 60px rgba(201,168,76,0.08); animation: pinReveal 0.4s cubic-bezier(0.16,1,0.3,1); }
 .wide-box { max-width: 420px; }
@@ -138,9 +138,6 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 .pin-box .btn-primary { margin-top: 16px; width: 160px; }
 .edit-prod-name { margin-bottom: 16px; font-weight: 600; color: var(--primary); font-size: 15px; width: 100%; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* ════════════════════════════════════
-   STOCK TOGGLE
-════════════════════════════════════ */
 .stock-toggle-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 2px 0; }
 .field-label { font-size: 12px; color: var(--muted2); font-weight: 500; letter-spacing: 0.03em; display: block; margin-bottom: 4px; }
 .toggle-switch { position: relative; display: inline-block; width: 42px; height: 24px; flex-shrink: 0; }
@@ -153,10 +150,7 @@ body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -
 .stock-label.in { color: #4cc968; }
 .stock-label.out { color: var(--destructive); }
 
-/* ════════════════════════════════════
-   ADMIN PANEL
-════════════════════════════════════ */
-.admin { position: fixed; inset: 0; z-index: 50; background: var(--bg); overflow-y: auto; animation: overlayFade 0.3s ease; }
+.admin { position: fixed; inset: 0; background: var(--bg); overflow-y: auto; animation: overlayFade 0.3s ease; }
 .admin-inner { max-width: 580px; margin: 0 auto; padding: 16px; }
 .card { border: 1px solid var(--border); border-radius: 16px; background: var(--card); padding: 18px; margin-bottom: 20px; }
 .card h3 { margin-bottom: 6px; font-family: var(--font-display); font-size: 16px; font-weight: 600; letter-spacing: 0.04em; color: var(--primary); }
@@ -188,14 +182,11 @@ select.field { cursor: pointer; }
 .ap-actions button:hover { background: rgba(255,255,255,0.06); }
 .out-of-stock-overlay { position: relative; }
 .out-of-stock-overlay::after { content: 'Out of Stock'; position: absolute; inset: 0; background: rgba(10,10,10,0.65); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--destructive); border-radius: 16px 16px 0 0; }
-
-/* INLINE ROW */
 .inline-row { display: flex; gap: 8px; align-items: center; }
 .inline-row .field { margin-bottom: 0; flex: 1; }
 .sm-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; border-radius: 10px; background: var(--primary); color: var(--primary-fg); border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background 0.2s; }
 .sm-btn:hover { background: var(--primary-dim); }
 
-/* CATEGORY MANAGEMENT */
 .cat-mgmt-card { border: 1px solid var(--border); border-radius: 12px; background: var(--bg2); padding: 12px 14px; margin-bottom: 10px; animation: fadeUp 0.3s ease; }
 .cat-mgmt-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .cat-mgmt-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--fg); letter-spacing: 0.04em; }
@@ -208,6 +199,17 @@ select.field { cursor: pointer; }
 .chip-btn { background: none; border: none; cursor: pointer; padding: 0 2px; font-size: 12px; }
 .chip-btn.edt { color: var(--primary); }
 .chip-btn.del { color: var(--destructive); font-size: 14px; }
+
+/* ════════════════════════════════════
+   ADMIN ORDERS LIST (NEW CSS)
+════════════════════════════════════ */
+.admin-order-card { border: 1px solid var(--border); border-radius: 12px; background: var(--bg2); padding: 14px; margin-bottom: 12px; animation: fadeUp 0.3s ease; }
+.order-head { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.order-id { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.05em; }
+.order-total { font-weight: 700; color: var(--primary); font-size: 14px; }
+.order-cust { font-size: 13px; margin-bottom: 8px; line-height: 1.4; color: var(--fg); }
+.order-cust strong { color: var(--primary); font-weight: 600; }
+.order-items { font-size: 12px; color: var(--muted2); background: var(--card); padding: 8px; border-radius: 8px; }
 
 /* ════════════════════════════════════
    PRODUCT DETAIL PAGE
@@ -297,11 +299,7 @@ select.field { cursor: pointer; }
 .pd-action-bar .btn-outline { padding: 14px 8px; font-size: 14px; border-radius: 12px; }
 .pd-action-bar .btn-primary { padding: 14px 8px; font-size: 14px; border-radius: 12px; }
 
-/* ════════════════════════════════════
-   HORIZONTAL SECTIONS
-════════════════════════════════════ */
 .horiz-sections { padding: 0; }
-
 .horiz-section {
   padding: 18px 0 4px;
   border-bottom: 1px solid var(--border);
@@ -379,15 +377,12 @@ select.field { cursor: pointer; }
 @keyframes slideFromRight   { from { transform: translateX(100%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
 @keyframes slideToRight     { from { transform: translateX(0); opacity: 1; }     to { transform: translateX(100%); opacity: 0; } }
 
-/* ════════════════════════════════════
-   SCROLLBAR
-════════════════════════════════════ */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 /* ════════════════════════════════════
-   CHECKOUT PAGE (FULL SCREEN)
+   CHECKOUT PAGE & STEPPER
 ════════════════════════════════════ */
 .checkout-page {
   width: 100%;
@@ -418,6 +413,86 @@ select.field { cursor: pointer; }
   letter-spacing: 0.04em;
 }
 
+/* --- STEPPER CSS --- */
+.checkout-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 30px 10px;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg2);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.step-item.active .step-circle {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-fg);
+}
+
+.step-item.completed .step-circle {
+  background: #4cc968;
+  border-color: #4cc968;
+  color: #fff;
+  font-size: 16px;
+}
+
+.step-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color 0.3s;
+}
+
+.step-item.active .step-label {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.step-item.completed .step-label {
+  color: #4cc968;
+  font-weight: 600;
+}
+
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: var(--border);
+  position: relative;
+  top: -12px;
+  margin: 0 -4px;
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.step-line.completed {
+  background: #4cc968;
+}
+
+/* --- FORM BODY --- */
 .checkout-body {
   flex: 1;
   overflow-y: auto;
