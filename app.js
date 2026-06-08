@@ -4,12 +4,12 @@
 ═══════════════════════════════════════════════════════ */
 
 const WHATSAPP_NUMBER = "9950701758";
-const ADMIN_PIN       = "9672";
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
 const $    = id      => document.getElementById(id);
 
+let ADMIN_PIN            = load("admin_pin", "9672"); // PIN ab local storage se aayega
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
@@ -303,7 +303,6 @@ function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections");
   container.innerHTML = "";
 
-  /* 1. Same subcategory */
   if (currentProduct.subCategory) {
     const subList = products.filter(p =>
       p.id !== currentProduct.id && p.subCategory === currentProduct.subCategory
@@ -312,7 +311,6 @@ function renderHorizSections(currentProduct) {
       container.appendChild(buildHorizSection("More from " + currentProduct.subCategory, subList));
   }
 
-  /* 2. Same main category (other subcategories) */
   const sameMainList = products.filter(p =>
     p.id !== currentProduct.id &&
     p.mainCategoryId === currentProduct.mainCategoryId &&
@@ -323,7 +321,6 @@ function renderHorizSections(currentProduct) {
     container.appendChild(buildHorizSection("More from " + (cat ? cat.name : "This Category"), sameMainList));
   }
 
-  /* 3. Every other main category, split by subcategory */
   mainCategories.forEach(cat => {
     if (cat.id === currentProduct.mainCategoryId) return;
     const catProds = products.filter(p => p.mainCategoryId === cat.id);
@@ -474,14 +471,14 @@ $("checkoutBtn").onclick  = () => {
 };
 
 /* ════════════════════════════════════
-   ADMIN PIN
+   ADMIN PIN (20 Taps)
 ════════════════════════════════════ */
 let tapCount = 0, tapTimer = null;
 $("logoBtn").onclick = () => {
   tapCount++;
   if (tapTimer) clearTimeout(tapTimer);
-  if (tapCount >= 7) { tapCount = 0; openPin(); return; }
-  tapTimer = setTimeout(() => { tapCount = 0; }, 1200);
+  if (tapCount >= 20) { tapCount = 0; openPin(); return; } // Tap count 20 kar diya hai
+  tapTimer = setTimeout(() => { tapCount = 0; }, 3000); // 3 seconds ka time diya hai
 };
 
 function openPin() {
@@ -682,6 +679,21 @@ window.renderAdmin = function() {
   syncAddProductDropdowns();
   syncFilterDropdown();
   renderAdminProducts();
+  
+  // Bind change PIN button event here so it's always ready
+  if ($("updatePinBtn")) {
+    $("updatePinBtn").onclick = () => {
+      const newPin = $("newAdminPin").value.trim();
+      if (newPin.length < 4) {
+        alert("PIN kam se kam 4 digit ka hona chahiye!");
+        return;
+      }
+      ADMIN_PIN = newPin;
+      save("admin_pin", ADMIN_PIN);
+      alert("Success! Naya Admin PIN set ho gaya hai: " + ADMIN_PIN);
+      $("newAdminPin").value = "";
+    };
+  }
 };
 
 /* ════════════════════════════════════
