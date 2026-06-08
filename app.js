@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════
    K_K FASHION — app.js
-   Dynamic main categories + sub-categories (add/edit/remove)
+   Dynamic categories + LIVE SEARCH (name + cat + sub-cat)
 ═══════════════════════════════════════════════════════ */
 
 const WHATSAPP_NUMBER = "9950701758";
@@ -16,6 +16,7 @@ let cart             = load("knk_cart", []);
 let activeMainCatId  = null;
 let activeSubCat     = "All";
 let editingProductId = null;
+let searchQuery      = "";
 
 const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
@@ -25,9 +26,7 @@ const getCat     = id => mainCategories.find(c => c.id === id);
 window.updateCategoriesFromFirebase = function(cats) {
   mainCategories = cats || [];
   if (!activeMainCatId && mainCategories.length > 0) activeMainCatId = mainCategories[0].id;
-  renderMainCats();
-  renderSubCats();
-  renderProducts();
+  renderMainCats(); renderSubCats(); renderProducts();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 
@@ -56,7 +55,7 @@ function renderMainCats() {
   wrap.innerHTML = "";
   mainCategories.forEach((cat, i) => {
     const btn = document.createElement("button");
-    btn.className = "main-cat-btn" + (cat.id === activeMainCatId ? " active" : "");
+    btn.className = "main-cat-btn" + (cat.id === activeMainCatId && !searchQuery ? " active" : "");
     btn.style.animationDelay = (i * 0.07) + "s";
     btn.style.animation = "fadeUp 0.4s ease both";
     btn.innerHTML = `<span class="mc-label">${cat.name}</span>`;
@@ -66,11 +65,14 @@ function renderMainCats() {
 }
 
 window.selectMainCat = function(id) {
+  if (searchQuery) {
+    searchQuery = "";
+    $("searchInput").value = "";
+    $("searchClear").classList.add("hidden");
+  }
   activeMainCatId = id;
   activeSubCat    = "All";
-  renderMainCats();
-  renderSubCats();
-  renderProducts();
+  renderMainCats(); renderSubCats(); renderProducts();
 };
 
 /* ── Sub-Category Bar ── */
@@ -78,6 +80,8 @@ function renderSubCats() {
   const wrap    = $("subCats");
   const subWrap = $("subCatsWrap");
   wrap.innerHTML = "";
+  if (searchQuery) { subWrap.classList.add("hidden-bar"); return; }
+
   const cat = getCat(activeMainCatId);
   if (!cat || !cat.subCategories || cat.subCategories.length === 0) {
     subWrap.classList.add("hidden-bar"); return;
@@ -94,29 +98,61 @@ function renderSubCats() {
   });
 }
 
+/* ── SEARCH MATCH (name + main cat + sub cat, multi-word) ── */
+function searchMatches(p, q) {
+  if (!q) return false;
+  const cat = getCat(p.mainCategoryId);
+  const haystack = [
+    p.name || "",
+    p.subCategory || "",
+    cat ? cat.name : ""
+  ].join(" ").toLowerCase();
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => haystack.includes(w));
+}
+
 /* ── Product Grid ── */
 function renderProducts() {
-  const cat  = getCat(activeMainCatId);
-  $("activeTitle").textContent = activeSubCat === "All" ? (cat ? cat.name : "") : activeSubCat;
-  let list = products.filter(p => p.mainCategoryId === activeMainCatId);
-  if (activeSubCat !== "All") list = list.filter(p => p.subCategory === activeSubCat);
+  const title = $("activeTitle");
+  let list;
+
+  if (searchQuery) {
+    list = products.filter(p => searchMatches(p, searchQuery));
+    title.innerHTML = `Search: "<span style="color:var(--primary)">${searchQuery}</span>"
+                       <span class="search-count">${list.length} result${list.length === 1 ? "" : "s"}</span>`;
+  } else {
+    const cat = getCat(activeMainCatId);
+    title.textContent = activeSubCat === "All" ? (cat ? cat.name : "") : activeSubCat;
+    list = products.filter(p => p.mainCategoryId === activeMainCatId);
+    if (activeSubCat !== "All") list = list.filter(p => p.subCategory === activeSubCat);
+  }
 
   const grid = $("products");
-  if (list.length === 0) { grid.innerHTML = '<p class="empty">Loading products from server...</p>'; return; }
+  if (list.length === 0) {
+    grid.innerHTML = searchQuery
+      ? `<p class="empty">Koi product nahi mila "<strong>${searchQuery}</strong>" ke liye.<br/>Doosra word try karein.</p>`
+      : `<p class="empty">Loading products from server...</p>`;
+    return;
+  }
   grid.innerHTML = "";
 
   list.forEach((p, i) => {
     const price   = finalPrice(p);
     const inStock = p.inStock !== false;
+    const cat     = getCat(p.mainCategoryId);
+    const tag     = searchQuery
+      ? `<div class="prod-cat-tag">${cat ? cat.name : ""}${p.subCategory ? " · " + p.subCategory : ""}</div>`
+      : "";
+
     const el = document.createElement("div");
     el.className = "product";
-    el.style.animationDelay = (i * 0.07) + "s";
+    el.style.animationDelay = (i * 0.05) + "s";
     el.innerHTML = `
       <div class="${!inStock ? 'out-of-stock-overlay' : ''}">
         <img src="${p.image}" alt="${p.name}" loading="lazy" />
       </div>
       <div class="info">
         <div class="name">${p.name}</div>
+        ${tag}
         <div class="price-row">
           <span class="price">₹${price}</span>
           ${p.discount > 0 ? `<span class="strike">₹${p.price}</span><span class="off">${p.discount}% off</span>` : ""}
@@ -137,6 +173,34 @@ function renderProducts() {
     grid.appendChild(el);
   });
 }
+
+/* ── Search Input Handlers ── */
+let searchDebounce = null;
+$("searchInput").addEventListener("input", function() {
+  const v = this.value.trim();
+  $("searchClear").classList.toggle("hidden", !v);
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    searchQuery = v;
+    renderMainCats(); renderSubCats(); renderProducts();
+  }, 120);
+});
+$("searchClear").addEventListener("click", () => {
+  $("searchInput").value = "";
+  $("searchClear").classList.add("hidden");
+  searchQuery = "";
+  renderMainCats(); renderSubCats(); renderProducts();
+  $("searchInput").focus();
+});
+$("searchInput").addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    $("searchInput").value = "";
+    $("searchClear").classList.add("hidden");
+    searchQuery = "";
+    renderMainCats(); renderSubCats(); renderProducts();
+    $("searchInput").blur();
+  }
+});
 
 /* ── Cart ── */
 function addToCart(p) {
@@ -225,11 +289,9 @@ function saveCategories() {
   if (window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(mainCategories);
 }
 
-/* ── Category Management ── */
 function renderCatMgmt() {
   const list = $("catMgmtList");
   list.innerHTML = "";
-
   mainCategories.forEach(cat => {
     const card = document.createElement("div");
     card.className = "cat-mgmt-card";
@@ -237,28 +299,26 @@ function renderCatMgmt() {
       <div class="cat-mgmt-head">
         <span class="cat-mgmt-name">${cat.name}</span>
         <div class="cat-mgmt-actions">
-          <button class="cat-action-btn edit-cat-btn" title="Naam edit">✏️ Edit</button>
-          <button class="cat-action-btn del del-cat-btn" title="Delete">🗑️ Delete</button>
+          <button class="cat-action-btn edit-cat-btn">✏️ Edit</button>
+          <button class="cat-action-btn del del-cat-btn">🗑️ Delete</button>
         </div>
       </div>
       <div class="cat-sub-section">
         <div class="cat-sub-label">SUB-CATEGORIES</div>
         <div class="chips" id="subChips_${cat.id}"></div>
         <div class="inline-row">
-          <input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam (e.g. COMBO)" />
+          <input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam" />
           <button class="btn-primary sm-btn add-sub-btn" data-id="${cat.id}">+ Add</button>
         </div>
       </div>`;
 
-    /* Sub-cat chips */
     const chipsEl = card.querySelector(`#subChips_${cat.id}`);
     (cat.subCategories || []).forEach(sub => {
       const chip = document.createElement("span");
       chip.className = "chip";
       chip.innerHTML = `${sub}
-        <button class="chip-btn edt" title="Edit">✏️</button>
-        <button class="chip-btn del" title="Delete">✕</button>`;
-
+        <button class="chip-btn edt">✏️</button>
+        <button class="chip-btn del">✕</button>`;
       chip.querySelector(".edt").onclick = () => {
         const n = prompt(`"${sub}" ka naya naam:`, sub);
         if (!n || !n.trim()) return;
@@ -276,7 +336,6 @@ function renderCatMgmt() {
       chipsEl.appendChild(chip);
     });
 
-    /* Add sub-cat */
     card.querySelector(".add-sub-btn").onclick = () => {
       const inp = card.querySelector(`#subInp_${cat.id}`);
       const v = inp.value.trim().toUpperCase();
@@ -288,7 +347,6 @@ function renderCatMgmt() {
       if (activeMainCatId === cat.id) renderSubCats();
     };
 
-    /* Edit category name */
     card.querySelector(".edit-cat-btn").onclick = () => {
       const n = prompt(`"${cat.name}" ka naya naam:`, cat.name);
       if (!n || !n.trim()) return;
@@ -296,7 +354,6 @@ function renderCatMgmt() {
       saveCategories(); renderAdmin(); renderMainCats();
     };
 
-    /* Delete category */
     card.querySelector(".del-cat-btn").onclick = () => {
       if (!confirm(`"${cat.name}" category delete karein?`)) return;
       mainCategories = mainCategories.filter(c => c.id !== cat.id);
@@ -311,7 +368,6 @@ function renderCatMgmt() {
   });
 }
 
-/* Add new main category */
 $("addCatBtn").onclick = () => {
   const inp = $("newCatName");
   const v = inp.value.trim().toUpperCase();
@@ -322,7 +378,6 @@ $("addCatBtn").onclick = () => {
   renderAdmin(); renderMainCats();
 };
 
-/* Sync Add Product dropdowns */
 function syncAddProductDropdowns() {
   const pMainCat = $("pMainCat");
   pMainCat.innerHTML = "";
@@ -352,7 +407,6 @@ $("pInStock").addEventListener("change", function() {
   lbl.className   = "stock-label " + (this.checked ? "in" : "out");
 });
 
-/* Admin filter dropdown */
 function syncFilterDropdown() {
   const sel = $("adminFilterCat");
   sel.innerHTML = '<option value="ALL">All Categories</option>';
@@ -361,14 +415,12 @@ function syncFilterDropdown() {
   });
 }
 
-/* Admin products list */
 function renderAdminProducts() {
   $("adminProdTitle").textContent = `Products (${products.length})`;
   const filterCat = $("adminFilterCat").value || "ALL";
   const list = $("adminProducts");
   list.innerHTML = "";
   const filtered = filterCat === "ALL" ? products : products.filter(p => p.mainCategoryId === filterCat);
-
   filtered.forEach(p => {
     const price   = finalPrice(p);
     const inStock = p.inStock !== false;
@@ -385,8 +437,8 @@ function renderAdminProducts() {
         <div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div>
       </div>
       <div class="ap-actions">
-        <button class="edit-btn" title="Edit">✏️</button>
-        <button class="trash" title="Delete">🗑️</button>
+        <button class="edit-btn">✏️</button>
+        <button class="trash">🗑️</button>
       </div>`;
     el.querySelector(".edit-btn").onclick = () => openEditModal(p);
     el.querySelector(".trash").onclick    = () => {
