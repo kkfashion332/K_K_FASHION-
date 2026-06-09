@@ -239,8 +239,15 @@
       </div>
 
       <section class="card">
-        <h3>Live Orders</h3>
-        <p class="section-hint">Customer ke naye orders (Address aur Products) yahan dikhenge.</p>
+        <h3>Order Management</h3>
+        <p class="section-hint">Customer ke orders check aur manage karein.</p>
+        
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="Recent">Recent</button>
+          <button class="admin-tab" data-tab="Pending">Pending</button>
+          <button class="admin-tab" data-tab="Completed">Completed</button>
+        </div>
+
         <div id="adminOrdersList">Loading orders...</div>
       </section>
 
@@ -374,7 +381,6 @@
       } catch(e) { console.error(e); }
     }
 
-    // --- NEW: FIREBASE ORDERS LOGIC ---
     window.saveOrderToFirebase = async function(orderData) {
       try {
         await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() });
@@ -390,14 +396,23 @@
         const snap = await getDocs(collection(db, "orders"));
         const list = [];
         snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-        list.sort((a,b) => b.timestamp - a.timestamp); // Sort by newest first
+        list.sort((a,b) => b.timestamp - a.timestamp);
         if (window.renderAdminOrders) window.renderAdminOrders(list);
       } catch (e) { console.error("Fetch orders error:", e); }
     };
 
+    // NEW Admin Actions for Orders
+    window.updateOrderStatusInFirebase = async function(id, status) {
+      try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) { console.error(e); }
+    };
+    
+    window.deleteOrderFromFirebase = async function(id) {
+      try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); }
+    };
+
     fetchSettings();
     fetchProducts();
-    window.fetchOrdersFromFirebase(); // Fetch orders on load
+    window.fetchOrdersFromFirebase();
 
     window.saveCategoriesToFirebase = async function(cats) {
       try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
