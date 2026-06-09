@@ -183,7 +183,7 @@
       <div class="checkout-body hidden" id="checkoutStep2">
         <div class="checkout-step2-grid" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
           <div class="chk-s2-left" style="margin-bottom: 15px; text-align: center;">
-            <img id="chkStep2Img" src="" alt="Product Image" style="width: 50%; max-width: 200px; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);" />
+            <img id="chkStep2Img" src="" alt="Product Image" style="width: 55%; max-width: 250px; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);" />
             <div class="field-group" style="margin-top: 10px; max-width: 160px; margin-left: auto; margin-right: auto; text-align: left;">
               <label class="field-label">Quantity (Max 7 Units)</label>
               <select id="chkStep2Qty" class="field" style="margin-bottom: 0;">
@@ -206,7 +206,7 @@
           </div>
         </div>
 
-        <div class="payment-options-wrap">
+        <div id="paymentOptionsWrap" class="payment-options-wrap">
           <h3 style="color: var(--fg); margin-bottom: 12px; font-size: 15px; font-weight: 600;">Select Payment Method</h3>
           
           <label class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
@@ -230,11 +230,31 @@
             <p style="font-size: 12px; color: var(--fg); line-height: 1.5;">Fake orders ko rokne ke liye aapko abhi <strong id="codAdvanceAmt" style="color:var(--primary);">₹0</strong> (25% Advance) online pay karna hoga. Baaki ka <strong id="codBalanceAmt" style="color:var(--primary);">₹0</strong> (75%) order milne par dena hoga.</p>
           </div>
         </div>
+
+        <div id="qrScanSection" class="hidden" style="background:#fff; padding:15px; border-radius:12px; margin-top:15px; text-align:center;">
+          <h4 style="color:#111; margin-top:5px; margin-bottom:5px; font-size:16px;">Scan To Pay: <span id="qrAmountDisplay" style="color:#e05555; font-weight:900;">₹0</span></h4>
+          
+          <div id="paymentTimer" style="color:#d9534f; font-weight:bold; font-size:14px; margin-bottom:10px; background:#fff3f3; padding:5px; border-radius:5px; display:inline-block;">Time left: 05:00</div>
+          <br>
+          <img src="62673.png" alt="QR Code" style="width:200px; height:auto; max-height:220px; object-fit:contain; border-radius:8px; margin-bottom:10px; border:2px solid #f0f0f0; padding:5px;" />
+          
+          <div style="color:#666; font-size:12px; margin-bottom:8px; text-transform:uppercase;">Or Pay via UPI ID</div>
+          
+          <div id="copyUpiBtn" style="font-weight:bold; font-size:15px; color:#333; background:#f9f9f9; padding:8px 15px; border-radius:6px; border:1px dashed #ccc; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:12px; transition:0.3s;">
+              kkfashion@nyes <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>
+          </div>
+          
+          <div style="font-size:12px; color:#d9534f; margin-top:5px; padding:8px; background:#fff3f3; border-radius:6px; font-weight:bold; margin-bottom: 12px;">
+            ⚠️ Niche wale box me strictly 12-digit ka UTR number dalein!
+          </div>
+
+          <input type="tel" id="chkUtr" placeholder="Enter 12-Digit UTR No." maxlength="12" style="width:100%; padding:14px; border:2px solid #ccc; border-radius:8px; font-size:16px; text-align:center; font-weight:bold; box-sizing:border-box; letter-spacing:2px; color:#111; background:#fff;" />
+        </div>
       </div>
 
       <div class="checkout-body hidden" id="checkoutStep3" style="text-align: center; padding: 40px 15px;">
         <h2 style="font-family: var(--font-display); color: var(--primary); font-size: 28px; font-weight: 700; line-height: 1.4; margin-bottom: 20px; letter-spacing: 0.02em;">
-          CONGRATULATIONS 🎉🎉<br/>
+          CONGRATULATIONS<br/>
           <span style="font-size: 18px; color: var(--fg); font-family: var(--font-body); display: block; margin-top: 10px;">YOUR ORDER HAS BEEN SUCCESSFULLY PLACED</span>
         </h2>
         
@@ -247,13 +267,8 @@
       <div class="checkout-footer" id="checkoutFooter">
         <div class="total" id="chkFooterTotalRow" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
         <button id="step1NextBtn" class="btn-primary full">Save Address & Place Order</button>
-        <button id="step2PayBtn" class="btn-primary full hidden">Pay Now via UPI App</button>
-        
-        <div id="utrSection" class="hidden" style="margin-top: 12px; width: 100%;">
-          <p style="font-size: 12px; color: #d9534f; background: #fff3f3; padding: 8px; border-radius: 6px; font-weight: bold; margin-bottom: 10px; border: 1px solid #ffdcdc; text-align: center;">⚠️ Payment complete karke yahan 12-digit UTR ya Ref No. daalein!</p>
-          <input id="chkUtr" class="field" type="tel" inputmode="numeric" maxlength="12" placeholder="Enter 12-Digit UTR No." style="margin-bottom: 10px; font-size: 16px; text-align: center; font-weight: bold; letter-spacing: 2px;" />
-          <button id="confirmOrderBtn" class="btn-primary full">Verify Payment & Place Order</button>
-        </div>
+        <button id="step2PayBtn" class="btn-primary full hidden">Pay Now</button>
+        <button id="confirmOrderBtn" class="btn-primary full hidden">Verify Payment & Place Order</button>
       </div>
     </div>
   </div>
