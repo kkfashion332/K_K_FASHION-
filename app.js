@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - MOBILE VIEW FIX)
+   K_K FASHION — app.js (FINAL - UI REFINEMENTS & FIXES)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -321,6 +321,7 @@ function resetCheckoutUI() {
   $("utrSection").classList.add("hidden"); 
   
   if($("chkUtr")) $("chkUtr").value = "";
+  if($("dynamicUtrInput")) $("dynamicUtrInput").value = "";
   
   // Clear timer if running
   if(window.paymentInterval) clearInterval(window.paymentInterval);
@@ -375,12 +376,6 @@ $("closeCheckout").onclick = () => {
       unlockScroll(); 
   }
 };
-
-// Adjust top back arrow style dynamically
-if($("closeCheckout")) {
-    $("closeCheckout").style.position = "absolute";
-    $("closeCheckout").style.left = "15px";
-}
 
 // STEP 1 -> STEP 2
 $("step1NextBtn").onclick = () => {
@@ -517,15 +512,19 @@ $("step2PayBtn").onclick = () => {
       <div id="copyUpiBtn" style="font-weight:bold; font-size:15px; color:#333; background:#f9f9f9; padding:8px 15px; border-radius:6px; border:1px dashed #ccc; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:12px; transition:0.3s;">
           ${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>
       </div>
+      
+      <div style="font-size:12px; color:#d9534f; margin-top:5px; padding:8px; background:#fff3f3; border-radius:6px; font-weight:bold;">
+        ⚠️ Niche wale box me strictly 12-digit ka UTR number dalein!
+      </div>
+
+      <input type="tel" id="dynamicUtrInput" placeholder="Enter 12-Digit UTR No." maxlength="12" style="width:100%; padding:14px; margin-top:15px; border:2px solid #ccc; border-radius:8px; font-size:16px; text-align:center; font-weight:bold; box-sizing:border-box; letter-spacing:2px; color:#111; background:#fff;" />
   `;
 
-  // APPEND QR TO THE BODY (Scrollable area) instead of Footer
-  $("checkoutStep2").appendChild(qrContainer);
-
-  // Automatically scroll down to the newly added QR code so user sees it
-  setTimeout(() => {
-      $("checkoutStep2").scrollTop = $("checkoutStep2").scrollHeight;
-  }, 100);
+  // Strict 12 digit validation on dynamic input
+  let dynUtr = $("dynamicUtrInput");
+  dynUtr.oninput = function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+  };
 
   // QR Box Back Button Logic
   document.getElementById("qrBackBtn").onclick = function() {
@@ -568,7 +567,16 @@ $("step2PayBtn").onclick = () => {
 
 // FINAL CONFIRM UTR & SAVE TO FIREBASE
 $("confirmOrderBtn").onclick = () => {
-  let utrValue = $("chkUtr").value.trim();
+  // Grab UTR from our dynamically visible box, fallback to old box if needed
+  let utrValue = "";
+  let dynUtr = $("dynamicUtrInput");
+  let oldUtr = $("chkUtr");
+
+  if (dynUtr) {
+      utrValue = dynUtr.value.trim();
+  } else if (oldUtr) {
+      utrValue = oldUtr.value.trim();
+  }
   
   // STRICT CHECK: Ensure length is exactly 12 and contains only digits
   if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
