@@ -158,7 +158,6 @@ function renderProducts() {
 ════════════════════════════════════ */
 function openProductDetail(p) {
   lockScroll();
-  // Yahan se allowZoom() HATA diya gaya hai taki product page par zoom na ho.
 
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
   
@@ -173,11 +172,11 @@ function openProductDetail(p) {
     const imgEl = document.createElement("img");
     imgEl.src = imgUrl; imgEl.alt = p.name;
     
-    // NEW: Open Fullscreen Viewer on Click (Sirf yahin zoom allow hoga)
+    // Open Fullscreen Viewer on Click
     imgEl.onclick = () => {
       $("fullImage").src = imgUrl;
       $("imageViewer").classList.remove("hidden");
-      allowZoom(); // YAHAN ADD KIYA GAYA HAI Taki fullscreen image par zoom ho sake!
+      allowZoom(); 
     };
 
     slider.appendChild(imgEl);
@@ -414,7 +413,12 @@ function renderOrdersByTab() {
   list.innerHTML = "";
   
   filtered.forEach(o => {
-    const itemsHtml = o.items.map(i => `${i.product.name} (x${i.qty})`).join("<br>");
+    // NEW: Ab admin ko order mein photo bhi dikhegi
+    const itemsHtml = o.items.map(i => {
+      const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : (typeof i.product.image === 'string' ? i.product.image : "placeholder.jpg");
+      return `<div class="order-item-row"><img src="${mainImg}" class="order-item-img" alt="${i.product.name}" /><span>${i.product.name} <strong style="color:var(--primary)">(x${i.qty})</strong></span></div>`;
+    }).join("");
+    
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
     
     const div = document.createElement("div"); div.className = "admin-order-card";
@@ -495,9 +499,8 @@ $("saveEditBtn").onclick = () => {
 };
 
 /* ════════════════════════════════════
-   FULLSCREEN VIEWER LOGIC (NEW)
+   FULLSCREEN VIEWER LOGIC
 ════════════════════════════════════ */
-// YAHAN PAR ZOOM PREVENT ADD KIYA GAYA HAI Taki jab viewer band ho, zoom band ho jaye
 $("closeViewerBtn").onclick = () => { 
   $("imageViewer").classList.add("hidden"); 
   preventZoom(); 
