@@ -24,7 +24,6 @@ const getCat     = id => mainCategories.find(c => c.id === id);
 const lockScroll   = () => document.body.classList.add("no-scroll");
 const unlockScroll = () => document.body.classList.remove("no-scroll");
 
-// Toggle Viewport (Allow zoom only on product detail page)
 const allowZoom   = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
 const preventZoom = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
 
@@ -163,7 +162,6 @@ function openProductDetail(p) {
 
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
   
-  // MULTIPLE IMAGES SLIDER
   const slider = $("pdImageSlider");
   const dotsWrap = $("pdImageDots");
   slider.innerHTML = ""; dotsWrap.innerHTML = "";
@@ -174,6 +172,13 @@ function openProductDetail(p) {
   images.forEach((imgUrl, i) => {
     const imgEl = document.createElement("img");
     imgEl.src = imgUrl; imgEl.alt = p.name;
+    
+    // NEW: Open Fullscreen Viewer on Click
+    imgEl.onclick = () => {
+      $("fullImage").src = imgUrl;
+      $("imageViewer").classList.remove("hidden");
+    };
+
     slider.appendChild(imgEl);
     if(images.length > 1) {
       const dot = document.createElement("div");
@@ -203,10 +208,7 @@ function openProductDetail(p) {
     buyBtn.onclick = () => directBuyCheckout(p);
   } else { addBtn.disabled = true; buyBtn.disabled = true; addBtn.textContent = "Out of Stock"; buyBtn.textContent = "Out of Stock"; }
   
-  // RE-ADDED HORIZONTAL SECTIONS CALL
   renderHorizSections(p);
-  
-  // Scroll detail page to top
   $("pdScroll").scrollTop = 0;
   
   $("prodDetail").classList.remove("hidden", "closing"); syncDetailCartBadge();
@@ -224,7 +226,7 @@ $("pdBackBtn").onclick = closeProductDetail;
 $("pdCartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); preventZoom(); };
 
 /* ════════════════════════════════════
-   RE-ADDED: HORIZONTAL SECTIONS (More From...)
+   HORIZONTAL SECTIONS (More From...)
 ════════════════════════════════════ */
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
@@ -252,7 +254,6 @@ function buildHorizSection(title, list) {
     card.innerHTML = `<div class="horiz-card-img-wrap"><img src="${mainImg}" alt="${p.name}" loading="lazy" />${!inStock ? '<div class="horiz-card-oos">OUT OF STOCK</div>' : ''}</div>
       <div class="horiz-card-info"><div class="horiz-card-name">${p.name}</div><div class="horiz-card-price">₹${price}</div><button class="horiz-card-add" ${!inStock ? 'disabled' : ''}>+ Cart</button></div>`;
     
-    // When clicking horizontal items inside product detail, close current and open new
     const switchProduct = () => { closeProductDetail(); setTimeout(() => openProductDetail(p), 300); };
     card.querySelector(".horiz-card-img-wrap").onclick = switchProduct;
     card.querySelector(".horiz-card-name").onclick = switchProduct;
@@ -491,6 +492,12 @@ $("saveEditBtn").onclick = () => {
   
   $("editModal").classList.add("hidden"); editingProductId = null;
 };
+
+/* ════════════════════════════════════
+   FULLSCREEN VIEWER LOGIC (NEW)
+════════════════════════════════════ */
+$("closeViewerBtn").onclick = () => $("imageViewer").classList.add("hidden");
+$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) $("imageViewer").classList.add("hidden"); };
 
 /* ════════════════════════════════════
    INIT
