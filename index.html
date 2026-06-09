@@ -249,6 +249,12 @@
         <div class="total" id="chkFooterTotalRow" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
         <button id="step1NextBtn" class="btn-primary full">Save Address & Place Order</button>
         <button id="step2PayBtn" class="btn-primary full hidden">Pay Now via UPI App</button>
+        
+        <div id="utrSection" class="hidden" style="margin-top: 12px; width: 100%;">
+          <p style="font-size: 12px; color: var(--primary); margin-bottom: 8px; font-weight: 600;">⚠️ Payment karne ke baad apna 12-digit UTR ya Ref No. yahan daalein, tabhi order confirm hoga.</p>
+          <input id="chkUtr" class="field" type="number" placeholder="Enter 12-digit UTR No." style="margin-bottom: 8px;" />
+          <button id="confirmOrderBtn" class="btn-primary full">Verify Payment & Place Order</button>
+        </div>
       </div>
     </div>
   </div>
