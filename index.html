@@ -241,13 +241,11 @@
       <section class="card">
         <h3>Order Management</h3>
         <p class="section-hint">Customer ke orders check aur manage karein.</p>
-        
         <div class="admin-tabs">
           <button class="admin-tab active" data-tab="Recent">Recent</button>
           <button class="admin-tab" data-tab="Pending">Pending</button>
           <button class="admin-tab" data-tab="Completed">Completed</button>
         </div>
-
         <div id="adminOrdersList">Loading orders...</div>
       </section>
 
@@ -382,13 +380,7 @@
     }
 
     window.saveOrderToFirebase = async function(orderData) {
-      try {
-        await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() });
-        return true;
-      } catch (e) {
-        alert("Order save error: " + e.message);
-        return false;
-      }
+      try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Order save error: " + e.message); return false; }
     };
 
     window.fetchOrdersFromFirebase = async function() {
@@ -401,7 +393,6 @@
       } catch (e) { console.error("Fetch orders error:", e); }
     };
 
-    // NEW Admin Actions for Orders
     window.updateOrderStatusInFirebase = async function(id, status) {
       try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) { console.error(e); }
     };
@@ -410,9 +401,7 @@
       try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); }
     };
 
-    fetchSettings();
-    fetchProducts();
-    window.fetchOrdersFromFirebase();
+    fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
 
     window.saveCategoriesToFirebase = async function(cats) {
       try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
