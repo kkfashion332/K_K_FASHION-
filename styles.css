@@ -174,7 +174,7 @@ body.no-scroll { overflow: hidden !important; }
 .pd-img-wrap { position: relative; width: 100%; background: var(--card2); }
 .pd-img-slider { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; width: 100%; }
 .pd-img-slider::-webkit-scrollbar { display: none; }
-.pd-img-slider img { flex: 0 0 100%; width: 100%; aspect-ratio: 1/1; object-fit: cover; scroll-snap-align: start; }
+.pd-img-slider img { flex: 0 0 100%; width: 100%; aspect-ratio: 1/1; object-fit: cover; scroll-snap-align: start; cursor: pointer; }
 .pd-img-dots { position: absolute; bottom: 12px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
 .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.4); transition: 0.3s; }
 .dot.active { background: var(--primary); width: 14px; border-radius: 4px; }
@@ -190,7 +190,7 @@ body.no-scroll { overflow: hidden !important; }
 .pd-action-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 46; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; background: rgba(10,10,10,0.97); backdrop-filter: blur(16px); border-top: 1px solid var(--border2); }
 .pd-action-bar .btn-outline, .pd-action-bar .btn-primary { padding: 14px 8px; font-size: 14px; border-radius: 12px; }
 
-/* RE-ADDED: HORIZONTAL SECTIONS CSS */
+/* HORIZONTAL SECTIONS CSS */
 .horiz-sections { padding: 0; }
 .horiz-section { padding: 18px 0 4px; border-bottom: 1px solid var(--border); animation: fadeUp 0.4s ease both; }
 .horiz-section-head { display: flex; align-items: center; justify-content: space-between; padding: 0 16px; margin-bottom: 12px; }
@@ -229,6 +229,9 @@ body.no-scroll { overflow: hidden !important; }
 .checkout-body textarea.field { resize: vertical; min-height: 80px; font-family: inherit; }
 .warning-text { font-size: 11px; color: var(--destructive); margin-top: 4px; display: block; font-weight: 600; }
 .checkout-footer { flex-shrink: 0; padding: 16px 20px; background: rgba(10,10,10,0.96); backdrop-filter: blur(12px); border-top: 1px solid var(--border2); }
+
+/* FULLSCREEN VIEWER ANIMATION */
+#imageViewer { animation: overlayFade 0.2s ease; }
 
 /* ANIMATIONS */
 @keyframes splashFadeIn { from { opacity: 0; } to { opacity: 1; } }
