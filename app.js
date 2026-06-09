@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (UPDATED WITH QR CODE SCANNER UI)
+   K_K FASHION — app.js (FINAL - WITH TIMER, COPY & SCROLL FIX)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -298,7 +298,6 @@ $("clearCartBtn").onclick = clearCart;
 /* ════════════════════════════════════
    CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
 ════════════════════════════════════ */
-// UPDATED UPI ID
 const UPI_ID = "kkfashion@nyes"; 
 const STORE_NAME = "KKFashion"; 
 
@@ -321,6 +320,9 @@ function resetCheckoutUI() {
   $("step2PayBtn").classList.add("hidden");
   $("utrSection").classList.add("hidden"); 
   $("chkUtr").value = "";
+  
+  // Clear timer if running
+  if(window.paymentInterval) clearInterval(window.paymentInterval);
   
   // Remove generated QR box if any
   const qrBox = $("qrDisplayBox");
@@ -413,6 +415,7 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
     // Clear previous UTR status and restore standard pay button
     $("step2PayBtn").classList.remove("hidden");
     $("utrSection").classList.add("hidden");
+    if(window.paymentInterval) clearInterval(window.paymentInterval);
     const qrBox = $("qrDisplayBox");
     if(qrBox) qrBox.remove(); // Remove QR box if payment method is changed
 
@@ -438,24 +441,68 @@ $("step2PayBtn").onclick = () => {
   $("step2PayBtn").classList.add("hidden");
   $("utrSection").classList.remove("hidden");
 
+  // Fix Scrolling Issue dynamically
+  $("checkoutStep2").style.overflowY = "auto";
+  $("checkoutStep2").style.maxHeight = "65vh"; // Taki footer ke liye jagah bache
+  $("checkoutStep2").style.paddingBottom = "20px";
+
   // Inject QR Code Box dynamically
   let qrContainer = document.getElementById("qrDisplayBox");
   if (!qrContainer) {
       qrContainer = document.createElement("div");
       qrContainer.id = "qrDisplayBox";
-      qrContainer.style.cssText = "text-align:center; background:#fff; padding:20px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
+      qrContainer.style.cssText = "text-align:center; background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
       
       // Insert right before UTR input box
       $("utrSection").insertBefore(qrContainer, $("utrSection").firstChild);
   }
   
   qrContainer.innerHTML = `
-      <h4 style="color:#111; margin-top:0; margin-bottom:12px; font-size:18px;">Scan To Pay: <span style="color:#e05555; font-weight:900;">₹${amountPaid}</span></h4>
-      <img src="62673.png" alt="QR Code Scanner" style="width:220px; max-width:100%; border-radius:8px; margin-bottom:15px; border:2px solid #f0f0f0; padding:10px;" />
-      <div style="color:#666; font-size:13px; margin-bottom:6px; text-transform:uppercase; letter-spacing:1px;">Or Pay via UPI ID</div>
-      <div style="font-weight:bold; font-size:17px; color:#333; background:#f9f9f9; padding:10px 15px; border-radius:8px; border:1px dashed #ccc; display:inline-block; letter-spacing:0.5px; margin-bottom:10px;">${UPI_ID}</div>
-      <p style="font-size:12px; color:#d9534f; margin-top:5px; line-height:1.5; font-weight:bold;">⚠️ Dhyan Dein: Payment complete karne ke baad neeche UTR / Reference Number daalna zaroori hai!</p>
+      <h4 style="color:#111; margin-top:0; margin-bottom:5px; font-size:16px;">Scan To Pay: <span style="color:#e05555; font-weight:900;">₹${amountPaid}</span></h4>
+      
+      <div id="paymentTimer" style="color:#d9534f; font-weight:bold; font-size:14px; margin-bottom:10px; background:#fff3f3; padding:5px; border-radius:5px; display:inline-block;">Time left: 05:00</div>
+      
+      <br>
+      <img src="62673.png" alt="QR Code Scanner" style="width:180px; height:auto; max-height:220px; object-fit:contain; border-radius:8px; margin-bottom:10px; border:2px solid #f0f0f0; padding:5px;" />
+      
+      <div style="color:#666; font-size:12px; margin-bottom:8px; text-transform:uppercase;">Or Pay via UPI ID</div>
+      
+      <div id="copyUpiBtn" style="font-weight:bold; font-size:15px; color:#333; background:#f9f9f9; padding:8px 15px; border-radius:6px; border:1px dashed #ccc; display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:12px; transition:0.3s;">
+          ${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>
+      </div>
+      
+      <p style="font-size:11px; color:#d9534f; margin-top:0; line-height:1.4; font-weight:bold;">⚠️ Dhyan Dein: Payment complete karne ke baad neeche UTR / Reference Number daalna zaroori hai!</p>
   `;
+
+  // Copy UPI ID Logic
+  document.getElementById("copyUpiBtn").onclick = function() {
+      navigator.clipboard.writeText(UPI_ID).then(() => {
+          const btn = document.getElementById("copyUpiBtn");
+          btn.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
+          setTimeout(() => { 
+              btn.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; 
+          }, 2000);
+      }).catch(err => alert("Copy nahi ho paya, manually type karein."));
+  };
+
+  // Timer Logic (5 Minutes)
+  let timeLeft = 300; 
+  const timerDisplay = document.getElementById("paymentTimer");
+  
+  if(window.paymentInterval) clearInterval(window.paymentInterval);
+  
+  window.paymentInterval = setInterval(() => {
+      timeLeft--;
+      let minutes = Math.floor(timeLeft / 60);
+      let seconds = timeLeft % 60;
+      timerDisplay.innerText = "Time left: 0" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+      if (timeLeft <= 0) {
+          clearInterval(window.paymentInterval);
+          timerDisplay.innerText = "Time expired! Kripya page refresh karein.";
+          timerDisplay.style.color = "red";
+      }
+  }, 1000);
 };
 
 // FINAL CONFIRM UTR & SAVE TO FIREBASE
@@ -499,6 +546,7 @@ $("confirmOrderBtn").onclick = () => {
   };
 
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
+  if(window.paymentInterval) clearInterval(window.paymentInterval); // Stop timer on success
   
   // Save to Firebase
   if (window.saveOrderToFirebase) {
@@ -511,6 +559,9 @@ $("confirmOrderBtn").onclick = () => {
         btn.textContent = "Confirm & Place Order";
       }
     });
+  } else {
+      // Falback if firebase function not present
+      showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
 
