@@ -46,7 +46,7 @@
       <div class="search-box">
         <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="7"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          <line x1="21" cy="21" x2="16.65" y2="16.65"/>
         </svg>
         <input id="searchInput" class="search-input" type="text" placeholder="Search watch, dress, earbuds, category..." autocomplete="off" />
         <button id="searchClear" class="search-clear hidden" aria-label="Clear search">✕</button>
@@ -181,10 +181,74 @@
           <input id="chkLandmark" class="field" type="text" placeholder="Near school, temple, hospital etc." />
         </div>
       </div>
+
+      <div class="checkout-body hidden" id="checkoutStep2">
+        <div class="checkout-step2-grid" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
+          <div class="chk-s2-left" style="margin-bottom: 15px; text-align: center;">
+            <img id="chkStep2Img" src="" alt="Product Image" style="width: 25%; min-width: 80px; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);" />
+            <div class="field-group" style="margin-top: 10px; max-width: 160px; margin-left: auto; margin-right: auto; text-align: left;">
+              <label class="field-label">Quantity (Max 7 Units)</label>
+              <select id="chkStep2Qty" class="field" style="margin-bottom: 0;">
+                <option value="1">1 Unit</option>
+                <option value="2">2 Units</option>
+                <option value="3">3 Units</option>
+                <option value="4">4 Units</option>
+                <option value="5">5 Units</option>
+                <option value="6">6 Units</option>
+                <option value="7">7 Units</option>
+              </select>
+            </div>
+          </div>
+          <div class="chk-s2-right" style="background: var(--card2); padding: 14px; border-radius: 10px; border: 1px solid var(--border);">
+            <h3 style="color: var(--primary); margin-bottom: 10px; font-size: 15px; font-family: var(--font-body); font-weight: 600;">Bill Summary</h3>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;"><span>Actual Price:</span><span id="billActual" style="text-decoration: line-through; color: var(--muted2);">₹0</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;"><span>Discount:</span><span id="billDiscount" style="color: var(--primary); font-weight: 600;">0%</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;"><span>Delivery Charge:</span><span style="color: #4cc968; font-weight: bold;">FREE</span></div>
+            <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 700; border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 6px; color: var(--primary);"><span>Final Price:</span><span id="billFinal">₹0</span></div>
+          </div>
+        </div>
+
+        <div class="payment-options-wrap">
+          <h3 style="color: var(--fg); margin-bottom: 12px; font-size: 15px; font-weight: 600;">Select Payment Method</h3>
+          
+          <label class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
+            <input type="radio" name="payMethod" value="Prepaid" id="payPrepaid" checked style="margin-top: 3px; accent-color: var(--primary);" />
+            <div class="pay-option-info" style="font-size: 13px; line-height: 1.4;">
+              <strong style="color: var(--fg); font-weight: 600; display: block; margin-bottom: 2px;">Prepaid (Full Online Pay)</strong>
+              <span style="color: var(--muted2); font-size: 12px;">Pay 100% online securely via any UPI App (PhonePe, GPay, Paytm etc.)</span>
+            </div>
+          </label>
+
+          <label class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
+            <input type="radio" name="payMethod" value="COD" id="payCOD" style="margin-top: 3px; accent-color: var(--primary);" />
+            <div class="pay-option-info" style="font-size: 13px; line-height: 1.4;">
+              <strong style="color: var(--fg); font-weight: 600; display: block; margin-bottom: 2px;">Cash on Delivery (C.O.D)</strong>
+              <span style="color: var(--muted2); font-size: 12px;">Requires 25% Safety Deposit online. Pay 75% balance during delivery 🚚</span>
+            </div>
+          </label>
+
+          <div id="codWarningBox" class="cod-warning-box hidden" style="margin-top: 12px; padding: 12px; border: 1px dashed var(--primary); background: rgba(201,168,76,0.04); border-radius: 10px;">
+            <span style="color: var(--destructive); font-weight: 700; font-size: 12px; display: block; margin-bottom: 4px; letter-spacing: 0.03em;">⚠️ SAFETY DEPOSIT REQUIRED</span>
+            <p style="font-size: 12px; color: var(--fg); line-height: 1.5;">Fake orders ko rokne ke liye aapko abhi <strong id="codAdvanceAmt" style="color:var(--primary);">₹0</strong> (25% Advance) online pay karna hoga. Baaki ka <strong id="codBalanceAmt" style="color:var(--primary);">₹0</strong> (75%) order milne par dena hoga.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkout-body hidden" id="checkoutStep3" style="text-align: center; padding: 35px 15px;">
+        <div style="font-size: 60px; margin-bottom: 15px;">🎉🎉</div>
+        <h2 style="font-family: var(--font-display); color: var(--primary); font-size: 24px; font-weight: 700; line-height: 1.4; margin-bottom: 12px; letter-spacing: 0.02em;">CONGRATULATIONS 🎉🎉<br/>YOUR ORDER SUCCESSFULLY PLACED</h2>
+        <p style="font-size: 13px; color: var(--muted2); margin-bottom: 20px; line-height: 1.5; padding: 0 10px;">Aapka order successfully register ho gaya hai aur database me safe kar diya gaya hai.</p>
+        
+        <div id="successOrderSummary" style="background: var(--card); padding: 14px; border-radius: 12px; border: 1px solid var(--border); text-align: left; margin-bottom: 25px; font-size: 13px; line-height: 1.6;">
+          </div>
+
+        <button id="successCloseBtn" class="btn-primary full" style="max-width: 220px; margin: 0 auto; display: block;">Continue Shopping</button>
+      </div>
       
-      <div class="checkout-footer">
-        <div class="total" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
+      <div class="checkout-footer" id="checkoutFooter">
+        <div class="total" id="chkFooterTotalRow" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
         <button id="step1NextBtn" class="btn-primary full">Save Address & Place Order</button>
+        <button id="step2PayBtn" class="btn-primary full hidden">Pay Now via UPI App</button>
       </div>
     </div>
   </div>
