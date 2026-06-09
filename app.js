@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (100% COMPLETE FIXED VERSION)
+   K_K FASHION — app.js (MULTIPLE IMAGES + ZOOM FIX + STEPPER FIX)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -20,9 +20,13 @@ const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
 const getCat     = id => mainCategories.find(c => c.id === id);
 
-// SCROLL LOCK UTILS (Prevents background from scrolling)
+// SCROLL & ZOOM LOCK UTILS
 const lockScroll   = () => document.body.classList.add("no-scroll");
 const unlockScroll = () => document.body.classList.remove("no-scroll");
+
+// Toggle Viewport (Allow zoom only on product detail page)
+const allowZoom   = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
+const preventZoom = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
 
 /* ════════════════════════════════════
    FIREBASE CALLBACKS
@@ -45,13 +49,8 @@ window.updateProductsFromFirebase = function(fbProducts) {
 ════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
-    const splash = $("splash");
-    splash.style.transition = "opacity 0.5s ease";
-    splash.style.opacity = "0";
-    setTimeout(() => {
-      splash.classList.add("hidden");
-      $("app").classList.remove("hidden");
-    }, 500);
+    const splash = $("splash"); splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
+    setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); }, 500);
   }, 2500);
 });
 
@@ -131,9 +130,13 @@ function renderProducts() {
   list.forEach((p, i) => {
     const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
     const tag = searchQuery ? `<div class="prod-cat-tag">${cat ? cat.name : ""}${p.subCategory ? " · " + p.subCategory : ""}</div>` : "";
+    
+    // Always show the 1st image in Grid view
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    
     const el = document.createElement("div"); el.className = "product"; el.style.animationDelay = (i * 0.05) + "s";
     el.innerHTML = `
-      <div class="${!inStock ? 'out-of-stock-overlay' : ''}"><img src="${p.image}" alt="${p.name}" loading="lazy" /></div>
+      <div class="${!inStock ? 'out-of-stock-overlay' : ''}"><img src="${mainImg}" alt="${p.name}" loading="lazy" /></div>
       <div class="info">
         <div class="name">${p.name}</div>${tag}
         <div class="price-row"><span class="price">₹${price}</span>${p.discount > 0 ? `<span class="strike">₹${p.price}</span><span class="off">${p.discount}% off</span>` : ""}</div>
@@ -158,8 +161,41 @@ function renderProducts() {
 ════════════════════════════════════ */
 function openProductDetail(p) {
   lockScroll();
+  allowZoom(); // Product image par pinch-zoom allow karna
+
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
-  $("pdImage").src = p.image; $("pdImage").alt = p.name;
+  
+  // -- RENDER MULTIPLE IMAGES SLIDER --
+  const slider = $("pdImageSlider");
+  const dotsWrap = $("pdImageDots");
+  slider.innerHTML = ""; dotsWrap.innerHTML = "";
+  
+  let images = Array.isArray(p.image) ? p.image : [p.image];
+  if(images.length === 0) images = ["placeholder.jpg"];
+
+  images.forEach((imgUrl, i) => {
+    const imgEl = document.createElement("img");
+    imgEl.src = imgUrl; imgEl.alt = p.name;
+    slider.appendChild(imgEl);
+    
+    // Add dots only if more than 1 image
+    if(images.length > 1) {
+      const dot = document.createElement("div");
+      dot.className = "dot" + (i === 0 ? " active" : "");
+      dotsWrap.appendChild(dot);
+    }
+  });
+
+  // Slider scroll pe dot change logic
+  if(images.length > 1) {
+    slider.onscroll = () => {
+      const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+      Array.from(dotsWrap.children).forEach((dot, i) => {
+        dot.className = "dot" + (i === index ? " active" : "");
+      });
+    };
+  }
+
   const badge = $("pdStockBadge"); badge.textContent = inStock ? "● In Stock" : "● Out of Stock"; badge.className = "stock-badge pd-img-stock " + (inStock ? "in" : "out");
   $("pdBreadcrumb").textContent = (cat ? cat.name : "") + (p.subCategory ? " › " + p.subCategory : "");
   $("pdName").textContent = p.name; $("pdPrice").textContent = "₹" + price;
@@ -175,6 +211,7 @@ function openProductDetail(p) {
 }
 
 function closeProductDetail() {
+  preventZoom(); // Back aate hi zoom wapas disable kar do
   const detail = $("prodDetail"); detail.classList.add("closing");
   detail.addEventListener("animationend", () => {
     detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null;
@@ -182,7 +219,7 @@ function closeProductDetail() {
   }, { once: true });
 }
 $("pdBackBtn").onclick = closeProductDetail;
-$("pdCartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); };
+$("pdCartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); preventZoom(); };
 
 function syncDetailCartBadge() { const count = cart.reduce((s, i) => s + i.qty, 0); $("pdCartCount").textContent = count; $("pdCartCount").classList.toggle("hidden", count === 0); }
 
@@ -204,8 +241,9 @@ function renderCart() {
   if (!cart.length) { body.innerHTML = '<p class="empty">Cart is empty</p>'; foot.classList.add("hidden"); return; }
   body.innerHTML = "";
   cart.forEach(i => {
+    const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : "placeholder.jpg";
     const el = document.createElement("div"); el.className = "cart-item";
-    el.innerHTML = `<img src="${i.product.image}" alt="${i.product.name}" /><div class="ci-info"><div class="ci-name">${i.product.name}</div><div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}</div></div><button class="trash">🗑️</button>`;
+    el.innerHTML = `<img src="${mainImg}" alt="${i.product.name}" /><div class="ci-info"><div class="ci-name">${i.product.name}</div><div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}</div></div><button class="trash">🗑️</button>`;
     el.querySelector(".trash").onclick = () => removeFromCart(i.product.id); body.appendChild(el);
   });
   $("cartTotal").textContent = "₹" + cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0); foot.classList.remove("hidden");
@@ -220,6 +258,7 @@ $("clearCartBtn").onclick = clearCart;
    CHECKOUT OVERLAY & STEPPER LOGIC
 ════════════════════════════════════ */
 function directBuyCheckout(p) {
+  preventZoom();
   cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
   $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null;
   openCheckout();
@@ -287,7 +326,6 @@ $("adminClose").onclick = () => { $("adminPanel").classList.add("hidden"); unloc
 
 function saveCategories() { if (window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(mainCategories); }
 
-// --- FIXED: RESTORED CATEGORY MANAGEMENT ---
 function renderCatMgmt() {
   const list = $("catMgmtList"); list.innerHTML = "";
   mainCategories.forEach(cat => {
@@ -308,7 +346,6 @@ function renderCatMgmt() {
   });
 }
 
-// --- FIXED: ADD CATEGORY BUTTON ---
 $("addCatBtn").onclick = () => { const inp = $("newCatName"); const v = inp.value.trim().toUpperCase(); if (!v) return; if (mainCategories.some(c => c.name.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; } mainCategories.push({ id: genId(), name: v, subCategories: [] }); saveCategories(); inp.value = ""; renderAdmin(); renderMainCats(); };
 
 function syncAddProductDropdowns() { const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); }); onMainCatChange(); }
@@ -317,22 +354,17 @@ $("pInStock").addEventListener("change", function() { const lbl = $("pStockLabel
 
 function syncFilterDropdown() { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
 
-
 // ═════ ADMIN ORDER MANAGEMENT ═════
 let liveOrders = [];
 let currentOrderTab = "Recent";
 
-window.renderAdminOrders = function(orders) {
-  liveOrders = orders;
-  renderOrdersByTab();
-};
+window.renderAdminOrders = function(orders) { liveOrders = orders; renderOrdersByTab(); };
 
 function renderOrdersByTab() {
   const list = $("adminOrdersList");
   if (!list) return;
 
   let filtered = liveOrders.filter(o => (o.status || "Recent") === currentOrderTab);
-
   if (filtered.length === 0) { list.innerHTML = `<p class='empty'>Koi order nahi hai is tab mein.</p>`; return; }
   list.innerHTML = "";
   
@@ -340,18 +372,10 @@ function renderOrdersByTab() {
     const itemsHtml = o.items.map(i => `${i.product.name} (x${i.qty})`).join("<br>");
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
     
-    const div = document.createElement("div");
-    div.className = "admin-order-card";
+    const div = document.createElement("div"); div.className = "admin-order-card";
     div.innerHTML = `
-      <div class="order-head">
-        <span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span>
-        <span class="order-total">₹${o.totalAmount}</span>
-      </div>
-      <div class="order-cust">
-        <strong>${o.name}</strong> (${o.mobile})<br>
-        ${o.address}, ${o.state} - ${o.pincode}<br>
-        <small style="color:var(--muted)">${dateStr}</small>
-      </div>
+      <div class="order-head"><span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span><span class="order-total">₹${o.totalAmount}</span></div>
+      <div class="order-cust"><strong>${o.name}</strong> (${o.mobile})<br>${o.address}, ${o.state} - ${o.pincode}<br><small style="color:var(--muted)">${dateStr}</small></div>
       <div class="order-items">${itemsHtml}</div>
       <div class="order-actions">
         <select class="field small-field status-select" data-id="${o.id}">
@@ -360,87 +384,76 @@ function renderOrdersByTab() {
           <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
         </select>
         <button class="trash del-order-btn" data-id="${o.id}">🗑️ Remove</button>
-      </div>
-    `;
+      </div>`;
     list.appendChild(div);
   });
 
-  document.querySelectorAll(".status-select").forEach(sel => {
-    sel.addEventListener("change", async (e) => {
-      const id = e.target.getAttribute("data-id");
-      const newStatus = e.target.value;
-      const order = liveOrders.find(x => x.id === id);
-      if(order) order.status = newStatus;
-      renderOrdersByTab(); 
-      if (window.updateOrderStatusInFirebase) await window.updateOrderStatusInFirebase(id, newStatus);
-    });
-  });
-
-  document.querySelectorAll(".del-order-btn").forEach(btn => {
-    btn.addEventListener("click", async (e) => {
-      const id = e.currentTarget.getAttribute("data-id");
-      if(!confirm("Kya aap sach me is order ko delete karna chahte hain?")) return;
-      liveOrders = liveOrders.filter(x => x.id !== id);
-      renderOrdersByTab();
-      if (window.deleteOrderFromFirebase) await window.deleteOrderFromFirebase(id);
-    });
-  });
+  document.querySelectorAll(".status-select").forEach(sel => { sel.addEventListener("change", async (e) => { const id = e.target.getAttribute("data-id"); const newStatus = e.target.value; const order = liveOrders.find(x => x.id === id); if(order) order.status = newStatus; renderOrdersByTab(); if (window.updateOrderStatusInFirebase) await window.updateOrderStatusInFirebase(id, newStatus); }); });
+  document.querySelectorAll(".del-order-btn").forEach(btn => { btn.addEventListener("click", async (e) => { const id = e.currentTarget.getAttribute("data-id"); if(!confirm("Kya aap sach me is order ko delete karna chahte hain?")) return; liveOrders = liveOrders.filter(x => x.id !== id); renderOrdersByTab(); if (window.deleteOrderFromFirebase) await window.deleteOrderFromFirebase(id); }); });
 }
 
-document.querySelectorAll(".admin-tab").forEach(tab => {
-  tab.addEventListener("click", (e) => {
-    document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
-    e.currentTarget.classList.add("active");
-    currentOrderTab = e.currentTarget.getAttribute("data-tab");
-    renderOrdersByTab();
-  });
-});
+document.querySelectorAll(".admin-tab").forEach(tab => { tab.addEventListener("click", (e) => { document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active")); e.currentTarget.classList.add("active"); currentOrderTab = e.currentTarget.getAttribute("data-tab"); renderOrdersByTab(); }); });
 
-// --- FIXED: RESTORED PRODUCT LIST ---
 function renderAdminProducts() {
   $("adminProdTitle").textContent = `Products (${products.length})`; const filterCat = $("adminFilterCat").value || "ALL"; const list = $("adminProducts"); list.innerHTML = "";
   const filtered = filterCat === "ALL" ? products : products.filter(p => p.mainCategoryId === filterCat);
   filtered.forEach(p => {
     const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId), catName = cat ? cat.name : "—", subLabel = p.subCategory ? ` · ${p.subCategory}` : "";
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
     const el = document.createElement("div"); el.className = "admin-prod";
-    el.innerHTML = `<img src="${p.image}" alt="${p.name}" /><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}${subLabel}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div><div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
+    el.innerHTML = `<img src="${mainImg}" alt="${p.name}" /><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}${subLabel}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div><div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
     el.querySelector(".edit-btn").onclick = () => openEditModal(p); el.querySelector(".trash").onclick = () => { if (!confirm("Delete karein?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) window.deleteProductFromFirebase(p.id); }; list.appendChild(el);
   });
 }
 
-// --- FIXED: RENDER ADMIN & RESTORE PIN CHANGE ---
 window.renderAdmin = function() {
-  renderCatMgmt(); 
-  syncAddProductDropdowns(); 
-  syncFilterDropdown(); 
-  renderAdminProducts();
-  
-  if ($("updatePinBtn")) { 
-    $("updatePinBtn").onclick = () => { 
-      const newPin = $("newAdminPin").value.trim(); 
-      if (newPin.length < 4) { alert("PIN kam se kam 4 digit ka hona chahiye!"); return; } 
-      ADMIN_PIN = newPin; save("admin_pin", ADMIN_PIN); 
-      alert("Success! Naya Admin PIN set ho gaya hai: " + ADMIN_PIN); 
-      $("newAdminPin").value = ""; 
-    }; 
-  }
-  
+  renderCatMgmt(); syncAddProductDropdowns(); syncFilterDropdown(); renderAdminProducts();
+  if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { const newPin = $("newAdminPin").value.trim(); if (newPin.length < 4) { alert("PIN kam se kam 4 digit ka hona chahiye!"); return; } ADMIN_PIN = newPin; save("admin_pin", ADMIN_PIN); alert("Success! Naya Admin PIN set ho gaya hai: " + ADMIN_PIN); $("newAdminPin").value = ""; }; }
   if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
 };
 
-// --- FIXED: EDIT MODAL LOGIC ---
-function openEditModal(p) { editingProductId = p.id; $("editPName").textContent = p.name; $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0; const inStock = p.inStock !== false; $("editInStock").checked = inStock; const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out"); $("editModal").classList.remove("hidden"); }
+function openEditModal(p) { 
+  editingProductId = p.id; 
+  $("editPName").textContent = p.name; 
+  
+  // Multiple images in edit modal
+  let imgArray = Array.isArray(p.image) ? p.image : [p.image];
+  $("editPImage").value = imgArray.join(", "); 
+  
+  $("editPPrice").value = p.price; 
+  $("editPDiscount").value = p.discount || 0; 
+  $("editPExtra").value = p.extra || 0; 
+  const inStock = p.inStock !== false; $("editInStock").checked = inStock; 
+  const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out"); 
+  $("editModal").classList.remove("hidden"); 
+}
+
 $("editInStock").addEventListener("change", function() { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
 $("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; };
+
 $("saveEditBtn").onclick = () => {
-  if (!editingProductId) return; const newPrice = Number($("editPPrice").value), newDiscount = Number($("editPDiscount").value) || 0, newExtra = Number($("editPExtra").value) || 0, newInStock = $("editInStock").checked;
-  if (!newPrice || newPrice <= 0) { alert("Sahi price daalein!"); return; } const idx = products.findIndex(p => p.id === editingProductId);
-  if (idx > -1) { products[idx] = { ...products[idx], price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }; renderProducts(); renderAdmin(); }
-  if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }); }
+  if (!editingProductId) return; 
+  const newPrice = Number($("editPPrice").value), newDiscount = Number($("editPDiscount").value) || 0, newExtra = Number($("editPExtra").value) || 0, newInStock = $("editInStock").checked;
+  const rawImage = $("editPImage").value.trim();
+  const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+  
+  if (!newPrice || newPrice <= 0 || newImgArray.length === 0) { alert("Sahi Image aur Price daalein!"); return; } 
+  const idx = products.findIndex(p => p.id === editingProductId);
+  
+  if (idx > -1) { 
+    products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }; 
+    renderProducts(); renderAdmin(); 
+  }
+  
+  if (window.updateProductInFirebase) { 
+    window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }); 
+  }
+  
   $("editModal").classList.add("hidden"); editingProductId = null;
 };
 
 /* ════════════════════════════════════
    INIT
 ════════════════════════════════════ */
+preventZoom(); // Start strictly with zoom blocked
 renderCartCount();
