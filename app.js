@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - WITH TIMER, COPY & SCROLL FIX)
+   K_K FASHION — app.js (FINAL - WITH BACK BUTTONS FIX)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -343,7 +343,43 @@ function openCheckout() {
   $("checkoutOverlay").classList.remove("hidden");
 }
 
-$("closeCheckout").onclick = () => { $("checkoutOverlay").classList.add("hidden"); unlockScroll(); };
+/* SMART BACK BUTTON LOGIC (FOR TOP HEADER ARROW) */
+$("closeCheckout").onclick = () => { 
+  // Agar QR code dikh raha hai (Step 2.5), toh Payment Options par wapas jao
+  if (!$("utrSection").classList.contains("hidden")) {
+      $("utrSection").classList.add("hidden");
+      $("step2PayBtn").classList.remove("hidden");
+      if(window.paymentInterval) clearInterval(window.paymentInterval);
+      const qrBox = $("qrDisplayBox");
+      if(qrBox) qrBox.remove();
+  }
+  // Agar Payment Options dikh rahe hain (Step 2), toh Address form (Step 1) par wapas jao
+  else if (!$("checkoutStep2").classList.contains("hidden")) {
+      $("checkoutStep2").classList.add("hidden");
+      $("checkoutStep1").classList.remove("hidden");
+      $("step1NextBtn").classList.remove("hidden");
+      $("step2PayBtn").classList.add("hidden");
+      $("chkFooterTotalRow").classList.remove("hidden");
+
+      // Stepper UI reset
+      $("step2Indicator").classList.remove("active");
+      $("step1Indicator").classList.remove("completed");
+      $("step1Indicator").classList.add("active");
+      $("line1").classList.remove("completed");
+      $("step1Circle").innerHTML = "1";
+  }
+  // Agar Step 1 par hi hain, toh poora Checkout Popup band kar do
+  else {
+      $("checkoutOverlay").classList.add("hidden"); 
+      unlockScroll(); 
+  }
+};
+
+// Adjust top back arrow style dynamically
+if($("closeCheckout")) {
+    $("closeCheckout").style.position = "absolute";
+    $("closeCheckout").style.left = "15px";
+}
 
 // STEP 1 -> STEP 2
 $("step1NextBtn").onclick = () => {
@@ -451,14 +487,18 @@ $("step2PayBtn").onclick = () => {
   if (!qrContainer) {
       qrContainer = document.createElement("div");
       qrContainer.id = "qrDisplayBox";
-      qrContainer.style.cssText = "text-align:center; background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
+      qrContainer.style.cssText = "position:relative; text-align:center; background:#fff; padding:15px; border-radius:12px; margin-bottom:20px; border: 1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05);";
       
       // Insert right before UTR input box
       $("utrSection").insertBefore(qrContainer, $("utrSection").firstChild);
   }
   
   qrContainer.innerHTML = `
-      <h4 style="color:#111; margin-top:0; margin-bottom:5px; font-size:16px;">Scan To Pay: <span style="color:#e05555; font-weight:900;">₹${amountPaid}</span></h4>
+      <button id="qrBackBtn" style="position:absolute; top:10px; left:10px; background:var(--bg); border:1px solid #ddd; font-size:18px; cursor:pointer; color:#333; padding:5px 10px; border-radius:6px; font-weight:bold; display:flex; align-items:center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index:10;">
+        ⬅
+      </button>
+
+      <h4 style="color:#111; margin-top:5px; margin-bottom:5px; font-size:16px;">Scan To Pay: <span style="color:#e05555; font-weight:900;">₹${amountPaid}</span></h4>
       
       <div id="paymentTimer" style="color:#d9534f; font-weight:bold; font-size:14px; margin-bottom:10px; background:#fff3f3; padding:5px; border-radius:5px; display:inline-block;">Time left: 05:00</div>
       
@@ -473,6 +513,14 @@ $("step2PayBtn").onclick = () => {
       
       <p style="font-size:11px; color:#d9534f; margin-top:0; line-height:1.4; font-weight:bold;">⚠️ Dhyan Dein: Payment complete karne ke baad neeche UTR / Reference Number daalna zaroori hai!</p>
   `;
+
+  // QR Box Back Button Logic
+  document.getElementById("qrBackBtn").onclick = function() {
+      $("utrSection").classList.add("hidden");
+      $("step2PayBtn").classList.remove("hidden");
+      if(window.paymentInterval) clearInterval(window.paymentInterval);
+      qrContainer.remove();
+  };
 
   // Copy UPI ID Logic
   document.getElementById("copyUpiBtn").onclick = function() {
