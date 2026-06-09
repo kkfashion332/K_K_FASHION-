@@ -299,7 +299,7 @@ $("clearCartBtn").onclick = clearCart;
    CHECKOUT OVERLAY (STEP 1, 2 & 3 WITH UTR VERIFY)
 ════════════════════════════════════ */
 const UPI_ID = "kkfashion@nyes"; 
-const STORE_NAME = "K_K_Fashion";
+const STORE_NAME = "KKFashion"; // Fixed: Removed underscores for standard compliance
 
 function directBuyCheckout(p) {
   preventZoom();
@@ -405,21 +405,21 @@ function updateStep2Summary() {
 document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
     
-    // Yahan fix lagaya hai - Pay button wapas laao aur UTR chhupao
+    // Fix: Clear previous UTR status and restore standard pay button
     $("step2PayBtn").classList.remove("hidden");
     $("utrSection").classList.add("hidden");
 
     if (e.target.value === "COD") {
        $("codWarningBox").classList.remove("hidden");
-       $("step2PayBtn").textContent = "Pay 25% Advance via PhonePe";
+       $("step2PayBtn").textContent = "Pay 25% Advance via UPI";
     } else {
        $("codWarningBox").classList.add("hidden");
-       $("step2PayBtn").textContent = "Pay 100% Now via PhonePe";
+       $("step2PayBtn").textContent = "Pay 100% Now via UPI";
     }
   });
 });
 
-// PAY BUTTON CLICK -> OPEN PHONEPE DIRECTLY & SHOW UTR INPUT
+// PAY BUTTON CLICK -> OPEN UNIVERSAL UPI CHOOSE APPS & SHOW UTR INPUT
 $("step2PayBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
@@ -427,9 +427,9 @@ $("step2PayBtn").onclick = () => {
   
   let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
 
-  // CREATE & TRIGGER PHONEPE DIRECT INTENT LINK
-  const phonepeLink = `phonepe://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
-  window.location.href = phonepeLink;
+  // Fixed: Replaced phonepe:// with standard universal upi:// link to bypass merchant account block on personal UPI IDs
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=${STORE_NAME}&am=${amountPaid}&cu=INR`;
+  window.location.href = upiLink;
 
   // HIDE PAY BUTTON AND SHOW UTR INPUT SECTION
   $("step2PayBtn").classList.add("hidden");
