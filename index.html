@@ -36,6 +36,11 @@
         <span class="brand-mark">K_K</span>
         <span class="brand-name">Fashion</span>
       </button>
+      
+      <button id="authBtn" class="icon-btn" aria-label="User Profile" style="margin-left: auto; margin-right: 10px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </button>
+
       <button id="cartBtn" class="icon-btn" aria-label="Open cart">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
         <span id="cartCount" class="badge hidden">0</span>
@@ -118,6 +123,18 @@
         <button id="checkoutBtn" class="btn-primary full">Proceed to Checkout</button>
         <button id="clearCartBtn" class="link">Clear cart</button>
       </div>
+    </div>
+  </div>
+
+  <div id="authOverlay" class="overlay center hidden" style="z-index: 115;">
+    <div class="pin-box">
+      <button id="authClose" class="icon-btn close-abs">✕</button>
+      <div class="lock" style="font-size:30px; margin-bottom:10px;">👤</div>
+      <h2>Welcome</h2>
+      <p style="font-size:13px; color:var(--muted); margin-bottom:15px;">Please login to continue</p>
+      <button id="googleSignInBtn" class="btn-primary full" style="display: flex; align-items: center; justify-content: center; gap: 10px; background: #fff; color: #000; border: 1px solid #ddd; font-weight: 600;">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google"> Continue with Google
+      </button>
     </div>
   </div>
 
@@ -422,9 +439,12 @@
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-    // IMPORT FIREBASE STORAGE MODULES
     import { getStorage, ref, deleteObject } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-storage.js";
+    
+    // ADDED: Firebase Auth Modules
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } 
+      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
@@ -439,8 +459,16 @@
     const fbApp = initializeApp(firebaseConfig);
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
-    // INITIALIZE STORAGE
     const storage = getStorage(fbApp);
+
+    // ADDED: Initialize Auth & make it global for app.js
+    const auth = getAuth(fbApp);
+    const provider = new GoogleAuthProvider();
+    window.firebaseAuth = auth;
+    window.firebaseProvider = provider;
+    window.signInWithPopup = signInWithPopup;
+    window.signOut = signOut;
+    window.onAuthStateChanged = onAuthStateChanged;
 
     async function fetchSettings() {
       try {
@@ -513,22 +541,17 @@
       try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
     };
 
-    // UPDATED: DELETE PRODUCT & ITS IMAGES FROM FIREBASE STORAGE
     window.deleteProductFromFirebase = async function(id) {
       try { 
-        // 1. Fetch product to get image URLs
         const productSnap = await getDoc(doc(db, "products", id));
         if (productSnap.exists()) {
             const data = productSnap.data();
             let imgUrls = [];
             if(Array.isArray(data.imageUrl)) { imgUrls = data.imageUrl; }
             else if(data.imageUrl) { imgUrls = [data.imageUrl]; }
-
-            // 2. Delete each image from Firebase Storage if it's a firebase storage link
             for (const url of imgUrls) {
                if (url.includes("firebasestorage.googleapis.com")) {
                   try {
-                      // Extract storage path from URL
                       const storageRef = ref(storage, url);
                       await deleteObject(storageRef);
                       console.log("Deleted image from storage:", url);
@@ -538,13 +561,9 @@
                }
             }
         }
-        
-        // 3. Delete from Firestore Database
         await deleteDoc(doc(db, "products", id)); 
         console.log("Product completely removed.");
-      } catch(e) {
-          console.error("Error deleting product completely:", e);
-      }
+      } catch(e) { console.error("Error deleting product completely:", e); }
     };
 
     window.updateProductInFirebase = async function(id, data) {
