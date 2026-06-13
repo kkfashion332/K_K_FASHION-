@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - BOTTOM NAV + MOBILE AUTH + ORDER MODAL + PROFILE EDIT)
+   K_K FASHION — app.js (FINAL - LOCAL STORAGE PROFILE IMAGE & NAV)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -22,16 +22,12 @@ const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
 const getCat     = id => mainCategories.find(c => c.id === id);
 
-// SCROLL & ZOOM LOCK UTILS
 const lockScroll   = () => document.body.classList.add("no-scroll");
 const unlockScroll = () => document.body.classList.remove("no-scroll");
 
 const allowZoom   = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
 const preventZoom = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
 
-/* ════════════════════════════════════
-   FIREBASE CALLBACKS
-════════════════════════════════════ */
 window.updateCategoriesFromFirebase = function(cats) {
   mainCategories = cats || [];
   if (!activeMainCatId && mainCategories.length > 0) activeMainCatId = mainCategories[0].id;
@@ -45,9 +41,6 @@ window.updateProductsFromFirebase = function(fbProducts) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 
-/* ════════════════════════════════════
-   AUTH & SPLASH LOGIC
-════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
   if(window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
@@ -59,7 +52,7 @@ window.addEventListener("DOMContentLoaded", () => {
           isAppInitialized = true;
         } else {
            if($("waBtn")) $("waBtn").classList.remove("hidden");
-           renderProfile(); // Update Profile if navigated
+           renderProfile(); 
         }
       } else {
         $("authScreen").classList.remove("hidden");
@@ -85,7 +78,6 @@ function showSplashAndStart() {
   }, 2500);
 }
 
-// Mobile + Password Auth Logic
 if($("authSubmitBtn")) {
   $("authSubmitBtn").onclick = async () => {
     const mob = $("authMobile").value.trim();
@@ -141,7 +133,6 @@ if($("googleLoginBtn")) {
   };
 }
 
-// Profile Logout
 if($("profileLogoutBtn")) {
   $("profileLogoutBtn").onclick = () => {
     if(confirm("Are you sure you want to logout?")) {
@@ -152,9 +143,6 @@ if($("profileLogoutBtn")) {
   };
 }
 
-/* ════════════════════════════════════
-   BOTTOM NAVIGATION LOGIC
-════════════════════════════════════ */
 window.switchNav = function(tab) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   if($("nav"+tab)) $("nav"+tab).classList.add("active");
@@ -177,9 +165,6 @@ window.switchNav = function(tab) {
   window.scrollTo(0,0);
 };
 
-/* ════════════════════════════════════
-   MY ORDERS & ORDER MODAL LOGIC
-════════════════════════════════════ */
 function renderMyOrders() {
   const list = $("myOrdersList");
   if(!myOrders || myOrders.length === 0) {
@@ -190,8 +175,6 @@ function renderMyOrders() {
   let html = "";
   myOrders.forEach(o => {
     const dateStr = new Date(o.savedAt || Date.now()).toLocaleDateString();
-    
-    // Get thumbnail of first item
     let thumb = "placeholder.jpg";
     if(o.items && o.items.length > 0) {
        const pImg = o.items[0].product.image;
@@ -271,7 +254,7 @@ window.openMyOrderModal = function(idStr) {
 };
 
 /* ════════════════════════════════════
-   PROFILE EDIT LOGIC
+   PROFILE EDIT LOGIC (LOCAL STORAGE COMPRESSION)
 ════════════════════════════════════ */
 function renderProfile() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
@@ -279,14 +262,18 @@ function renderProfile() {
   const nameObj = $("profileDisplayName");
   const imgObj = $("profileImg");
 
+  // Load from LocalStorage
+  const savedPic = localStorage.getItem("knk_profile_pic");
+
   if(user) {
      let email = user.email || "";
      displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com","") : email;
      nameObj.textContent = user.displayName || "Add Your Name";
-     imgObj.src = user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+     imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
   } else {
      displayObj.textContent = "Guest User";
      nameObj.textContent = "Guest";
+     imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
   }
 }
 
@@ -306,36 +293,47 @@ if($("editProfileBtn")) {
 }
 
 if($("profilePicInput")) {
-  $("profilePicInput").onchange = async (e) => {
+  $("profilePicInput").onchange = function(e) {
      const file = e.target.files[0];
      if(!file) return;
-     const user = window.fbAuth.currentUser;
-     if(!user) return;
 
-     if(file.size > 2 * 1024 * 1024) {
-       alert("Image size should be less than 2MB.");
-       return;
-     }
+     // Compress Image Using Canvas to avoid LocalStorage Quota error
+     const reader = new FileReader();
+     reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+            const canvas = document.createElement("canvas");
+            let width = img.width;
+            let height = img.height;
+            const MAX_SIZE = 250;
 
-     const stRef = window.storageRef(window.storageObj, `profiles/${user.uid}_${Date.now()}`);
-     $("profileImg").style.opacity = "0.5";
-     try {
-        await window.uploadBytes(stRef, file);
-        const url = await window.getDownloadURL(stRef);
-        await window.updateProfile(user, { photoURL: url });
-        renderProfile();
-     } catch(err) {
-        alert("Image upload failed: " + err.message);
-     } finally {
-        $("profileImg").style.opacity = "1";
-     }
+            if (width > height) {
+                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+            } else {
+                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.7); // Compress 70%
+            
+            try {
+                localStorage.setItem("knk_profile_pic", dataUrl);
+                $("profileImg").src = dataUrl;
+            } catch(err) {
+                alert("Browser Storage full! Kripya kisi aur choti image ka prayog karein.");
+            }
+        };
+        img.src = event.target.result;
+     };
+     reader.readAsDataURL(file);
   };
 }
 
 
-/* ════════════════════════════════════
-   MAIN CATEGORY & SUB-CATEGORY BAR
-════════════════════════════════════ */
 function renderMainCats() {
   const wrap = $("mainCats"); wrap.innerHTML = "";
   mainCategories.forEach((cat, i) => {
@@ -369,9 +367,6 @@ function renderSubCats() {
   });
 }
 
-/* ════════════════════════════════════
-   SEARCH
-════════════════════════════════════ */
 function searchMatches(p, q) {
   if (!q) return false;
   const cat = getCat(p.mainCategoryId);
@@ -387,9 +382,6 @@ $("searchInput").addEventListener("input", function() {
 });
 $("searchClear").addEventListener("click", () => { $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = ""; renderMainCats(); renderSubCats(); renderProducts(); $("searchInput").focus(); });
 
-/* ════════════════════════════════════
-   PRODUCT GRID
-════════════════════════════════════ */
 function renderProducts() {
   const title = $("activeTitle"); let list;
   if (searchQuery) {
@@ -433,9 +425,6 @@ function renderProducts() {
   });
 }
 
-/* ════════════════════════════════════
-   PRODUCT DETAIL PAGE
-════════════════════════════════════ */
 function openProductDetail(p) {
   lockScroll();
   currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
@@ -502,9 +491,6 @@ function closeProductDetail() {
 $("pdBackBtn").onclick = closeProductDetail;
 $("pdCartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); preventZoom(); };
 
-/* ════════════════════════════════════
-   HORIZONTAL SECTIONS (More From...)
-════════════════════════════════════ */
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
   if (currentProduct.subCategory) {
@@ -544,9 +530,6 @@ function buildHorizSection(title, list) {
 
 function syncDetailCartBadge() { const count = cart.reduce((s, i) => s + i.qty, 0); $("pdCartCount").textContent = count; $("pdCartCount").classList.toggle("hidden", count === 0); }
 
-/* ════════════════════════════════════
-   CART
-════════════════════════════════════ */
 function addToCart(p) {
   const found = cart.find(i => i.product.id === p.id);
   if (found) found.qty += 1; else cart.push({ product: p, qty: 1 });
@@ -575,9 +558,6 @@ $("cartClose").onclick = () => { $("cartOverlay").classList.add("hidden"); unloc
 $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOverlay").classList.add("hidden"); unlockScroll(); } };
 $("clearCartBtn").onclick = clearCart;
 
-/* ════════════════════════════════════
-   CHECKOUT OVERLAY
-════════════════════════════════════ */
 const UPI_ID = "kkfashion@nyes"; 
 
 if($("chkUtr")) {
@@ -869,9 +849,6 @@ $("successCloseBtn").onclick = () => {
   resetCheckoutUI();
 };
 
-/* ════════════════════════════════════
-   ADMIN PIN & PANEL LOGIC
-════════════════════════════════════ */
 let tapCount = 0, tapTimer = null;
 $("logoBtn").onclick = () => {
   tapCount++; if (tapTimer) clearTimeout(tapTimer);
