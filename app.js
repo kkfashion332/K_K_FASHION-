@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - BOTTOM NAV + MOBILE AUTH)
+   K_K FASHION — app.js (FINAL - BOTTOM NAV + MOBILE AUTH + ORDER MODAL + PROFILE EDIT)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -10,7 +10,7 @@ let ADMIN_PIN            = load("admin_pin", "9672");
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
-let myOrders             = load("knk_my_orders", []); // NEW: For User's own orders
+let myOrders             = load("knk_my_orders", []); 
 let activeMainCatId      = null;
 let activeSubCat         = "All";
 let editingProductId     = null;
@@ -59,6 +59,7 @@ window.addEventListener("DOMContentLoaded", () => {
           isAppInitialized = true;
         } else {
            if($("waBtn")) $("waBtn").classList.remove("hidden");
+           renderProfile(); // Update Profile if navigated
         }
       } else {
         $("authScreen").classList.remove("hidden");
@@ -126,14 +127,12 @@ if($("authSubmitBtn")) {
   };
 }
 
-// Restrict Mobile Input to numbers only
 if($("authMobile")) {
   $("authMobile").oninput = function() {
       this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
   };
 }
 
-// Google Login Button Click
 if($("googleLoginBtn")) {
   $("googleLoginBtn").onclick = () => {
     const provider = new window.GoogleAuthProvider();
@@ -142,7 +141,7 @@ if($("googleLoginBtn")) {
   };
 }
 
-// Profile Logout Button Click (Moved from Header)
+// Profile Logout
 if($("profileLogoutBtn")) {
   $("profileLogoutBtn").onclick = () => {
     if(confirm("Are you sure you want to logout?")) {
@@ -157,21 +156,18 @@ if($("profileLogoutBtn")) {
    BOTTOM NAVIGATION LOGIC
 ════════════════════════════════════ */
 window.switchNav = function(tab) {
-  // Update Button States
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   if($("nav"+tab)) $("nav"+tab).classList.add("active");
   
   if(tab === 'Order') $("navOrderWrap").classList.add("active");
   else $("navOrderWrap").classList.remove("active");
 
-  // Hide All Tab Contents
   $("homeContent").classList.add("hidden");
   $("contactPage").classList.add("hidden");
   $("orderPage").classList.add("hidden");
   $("aboutPage").classList.add("hidden");
   $("profilePage").classList.add("hidden");
 
-  // Show Active Tab Content
   if(tab === 'Home') $("homeContent").classList.remove("hidden");
   if(tab === 'Contact') $("contactPage").classList.remove("hidden");
   if(tab === 'Order') { $("orderPage").classList.remove("hidden"); renderMyOrders(); }
@@ -181,7 +177,9 @@ window.switchNav = function(tab) {
   window.scrollTo(0,0);
 };
 
-// Render User's Orders from LocalStorage
+/* ════════════════════════════════════
+   MY ORDERS & ORDER MODAL LOGIC
+════════════════════════════════════ */
 function renderMyOrders() {
   const list = $("myOrdersList");
   if(!myOrders || myOrders.length === 0) {
@@ -191,45 +189,149 @@ function renderMyOrders() {
 
   let html = "";
   myOrders.forEach(o => {
-    const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
     const dateStr = new Date(o.savedAt || Date.now()).toLocaleDateString();
     
-    let itemsText = o.items.map(i => `${i.product.name} (x${i.qty})`).join("<br>");
+    // Get thumbnail of first item
+    let thumb = "placeholder.jpg";
+    if(o.items && o.items.length > 0) {
+       const pImg = o.items[0].product.image;
+       thumb = Array.isArray(pImg) ? pImg[0] : pImg;
+    }
 
     html += `
-    <div class="mo-card">
+    <div class="mo-card" onclick="openMyOrderModal('${o.savedAt}')">
       <div class="mo-head">
         <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
-        <span class="mo-status">Processing</span>
+        <span class="mo-status">${o.status || 'Processing'}</span>
       </div>
-      <div class="mo-body">
-        <strong>Date:</strong> ${dateStr}<br>
-        <strong>Items:</strong><br><span style="color:var(--muted2);">${itemsText}</span><br><br>
-        <strong>Delivery Address:</strong><br>
-        <span style="color:var(--fg);">${o.name} (${o.mobile})</span><br>
-        <span style="color:var(--muted2);">${o.address}, ${o.state} - ${o.pincode}</span><br>
-        <strong>Mode:</strong> <span style="color:var(--primary);">${payMode}</span>
+      <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
+         <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
+         <div style="flex:1;">
+           <strong style="color:var(--fg);">Date:</strong> ${dateStr}<br>
+           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Click for full details</span>
+         </div>
       </div>
     </div>`;
   });
   list.innerHTML = html;
 }
 
-// Render Profile Info
+window.openMyOrderModal = function(idStr) {
+  const o = myOrders.find(x => x.savedAt.toString() === idStr.toString());
+  if(!o) return;
+
+  let itemsHtml = o.items.map(i => {
+    const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
+    const actual = i.product.price * i.qty;
+    const finalP = finalPrice(i.product) * i.qty;
+    return `
+    <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border2); padding-bottom:12px;">
+       <img src="${img}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
+       <div>
+          <div style="font-weight:600; font-size:13px; color:var(--fg);">${i.product.name}</div>
+          <div style="font-size:12px; color:var(--muted2);">Qty: ${i.qty} Unit(s)</div>
+          <div style="font-size:13px; margin-top:4px;">
+            <span style="text-decoration:line-through; color:var(--muted); font-size:11px;">₹${actual}</span>
+            <strong style="color:var(--primary); margin-left:6px;">₹${finalP}</strong>
+          </div>
+       </div>
+    </div>`;
+  }).join("");
+
+  const dateStr = new Date(o.savedAt || Date.now()).toLocaleString();
+  const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
+
+  $("myOrderDetailBody").innerHTML = `
+    <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
+       <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Status: ${o.status || 'Processing'}</div>
+       <div style="font-size:12px; color:var(--muted2);">Order Date: ${dateStr}</div>
+       <div style="font-size:12px; color:var(--muted2); margin-top:4px;">Payment: ${payMode}</div>
+    </div>
+    
+    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg);">Items Details</h3>
+    ${itemsHtml}
+
+    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg);">Delivery Address</h3>
+    <div style="font-size:13px; color:var(--muted); line-height:1.5; background:var(--bg2); padding:10px; border-radius:8px;">
+       <strong style="color:var(--fg);">${o.name}</strong> (${o.mobile})<br>
+       ${o.address}<br>
+       ${o.landmark ? o.landmark+'<br>' : ''}
+       ${o.state} - ${o.pincode}
+    </div>
+
+    <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
+       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
+       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Balance Due (COD):</span> <span style="color:var(--destructive);">₹${o.balanceDue}</span></div>
+       <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:16px; font-weight:700; color:var(--primary);"><span>Total Amount:</span> <span>₹${o.totalAmount}</span></div>
+    </div>
+  `;
+
+  $("myOrderDetailModal").classList.remove("hidden");
+  lockScroll();
+};
+
+/* ════════════════════════════════════
+   PROFILE EDIT LOGIC
+════════════════════════════════════ */
 function renderProfile() {
+  const user = window.fbAuth ? window.fbAuth.currentUser : null;
   const displayObj = $("profileDisplayId");
-  if(window.fbAuth && window.fbAuth.currentUser) {
-     let email = window.fbAuth.currentUser.email || "";
-     // If it's a mobile login, strip the fake domain
-     if(email.includes("@kkfashion.com")) {
-        displayObj.textContent = "+91 " + email.replace("@kkfashion.com","");
-     } else {
-        displayObj.textContent = email;
-     }
+  const nameObj = $("profileDisplayName");
+  const imgObj = $("profileImg");
+
+  if(user) {
+     let email = user.email || "";
+     displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com","") : email;
+     nameObj.textContent = user.displayName || "Add Your Name";
+     imgObj.src = user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
   } else {
      displayObj.textContent = "Guest User";
+     nameObj.textContent = "Guest";
   }
 }
+
+if($("editProfileBtn")) {
+  $("editProfileBtn").onclick = async () => {
+     const user = window.fbAuth.currentUser;
+     if(!user) return;
+     const newName = prompt("Enter your Name:", user.displayName || "");
+     if(newName !== null && newName.trim() !== "") {
+        const btn = $("editProfileBtn");
+        btn.textContent = "Saving...";
+        await window.updateProfile(user, { displayName: newName.trim() });
+        btn.textContent = "✏️ Edit Name";
+        renderProfile();
+     }
+  };
+}
+
+if($("profilePicInput")) {
+  $("profilePicInput").onchange = async (e) => {
+     const file = e.target.files[0];
+     if(!file) return;
+     const user = window.fbAuth.currentUser;
+     if(!user) return;
+
+     if(file.size > 2 * 1024 * 1024) {
+       alert("Image size should be less than 2MB.");
+       return;
+     }
+
+     const stRef = window.storageRef(window.storageObj, `profiles/${user.uid}_${Date.now()}`);
+     $("profileImg").style.opacity = "0.5";
+     try {
+        await window.uploadBytes(stRef, file);
+        const url = await window.getDownloadURL(stRef);
+        await window.updateProfile(user, { photoURL: url });
+        renderProfile();
+     } catch(err) {
+        alert("Image upload failed: " + err.message);
+     } finally {
+        $("profileImg").style.opacity = "1";
+     }
+  };
+}
+
 
 /* ════════════════════════════════════
    MAIN CATEGORY & SUB-CATEGORY BAR
@@ -474,10 +576,9 @@ $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOv
 $("clearCartBtn").onclick = clearCart;
 
 /* ════════════════════════════════════
-   CHECKOUT OVERLAY (100% ROCK SOLID LOGIC)
+   CHECKOUT OVERLAY
 ════════════════════════════════════ */
 const UPI_ID = "kkfashion@nyes"; 
-const STORE_NAME = "KKFashion"; 
 
 if($("chkUtr")) {
   $("chkUtr").oninput = function() {
@@ -715,7 +816,7 @@ $("confirmOrderBtn").onclick = () => {
     balanceDue: balanceDue,
     utrNumber: utrValue,
     status: "Recent",
-    savedAt: Date.now() // For local rendering
+    savedAt: Date.now()
   };
 
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
@@ -724,7 +825,6 @@ $("confirmOrderBtn").onclick = () => {
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
       if (success) {
-        // Save locally for User's "Order" Tab
         myOrders.unshift(orderData);
         save("knk_my_orders", myOrders);
 
@@ -736,7 +836,6 @@ $("confirmOrderBtn").onclick = () => {
       }
     });
   } else {
-      // Fallback local save
       myOrders.unshift(orderData);
       save("knk_my_orders", myOrders);
       showStep3Success(payMethod, amountPaid, balanceDue);
