@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - ROCK SOLID CHECKOUT + AUTH)
+   K_K FASHION — app.js (FINAL - MOBILE + PWD AUTH & WA HIDDEN)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
@@ -48,25 +48,24 @@ window.updateProductsFromFirebase = function(fbProducts) {
    AUTH & SPLASH LOGIC
 ════════════════════════════════════ */
 window.addEventListener("DOMContentLoaded", () => {
-  // Check auth state securely
   if(window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
-        // User is logged in
         $("authScreen").classList.add("hidden");
         $("logoutBtn").classList.remove("hidden"); 
         
-        // Show splash only once per session load
         if(!isAppInitialized) {
           showSplashAndStart();
           isAppInitialized = true;
+        } else {
+           if($("waBtn")) $("waBtn").classList.remove("hidden");
         }
       } else {
-        // Not logged in
         $("authScreen").classList.remove("hidden");
         $("app").classList.add("hidden");
         $("splash").classList.add("hidden");
         $("logoutBtn").classList.add("hidden");
+        if($("waBtn")) $("waBtn").classList.add("hidden"); 
       }
     });
   }
@@ -81,8 +80,58 @@ function showSplashAndStart() {
      setTimeout(() => { 
         splash.classList.add("hidden"); 
         $("app").classList.remove("hidden"); 
+        if($("waBtn")) $("waBtn").classList.remove("hidden"); 
      }, 500);
   }, 2500);
+}
+
+// Mobile + Password Auth Logic
+if($("authSubmitBtn")) {
+  $("authSubmitBtn").onclick = async () => {
+    const mob = $("authMobile").value.trim();
+    const pwd = $("authPassword").value.trim();
+
+    if(!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) {
+      alert("Kripya sahi 10-digit mobile number dalein!");
+      return;
+    }
+    if(!pwd || pwd.length < 6) {
+      alert("Password kam se kam 6 characters ka hona chahiye!");
+      return;
+    }
+
+    const fakeEmail = mob + "@kkfashion.com";
+    const btn = $("authSubmitBtn");
+    const originalText = btn.textContent;
+    btn.textContent = "Please wait...";
+    btn.disabled = true;
+
+    try {
+      await window.signInWithEmailAndPassword(window.fbAuth, fakeEmail, pwd);
+    } catch (err) {
+      try {
+        await window.createUserWithEmailAndPassword(window.fbAuth, fakeEmail, pwd);
+      } catch(regErr) {
+        if(regErr.code === 'auth/email-already-in-use') {
+           alert("Galat Password! Kripya is number ka sahi password dalein.");
+        } else {
+           alert("Error: " + regErr.message);
+        }
+      }
+    } finally {
+      if($("authSubmitBtn")) {
+         $("authSubmitBtn").textContent = originalText;
+         $("authSubmitBtn").disabled = false;
+      }
+    }
+  };
+}
+
+// Restrict Mobile Input to numbers only
+if($("authMobile")) {
+  $("authMobile").oninput = function() {
+      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+  };
 }
 
 // Google Login Button Click
@@ -90,12 +139,7 @@ if($("googleLoginBtn")) {
   $("googleLoginBtn").onclick = () => {
     const provider = new window.GoogleAuthProvider();
     window.signInWithPopup(window.fbAuth, provider)
-      .then((result) => { 
-        console.log("Logged in successfully!"); 
-      })
-      .catch((error) => { 
-        alert("Login failed: " + error.message); 
-      });
+      .catch((error) => { alert("Login failed: " + error.message); });
   };
 }
 
@@ -358,14 +402,12 @@ $("clearCartBtn").onclick = clearCart;
 const UPI_ID = "kkfashion@nyes"; 
 const STORE_NAME = "KKFashion"; 
 
-// Only allow strictly 12 digits on UTR input
 if($("chkUtr")) {
   $("chkUtr").oninput = function() {
       this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
   };
 }
 
-// Copy UPI Logic
 if($("copyUpiBtn")) {
   $("copyUpiBtn").onclick = function() {
       navigator.clipboard.writeText(UPI_ID).then(() => {
@@ -391,19 +433,16 @@ function resetCheckoutUI() {
   $("checkoutStep2").classList.add("hidden");
   if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
   
-  // Footer
   $("checkoutFooter").classList.remove("hidden");
   $("chkFooterTotalRow").classList.remove("hidden");
   $("step1NextBtn").classList.remove("hidden");
   $("step2PayBtn").classList.add("hidden");
   $("confirmOrderBtn").classList.add("hidden");
 
-  // Step 2 inner areas
   if($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden");
   if($("qrScanSection")) $("qrScanSection").classList.add("hidden");
   if($("chkUtr")) $("chkUtr").value = "";
   
-  // Clear timer if running
   if(window.paymentInterval) clearInterval(window.paymentInterval);
   
   $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
@@ -421,9 +460,7 @@ function openCheckout() {
   $("checkoutOverlay").classList.remove("hidden");
 }
 
-/* SMART BACK BUTTON LOGIC (FOR TOP HEADER ARROW ONLY) */
 $("closeCheckout").onclick = () => { 
-  // 1. Agar QR code dikh raha hai (Step 2 se peeche jana)
   if (!$("qrScanSection").classList.contains("hidden")) {
       $("qrScanSection").classList.add("hidden");
       $("paymentOptionsWrap").classList.remove("hidden");
@@ -433,7 +470,6 @@ $("closeCheckout").onclick = () => {
       
       if(window.paymentInterval) clearInterval(window.paymentInterval);
   }
-  // 2. Agar Payment Options dikh rahe hain (Step 2 se Step 1 par wapas jao)
   else if (!$("checkoutStep2").classList.contains("hidden")) {
       $("checkoutStep2").classList.add("hidden");
       $("checkoutStep1").classList.remove("hidden");
@@ -442,27 +478,23 @@ $("closeCheckout").onclick = () => {
       $("step1NextBtn").classList.remove("hidden");
       $("chkFooterTotalRow").classList.remove("hidden");
 
-      // Stepper UI backward reset
       $("step2Indicator").classList.remove("active");
       $("step1Indicator").classList.remove("completed");
       $("step1Indicator").classList.add("active");
       $("line1").classList.remove("completed");
       $("step1Circle").innerHTML = "1";
   }
-  // 3. Agar Step 1 par hi hain, toh poora Checkout Popup band kar do
   else {
       $("checkoutOverlay").classList.add("hidden"); 
       unlockScroll(); 
   }
 };
 
-// STEP 1 -> STEP 2
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim();
   if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
   if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
 
-  // Transition to Step 2
   $("checkoutStep1").classList.add("hidden");
   $("checkoutStep2").classList.remove("hidden");
   
@@ -470,7 +502,6 @@ $("step1NextBtn").onclick = () => {
   $("step2PayBtn").classList.remove("hidden");
   $("chkFooterTotalRow").classList.add("hidden");
 
-  // Stepper UI update
   $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed");
   $("step1Circle").innerHTML = "✔"; $("line1").classList.add("completed");
   $("step2Indicator").classList.add("active");
@@ -518,10 +549,8 @@ function updateStep2Summary() {
   $("codBalanceAmt").textContent = "₹" + balance;
 }
 
-// Payment Option Toggle
 document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   radio.addEventListener("change", (e) => {
-    // Agar option badle toh wapas default step 2 par le aao
     $("qrScanSection").classList.add("hidden");
     $("paymentOptionsWrap").classList.remove("hidden");
     $("confirmOrderBtn").classList.add("hidden");
@@ -538,28 +567,22 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
   });
 });
 
-// PAY BUTTON CLICK -> HIDE PAY BUTTON, SHOW QR + UTR + CONFIRM BUTTON
 $("step2PayBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
   cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
   let amountPaid = payMethod === "Prepaid" ? finalTotal : Math.round(finalTotal * 0.25);
 
-  // Set the price in QR section
   $("qrAmountDisplay").textContent = "₹" + amountPaid;
 
-  // Toggle Visibility securely
   $("paymentOptionsWrap").classList.add("hidden");
   $("qrScanSection").classList.remove("hidden");
 
-  // Switch Footer Buttons
   $("step2PayBtn").classList.add("hidden");
   $("confirmOrderBtn").classList.remove("hidden");
 
-  // Scroll to top of Step 2 area so QR is fully visible
   $("checkoutStep2").scrollTop = 0;
 
-  // Timer Logic
   let timeLeft = 300; 
   const timerDisplay = document.getElementById("paymentTimer");
   
@@ -578,11 +601,9 @@ $("step2PayBtn").onclick = () => {
   }, 1000);
 };
 
-// FINAL CONFIRM UTR & SAVE TO FIREBASE
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
   
-  // STRICT 12 DIGIT CHECK
   if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
     alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
     return;
@@ -603,7 +624,6 @@ $("confirmOrderBtn").onclick = () => {
     balanceDue = finalTotal - amountPaid;
   }
 
-  // Prepare Data for Firebase
   const orderData = { 
     name: $("chkName").value.trim(), 
     mobile: $("chkMobile").value.trim(), 
@@ -621,9 +641,8 @@ $("confirmOrderBtn").onclick = () => {
   };
 
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
-  if(window.paymentInterval) clearInterval(window.paymentInterval); // Stop timer on success
+  if(window.paymentInterval) clearInterval(window.paymentInterval); 
   
-  // Save to Firebase
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
       if (success) {
@@ -635,12 +654,10 @@ $("confirmOrderBtn").onclick = () => {
       }
     });
   } else {
-      // Fallback
       showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
 
-// STEP 3 SUCCESS SCREEN
 function showStep3Success(payMethod, paid, due) {
   $("checkoutStep2").classList.add("hidden");
   $("checkoutStep3").classList.remove("hidden");
@@ -667,7 +684,6 @@ $("successCloseBtn").onclick = () => {
   unlockScroll();
   resetCheckoutUI();
 };
-
 
 /* ════════════════════════════════════
    ADMIN PIN & PANEL LOGIC
@@ -721,10 +737,6 @@ $("pInStock").addEventListener("change", function() { const lbl = $("pStockLabel
 
 function syncFilterDropdown() { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
 
-// ═════ ADMIN ORDER MANAGEMENT ═════
-let liveOrders = [];
-let currentOrderTab = "Recent";
-
 window.renderAdminOrders = function(orders) { liveOrders = orders; renderOrdersByTab(); };
 
 function renderOrdersByTab() {
@@ -743,7 +755,6 @@ function renderOrdersByTab() {
     
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
     
-    // Pay Method Badge and UTR Display
     const payBadge = o.paymentMethod === "COD" 
        ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px;">C.O.D (Due: ₹${o.balanceDue})</span>` 
        : `<span style="background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; color:black; font-weight:bold;">PREPAID</span>`;
@@ -835,9 +846,6 @@ $("saveEditBtn").onclick = () => {
   $("editModal").classList.add("hidden"); editingProductId = null;
 };
 
-/* ════════════════════════════════════
-   FULLSCREEN VIEWER LOGIC
-════════════════════════════════════ */
 $("closeViewerBtn").onclick = () => { 
   $("imageViewer").classList.add("hidden"); 
   preventZoom(); 
@@ -849,8 +857,5 @@ $("imageViewer").onclick = (e) => {
   } 
 };
 
-/* ════════════════════════════════════
-   INIT
-════════════════════════════════════ */
 preventZoom(); 
 renderCartCount();
