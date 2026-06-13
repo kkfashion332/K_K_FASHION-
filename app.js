@@ -1,14 +1,12 @@
-
-
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - LOCAL STORAGE PROFILE IMAGE & NAV)
+   K_K FASHION — app.js (FINAL - LOCAL STORAGE + BUG FIX + ELITE UI)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
 const $    = id      => document.getElementById(id);
 
-let ADMIN_PIN            = load("admin_pin", "9672");
+let ADMIN_PIN            = load("admin_pin", "1555"); // STRICTLY PIN SET TO 1555
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
@@ -19,6 +17,7 @@ let editingProductId     = null;
 let searchQuery          = "";
 let currentDetailProduct = null;
 let isAppInitialized     = false;
+let runtimeSkipped       = false; // RUNTIME FLAG TO HANDLE LOG IN SKIP STATE
 
 const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
 const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
@@ -29,6 +28,30 @@ const unlockScroll = () => document.body.classList.remove("no-scroll");
 
 const allowZoom   = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
 const preventZoom = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+
+// FUNCTION TO DYNAMICALLY INJECT PL29734662 ADS SCRIPT AFTER AUTHENTICATION IS RESOLVED
+function loadAdNetworkScripts() {
+  if (window.adsScriptExecuted) return;
+  window.adsScriptExecuted = true;
+  let adScript = document.createElement("script");
+  adScript.src = "https://pl29734662.effectivecpmnetwork.com/33/e1/b0/33e1b009f252fa0084b83f7fa7cc7315.js";
+  adScript.async = true;
+  document.head.appendChild(adScript);
+}
+
+// FORCE USER BACK TO LOGIN FORM IF WORKING IN SKIPPED MODE AND CLICKS BUY AT checkout
+function checkAuthAndProceed(successCallback) {
+  if (window.fbAuth && window.fbAuth.currentUser) {
+     successCallback();
+  } else {
+     alert("Kripya order aage badhane ke liye login ya register karein!");
+     runtimeSkipped = false;
+     $("app").classList.add("hidden");
+     $("prodDetail").classList.add("hidden");
+     $("cartOverlay").classList.add("hidden");
+     $("authScreen").classList.remove("hidden");
+  }
+}
 
 window.updateCategoriesFromFirebase = function(cats) {
   mainCategories = cats || [];
@@ -48,19 +71,23 @@ window.addEventListener("DOMContentLoaded", () => {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
         $("authScreen").classList.add("hidden");
+        loadAdNetworkScripts();
         
         if(!isAppInitialized) {
           showSplashAndStart();
           isAppInitialized = true;
         } else {
+           $("app").classList.remove("hidden");
            if($("waBtn")) $("waBtn").classList.remove("hidden");
            renderProfile(); 
         }
       } else {
-        $("authScreen").classList.remove("hidden");
-        $("app").classList.add("hidden");
-        $("splash").classList.add("hidden");
-        if($("waBtn")) $("waBtn").classList.add("hidden"); 
+         if (!runtimeSkipped) {
+            $("authScreen").classList.remove("hidden");
+            $("app").classList.add("hidden");
+            $("splash").classList.add("hidden");
+            if($("waBtn")) $("waBtn").classList.add("hidden");
+         }
       }
     });
   }
@@ -80,13 +107,23 @@ function showSplashAndStart() {
   }, 2500);
 }
 
+// SKIP BUTTON INTERACTION
+if($("skipLoginBtn")) {
+  $("skipLoginBtn").onclick = () => {
+     runtimeSkipped = true;
+     $("authScreen").classList.add("hidden");
+     loadAdNetworkScripts();
+     showSplashAndStart();
+  };
+}
+
 if($("authSubmitBtn")) {
   $("authSubmitBtn").onclick = async () => {
     const mob = $("authMobile").value.trim();
     const pwd = $("authPassword").value.trim();
 
     if(!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) {
-      alert("Kripya sahi 10-digit mobile number dalein!");
+      alert("Kripya sahi 10-digit mobile number dalein elite access ke liye!");
       return;
     }
     if(!pwd || pwd.length < 6) {
@@ -97,7 +134,7 @@ if($("authSubmitBtn")) {
     const fakeEmail = mob + "@kkfashion.com";
     const btn = $("authSubmitBtn");
     const originalText = btn.textContent;
-    btn.textContent = "Please wait...";
+    btn.textContent = "Processing...";
     btn.disabled = true;
 
     try {
@@ -131,13 +168,14 @@ if($("googleLoginBtn")) {
   $("googleLoginBtn").onclick = () => {
     const provider = new window.GoogleAuthProvider();
     window.signInWithPopup(window.fbAuth, provider)
-      .catch((error) => { alert("Login failed: " + error.message); });
+      .catch((error) => { alert("Google Elite Login failed: " + error.message); });
   };
 }
 
 if($("profileLogoutBtn")) {
   $("profileLogoutBtn").onclick = () => {
-    if(confirm("Are you sure you want to logout?")) {
+    if(confirm("Are you sure you want to logout from Elite Access?")) {
+      runtimeSkipped = false;
       window.signOut(window.fbAuth).then(() => {
          window.location.reload();
       });
@@ -170,7 +208,7 @@ window.switchNav = function(tab) {
 function renderMyOrders() {
   const list = $("myOrdersList");
   if(!myOrders || myOrders.length === 0) {
-    list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted);">Aapne abhi tak koi order place nahi kiya hai.</div>`;
+    list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted); font-size:13px;">No elite orders placed yet. Explore our premium collection!</div>`;
     return;
   }
 
@@ -192,8 +230,8 @@ function renderMyOrders() {
       <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
          <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
          <div style="flex:1;">
-           <strong style="color:var(--fg);">Date:</strong> ${dateStr}<br>
-           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Click for full details</span>
+           <strong style="color:var(--fg); font-size:13px;">Date: ${dateStr}</strong><br>
+           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Premium Item(s) • Tap for details</span>
          </div>
       </div>
     </div>`;
@@ -233,10 +271,10 @@ window.openMyOrderModal = function(idStr) {
        <div style="font-size:12px; color:var(--muted2); margin-top:4px;">Payment: ${payMode}</div>
     </div>
     
-    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg);">Items Details</h3>
+    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Items Details</h3>
     ${itemsHtml}
 
-    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg);">Delivery Address</h3>
+    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Delivery Address</h3>
     <div style="font-size:13px; color:var(--muted); line-height:1.5; background:var(--bg2); padding:10px; border-radius:8px;">
        <strong style="color:var(--fg);">${o.name}</strong> (${o.mobile})<br>
        ${o.address}<br>
@@ -255,27 +293,47 @@ window.openMyOrderModal = function(idStr) {
   lockScroll();
 };
 
-/* ════════════════════════════════════
-   PROFILE EDIT LOGIC (LOCAL STORAGE COMPRESSION)
-════════════════════════════════════ */
 function renderProfile() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
   const displayObj = $("profileDisplayId");
   const nameObj = $("profileDisplayName");
   const imgObj = $("profileImg");
 
-  // Load from LocalStorage
   const savedPic = localStorage.getItem("knk_profile_pic");
 
   if(user) {
      let email = user.email || "";
      displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com","") : email;
-     nameObj.textContent = user.displayName || "Add Your Name";
-     imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
+     nameObj.textContent = user.displayName || "Elite Member";
+     
+     if(savedPic) {
+        imgObj.src = savedPic;
+     } else if(user.photoURL) {
+        imgObj.src = user.photoURL;
+     } else {
+        imgObj.src = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+     }
   } else {
-     displayObj.textContent = "Guest User";
-     nameObj.textContent = "Guest";
+     displayObj.textContent = "Guest Access";
+     nameObj.textContent = "Welcome Guest";
      imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+  }
+  
+  // SECURE TRIGER ON DETECTING 10 TAPS SPECIFICALLY ON THE USER PROFILE PIC
+  if (imgObj && !imgObj.dataset.listenerAttached) {
+    imgObj.dataset.listenerAttached = "true";
+    let profileTapCount = 0, profileTapTimer = null;
+    imgObj.addEventListener("click", (e) => {
+       e.stopPropagation();
+       profileTapCount++;
+       if (profileTapTimer) clearTimeout(profileTapTimer);
+       if (profileTapCount >= 10) {
+          profileTapCount = 0;
+          openPin();
+          return;
+       }
+       profileTapTimer = setTimeout(() => { profileTapCount = 0; }, 3000);
+    });
   }
 }
 
@@ -283,12 +341,15 @@ if($("editProfileBtn")) {
   $("editProfileBtn").onclick = async () => {
      const user = window.fbAuth.currentUser;
      if(!user) return;
-     const newName = prompt("Enter your Name:", user.displayName || "");
+     const newName = prompt("Enter your Full Name for Elite Profile:", user.displayName || "");
      if(newName !== null && newName.trim() !== "") {
         const btn = $("editProfileBtn");
+        const originalHtml = btn.innerHTML; 
         btn.textContent = "Saving...";
+        btn.disabled = true;
         await window.updateProfile(user, { displayName: newName.trim() });
-        btn.textContent = "✏️ Edit Name";
+        btn.innerHTML = originalHtml; 
+        btn.disabled = false;
         renderProfile();
      }
   };
@@ -299,7 +360,8 @@ if($("profilePicInput")) {
      const file = e.target.files[0];
      if(!file) return;
 
-     // Compress Image Using Canvas to avoid LocalStorage Quota error
+     $("profileImg").style.opacity = "0.5";
+
      const reader = new FileReader();
      reader.onload = function(event) {
         const img = new Image();
@@ -307,7 +369,7 @@ if($("profilePicInput")) {
             const canvas = document.createElement("canvas");
             let width = img.width;
             let height = img.height;
-            const MAX_SIZE = 250;
+            const MAX_SIZE = 400; 
 
             if (width > height) {
                 if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
@@ -320,13 +382,20 @@ if($("profilePicInput")) {
             const ctx = canvas.getContext("2d");
             ctx.drawImage(img, 0, 0, width, height);
 
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.7); // Compress 70%
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.7); 
             
             try {
                 localStorage.setItem("knk_profile_pic", dataUrl);
                 $("profileImg").src = dataUrl;
+                $("profileImg").style.opacity = "1"; 
+
+                const user = window.fbAuth.currentUser;
+                if(user && !user.email.includes("@kkfashion.com")) {
+                   window.updateProfile(user, { photoURL: dataUrl });
+                }
             } catch(err) {
-                alert("Browser Storage full! Kripya kisi aur choti image ka prayog karein.");
+                alert("Browser Storage Quota full! Please use a smaller image file for premium avatar.");
+                $("profileImg").style.opacity = "1";
             }
         };
         img.src = event.target.result;
@@ -335,6 +404,10 @@ if($("profilePicInput")) {
   };
 }
 
+// LOGO BUTTON REFRESH/RESET CAT ONLY (ADMIN LINK REMOVED FROM LOGO)
+$("logoBtn").onclick = () => { 
+  if (mainCategories.length > 0) selectMainCat(mainCategories[0].id); 
+};
 
 function renderMainCats() {
   const wrap = $("mainCats"); wrap.innerHTML = "";
@@ -397,7 +470,7 @@ function renderProducts() {
   }
 
   const grid = $("products");
-  if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
+  if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty" style="font-size:13px; color:var(--muted);">Koi premium product nahi mila.</p>` : `<p class="empty" style="font-size:13px; color:var(--muted);">Loading elite collection...</p>`; return; }
   grid.innerHTML = "";
 
   list.forEach((p, i) => {
@@ -509,7 +582,7 @@ function renderHorizSections(currentProduct) {
 function buildHorizSection(title, list) {
   const section = document.createElement("div"); section.className = "horiz-section";
   const head = document.createElement("div"); head.className = "horiz-section-head";
-  head.innerHTML = `<span class="horiz-section-title">${title}</span><span class="horiz-section-count">${list.length} items</span>`;
+  head.innerHTML = `<span class="horiz-section-title">${title}</span><span class="horiz-section-count">${list.length} premium items</span>`;
   section.appendChild(head);
   const row = document.createElement("div"); row.className = "horiz-row";
   list.forEach((p, i) => {
@@ -544,7 +617,7 @@ function renderCartCount() { const count = cart.reduce((s, i) => s + i.qty, 0); 
 
 function renderCart() {
   const body = $("cartItems"), foot = $("cartFooter");
-  if (!cart.length) { body.innerHTML = '<p class="empty">Cart is empty</p>'; foot.classList.add("hidden"); return; }
+  if (!cart.length) { body.innerHTML = '<p class="empty" style="font-size:13px; color:var(--muted);">Premium cart is empty.</p>'; foot.classList.add("hidden"); return; }
   body.innerHTML = "";
   cart.forEach(i => {
     const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : "placeholder.jpg";
@@ -560,33 +633,21 @@ $("cartClose").onclick = () => { $("cartOverlay").classList.add("hidden"); unloc
 $("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOverlay").classList.add("hidden"); unlockScroll(); } };
 $("clearCartBtn").onclick = clearCart;
 
-const UPI_ID = "kkfashion@nyes"; 
-
-if($("chkUtr")) {
-  $("chkUtr").oninput = function() {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
-  };
-}
-
-if($("copyUpiBtn")) {
-  $("copyUpiBtn").onclick = function() {
-      navigator.clipboard.writeText(UPI_ID).then(() => {
-          this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
-          setTimeout(() => { 
-              this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; 
-          }, 2000);
-      }).catch(err => alert("Copy nahi ho paya, manually type karein."));
-  };
-}
-
 function directBuyCheckout(p) {
-  preventZoom();
-  cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
-  $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null;
-  openCheckout();
+  checkAuthAndProceed(() => {
+     preventZoom();
+     cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
+     $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null;
+     openCheckout();
+  });
 }
 
-$("checkoutBtn").onclick = () => { if (!cart.length) return; $("cartOverlay").classList.add("hidden"); openCheckout(); };
+$("checkoutBtn").onclick = () => { 
+  if (!cart.length) return; 
+  checkAuthAndProceed(() => {
+     $("cartOverlay").classList.add("hidden"); openCheckout(); 
+  });
+};
 
 function resetCheckoutUI() {
   $("checkoutStep1").classList.remove("hidden");
@@ -652,8 +713,8 @@ $("closeCheckout").onclick = () => {
 
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim();
-  if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
-  if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
+  if(!name || !mobile || !address || !state || !pincode) { alert("Please fill all premium shipping details!"); return; }
+  if(mobile.length < 10 || isNaN(mobile)) { alert("Invalid elite mobile number!"); return; }
 
   $("checkoutStep1").classList.add("hidden");
   $("checkoutStep2").classList.remove("hidden");
@@ -719,7 +780,7 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
 
     if (e.target.value === "COD") {
        $("codWarningBox").classList.remove("hidden");
-       $("step2PayBtn").textContent = "Pay 25% Advance";
+       $("step2PayBtn").textContent = "Pay 25% Elite Deposit";
     } else {
        $("codWarningBox").classList.add("hidden");
        $("step2PayBtn").textContent = "Pay 100% Now";
@@ -755,8 +816,8 @@ $("step2PayBtn").onclick = () => {
 
       if (timeLeft <= 0) {
           clearInterval(window.paymentInterval);
-          timerDisplay.innerText = "Time expired! Kripya page refresh karein.";
-          timerDisplay.style.color = "red";
+          timerDisplay.innerText = "Time expired! Refresh page.";
+          timerDisplay.style.color = "#e05555";
       }
   }, 1000);
 };
@@ -764,8 +825,8 @@ $("step2PayBtn").onclick = () => {
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
   
-  if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
-    alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
+  if (ut Value.length !== 12 || !/^\d+$/.test(utrValue)) {
+    alert("Invalid UTR! Enter exact 12-digit numeric Reference Number.");
     return;
   }
 
@@ -801,7 +862,7 @@ $("confirmOrderBtn").onclick = () => {
     savedAt: Date.now()
   };
 
-  const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
+  const btn = $("confirmOrderBtn"); btn.textContent = "Verifying Elite Payment...";
   if(window.paymentInterval) clearInterval(window.paymentInterval); 
   
   if (window.saveOrderToFirebase) {
@@ -814,7 +875,7 @@ $("confirmOrderBtn").onclick = () => {
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
         alert("Server error. Please try again.");
-        btn.textContent = "Verify Payment & Place Order";
+        btn.textContent = "Verify Payment & Confirm";
       }
     });
   } else {
@@ -836,10 +897,10 @@ function showStep3Success(payMethod, paid, due) {
   let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
   if(payMethod === "COD") {
     sumHtml += `<strong>Safety Deposit Paid (25%):</strong> ₹${paid}<br>`;
-    sumHtml += `<strong style="color:var(--destructive)">Balance Cash on Delivery (75%):</strong> ₹${due}`;
+    sumHtml += `<strong style="color:var(--destructive)">Balance COD (75%):</strong> ₹${due}`;
   } else {
     sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br>`;
-    sumHtml += `<strong style="color:#4cc968">No pending dues!</strong>`;
+    sumHtml += `<strong style="color:#4cc968">Fully Paid. Elite delivery initiated!</strong>`;
   }
   $("successOrderSummary").innerHTML = sumHtml;
   clearCart();
@@ -849,13 +910,6 @@ $("successCloseBtn").onclick = () => {
   $("checkoutOverlay").classList.add("hidden");
   unlockScroll();
   resetCheckoutUI();
-};
-
-let tapCount = 0, tapTimer = null;
-$("logoBtn").onclick = () => {
-  tapCount++; if (tapTimer) clearTimeout(tapTimer);
-  if (tapCount >= 20) { tapCount = 0; openPin(); return; }
-  tapTimer = setTimeout(() => { tapCount = 0; }, 3000);
 };
 
 function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); setTimeout(() => $("pinInput").focus(), 100); }
@@ -877,22 +931,16 @@ function renderCatMgmt() {
   mainCategories.forEach(cat => {
     const card = document.createElement("div"); card.className = "cat-mgmt-card";
     card.innerHTML = `<div class="cat-mgmt-head"><span class="cat-mgmt-name">${cat.name}</span><div class="cat-mgmt-actions"><button class="cat-action-btn edit-cat-btn">✏️ Edit</button><button class="cat-action-btn del del-cat-btn">🗑️ Delete</button></div></div>
-      <div class="cat-sub-section"><div class="cat-sub-label">SUB-CATEGORIES</div><div class="chips" id="subChips_${cat.id}"></div><div class="inline-row"><input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam" /><button class="btn-primary sm-btn add-sub-btn" data-id="${cat.id}">+ Add</button></div></div>`;
-    const chipsEl = card.querySelector(`#subChips_${cat.id}`);
-    (cat.subCategories || []).forEach(sub => {
-      const chip = document.createElement("span"); chip.className = "chip"; chip.innerHTML = `${sub}<button class="chip-btn edt">✏️</button><button class="chip-btn del">✕</button>`;
-      chip.querySelector(".edt").onclick = () => { const n = prompt(`"${sub}" ka naya naam:`, sub); if (!n || !n.trim()) return; const idx = cat.subCategories.indexOf(sub); if (idx > -1) cat.subCategories[idx] = n.trim().toUpperCase(); saveCategories(); renderAdmin(); if (activeMainCatId === cat.id) { activeSubCat = "All"; renderSubCats(); renderProducts(); } };
-      chip.querySelector(".del").onclick = () => { if (!confirm(`"${sub}" delete karein?`)) return; cat.subCategories = cat.subCategories.filter(x => x !== sub); saveCategories(); renderAdmin(); if (activeMainCatId === cat.id) { activeSubCat = "All"; renderSubCats(); renderProducts(); } };
-      chipsEl.appendChild(chip);
-    });
-    card.querySelector(".add-sub-btn").onclick = () => { const inp = card.querySelector(`#subInp_${cat.id}`); const v = inp.value.trim().toUpperCase(); if (!v) return; if ((cat.subCategories || []).some(x => x.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; } cat.subCategories = [...(cat.subCategories || []), v]; saveCategories(); inp.value = ""; renderAdmin(); if (activeMainCatId === cat.id) renderSubCats(); };
+      <div class="cat-sub-section"><div class="cat-sub-label">SUB-CATEGORIES</div><div class="chips" id="subChips_${cat.id}"></div><div class="inline-row"><input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam" /><button class="btn-primary sm-btn auth-submit" data-id="${cat.id}">+ Add</button></div></div>`;
+    
+    card.querySelector(".btn-primary").onclick = () => { const inp = card.querySelector(`#subInp_${cat.id}`); const v = inp.value.trim().toUpperCase(); if (!v) return; if ((cat.subCategories || []).some(x => x.toUpperCase() === v)) { alert("Sub-category exists!"); return; } cat.subCategories = [...(cat.subCategories || []), v]; saveCategories(); inp.value = ""; renderAdmin(); if (activeMainCatId === cat.id) renderSubCats(); };
     card.querySelector(".edit-cat-btn").onclick = () => { const n = prompt(`"${cat.name}" ka naya naam:`, cat.name); if (!n || !n.trim()) return; cat.name = n.trim().toUpperCase(); saveCategories(); renderAdmin(); renderMainCats(); };
-    card.querySelector(".del-cat-btn").onclick = () => { if (!confirm(`"${cat.name}" category delete karein?`)) return; mainCategories = mainCategories.filter(c => c.id !== cat.id); if (activeMainCatId === cat.id) { activeMainCatId = mainCategories.length > 0 ? mainCategories[0].id : null; activeSubCat = "All"; } saveCategories(); renderAdmin(); renderMainCats(); renderSubCats(); renderProducts(); };
+    card.querySelector(".del-cat-btn").onclick = () => { if (!confirm("Delete this premium category?")) return; mainCategories = mainCategories.filter(c => c.id !== cat.id); if (activeMainCatId === cat.id) { activeMainCatId = mainCategories.length > 0 ? mainCategories[0].id : null; activeSubCat = "All"; } saveCategories(); renderAdmin(); renderMainCats(); renderSubCats(); renderProducts(); };
     list.appendChild(card);
   });
 }
 
-$("addCatBtn").onclick = () => { const inp = $("newCatName"); const v = inp.value.trim().toUpperCase(); if (!v) return; if (mainCategories.some(c => c.name.toUpperCase() === v)) { alert("Pehle se exist karti hai!"); return; } mainCategories.push({ id: genId(), name: v, subCategories: [] }); saveCategories(); inp.value = ""; renderAdmin(); renderMainCats(); };
+$("addCatBtn").onclick = () => { const inp = $("newCatName"); const v = inp.value.trim().toUpperCase(); if (!v) return; if (mainCategories.some(c => c.name.toUpperCase() === v)) { alert("Category already exists!"); return; } mainCategories.push({ id: genId(), name: v, subCategories: [] }); saveCategories(); inp.value = ""; renderAdmin(); renderMainCats(); };
 
 function syncAddProductDropdowns() { const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); }); onMainCatChange(); }
 window.onMainCatChange = function() { const cat = getCat($("pMainCat").value); const group = $("subCatGroup"); const pSub = $("pSubCat"); if (!cat || !cat.subCategories || cat.subCategories.length === 0) { group.style.display = "none"; return; } group.style.display = ""; pSub.innerHTML = ""; cat.subCategories.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; pSub.appendChild(o); }); };
@@ -907,7 +955,7 @@ function renderOrdersByTab() {
   if (!list) return;
 
   let filtered = liveOrders.filter(o => (o.status || "Recent") === currentOrderTab);
-  if (filtered.length === 0) { list.innerHTML = `<p class='empty'>Koi order nahi hai is tab mein.</p>`; return; }
+  if (filtered.length === 0) { list.innerHTML = `<p class='empty' style='font-size:13px;'>No elite orders here.</p>`; return; }
   list.innerHTML = "";
   
   filtered.forEach(o => {
@@ -919,8 +967,8 @@ function renderOrdersByTab() {
     const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
     
     const payBadge = o.paymentMethod === "COD" 
-       ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px;">C.O.D (Due: ₹${o.balanceDue})</span>` 
-       : `<span style="background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; color:black; font-weight:bold;">PREPAID</span>`;
+       ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; font-weight:700;">C.O.D (Due: ₹${o.balanceDue})</span>` 
+       : `<span style="background:#4cc968; color:#0a0a0a; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; font-weight:700;">PREPAID</span>`;
     
     const utrText = o.utrNumber ? `<div style="margin-top:4px; font-size:11px; color:var(--primary);">UTR/Ref: <strong>${o.utrNumber}</strong></div>` : "";
 
@@ -934,7 +982,7 @@ function renderOrdersByTab() {
         <strong>${o.name}</strong> (${o.mobile}) ${payBadge}<br>
         ${o.address}, ${o.state} - ${o.pincode}<br>
         ${utrText}
-        <small style="color:var(--muted)">${dateStr}</small>
+        <small style="color:var(--muted); font-size:10px; margin-top:3px; display:block;">Placed: ${dateStr}</small>
       </div>
       <div class="order-items">${itemsHtml}</div>
       <div class="order-actions">
@@ -949,26 +997,26 @@ function renderOrdersByTab() {
   });
 
   document.querySelectorAll(".status-select").forEach(sel => { sel.addEventListener("change", async (e) => { const id = e.target.getAttribute("data-id"); const newStatus = e.target.value; const order = liveOrders.find(x => x.id === id); if(order) order.status = newStatus; renderOrdersByTab(); if (window.updateOrderStatusInFirebase) await window.updateOrderStatusInFirebase(id, newStatus); }); });
-  document.querySelectorAll(".del-order-btn").forEach(btn => { btn.addEventListener("click", async (e) => { const id = e.currentTarget.getAttribute("data-id"); if(!confirm("Kya aap sach me is order ko delete karna chahte hain?")) return; liveOrders = liveOrders.filter(x => x.id !== id); renderOrdersByTab(); if (window.deleteOrderFromFirebase) await window.deleteOrderFromFirebase(id); }); });
+  document.querySelectorAll(".del-order-btn").forEach(btn => { btn.addEventListener("click", async (e) => { const id = e.currentTarget.getAttribute("data-id"); if(!confirm("Are you sure you want to remove this elite order from database?")) return; liveOrders = liveOrders.filter(x => x.id !== id); renderOrdersByTab(); if (window.deleteOrderFromFirebase) await window.deleteOrderFromFirebase(id); }); });
 }
 
 document.querySelectorAll(".admin-tab").forEach(tab => { tab.addEventListener("click", (e) => { document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active")); e.currentTarget.classList.add("active"); currentOrderTab = e.currentTarget.getAttribute("data-tab"); renderOrdersByTab(); }); });
 
 function renderAdminProducts() {
-  $("adminProdTitle").textContent = `Products (${products.length})`; const filterCat = $("adminFilterCat").value || "ALL"; const list = $("adminProducts"); list.innerHTML = "";
+  $("adminProdTitle").textContent = `Elite Collection (${products.length})`; const filterCat = $("adminFilterCat").value || "ALL"; const list = $("adminProducts"); list.innerHTML = "";
   const filtered = filterCat === "ALL" ? products : products.filter(p => p.mainCategoryId === filterCat);
   filtered.forEach(p => {
     const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId), catName = cat ? cat.name : "—", subLabel = p.subCategory ? ` · ${p.subCategory}` : "";
     const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
     const el = document.createElement("div"); el.className = "admin-prod";
     el.innerHTML = `<img src="${mainImg}" alt="${p.name}" /><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}${subLabel}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div><div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
-    el.querySelector(".edit-btn").onclick = () => openEditModal(p); el.querySelector(".trash").onclick = () => { if (!confirm("Delete karein?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) window.deleteProductFromFirebase(p.id); }; list.appendChild(el);
+    el.querySelector(".edit-btn").onclick = () => openEditModal(p); el.querySelector(".trash").onclick = () => { if (!confirm("Delete this premium product?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) window.deleteProductFromFirebase(p.id); }; list.appendChild(el);
   });
 }
 
 window.renderAdmin = function() {
   renderCatMgmt(); syncAddProductDropdowns(); syncFilterDropdown(); renderAdminProducts();
-  if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { const newPin = $("newAdminPin").value.trim(); if (newPin.length < 4) { alert("PIN kam se kam 4 digit ka hona chahiye!"); return; } ADMIN_PIN = newPin; save("admin_pin", ADMIN_PIN); alert("Success! Naya Admin PIN set ho gaya hai: " + ADMIN_PIN); $("newAdminPin").value = ""; }; }
+  if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { const newPin = $("newAdminPin").value.trim(); if (newPin.length < 4) { alert("PIN kam se kam 4 digit ka hona chahiye!"); return; } ADMIN_PIN = newPin; save("admin_pin", ADMIN_PIN); alert("Naya Admin PIN set ho gaya hai."); $("newAdminPin").value = ""; }; }
   if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
 };
 
@@ -994,7 +1042,7 @@ $("saveEditBtn").onclick = () => {
   const rawImage = $("editPImage").value.trim();
   const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
   
-  if (!newPrice || newPrice <= 0 || newImgArray.length === 0) { alert("Sahi Image aur Price daalein!"); return; } 
+  if (!newPrice || newPrice <= 0 || newImgArray.length === 0) { alert("Sahi Image aur Price daalein premium product ke liye!"); return; } 
   const idx = products.findIndex(p => p.id === editingProductId);
   
   if (idx > -1) { 
