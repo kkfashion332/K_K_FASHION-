@@ -261,12 +261,6 @@ body.no-scroll { overflow: hidden !important; }
 /* ==========================================================
    FLOATING WHATSAPP BUTTON WITH HELP TEXT
 ========================================================== */
-@keyframes waDelayShow {
-    0% { opacity: 0; pointer-events: none; transform: scale(0.8); }
-    95% { opacity: 0; pointer-events: none; }
-    100% { opacity: 1; pointer-events: auto; transform: scale(1); }
-}
-
 .whatsapp-float {
     position: fixed;
     bottom: 85px;      
@@ -277,7 +271,7 @@ body.no-scroll { overflow: hidden !important; }
     text-decoration: none;
     z-index: 99999 !important; 
     cursor: pointer;
-    animation: waDelayShow 3.2s ease forwards;
+    animation: fadeUp 0.5s ease forwards;
 }
 
 .whatsapp-icon {
@@ -303,7 +297,7 @@ body.no-scroll { overflow: hidden !important; }
 }
 
 /* ==========================================================
-   GOOGLE AUTH SCREEN CSS
+   MOBILE + GOOGLE AUTH SCREEN CSS
 ========================================================== */
 .auth-screen { 
   position: fixed; inset: 0; z-index: 1000; 
@@ -312,7 +306,7 @@ body.no-scroll { overflow: hidden !important; }
 }
 .auth-card { 
   background: var(--card); border: 1px solid var(--border); 
-  border-radius: 20px; padding: 40px 30px; 
+  border-radius: 20px; padding: 35px 25px; 
   text-align: center; max-width: 340px; width: 90%; 
   box-shadow: 0 10px 40px rgba(0,0,0,0.7); 
 }
@@ -320,10 +314,32 @@ body.no-scroll { overflow: hidden !important; }
   font-family: var(--font-display); font-size: 38px; font-weight: 700; 
   background: linear-gradient(135deg, #e8d08a, #C9A84C, #a87f28); 
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-  margin-bottom: 8px; letter-spacing: 0.05em; 
+  margin-bottom: 6px; letter-spacing: 0.05em; 
 }
 .auth-sub { 
-  font-size: 14px; color: var(--muted); margin-bottom: 30px; 
+  font-size: 14px; color: var(--muted); margin-bottom: 25px; 
+}
+.auth-form {
+  margin-bottom: 15px;
+}
+.auth-input {
+  width: 100%; padding: 12px 14px; border-radius: 12px; 
+  border: 1px solid var(--border); background: var(--bg2); 
+  color: var(--fg); margin-bottom: 12px; font-size: 15px; 
+  font-family: var(--font-body); outline: none; transition: border-color 0.3s;
+}
+.auth-input:focus {
+  border-color: var(--primary);
+}
+.auth-divider {
+  display: flex; align-items: center; text-align: center; 
+  color: var(--muted2); margin-bottom: 15px; font-size: 12px; font-weight: 600;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; border-bottom: 1px solid var(--border2);
+}
+.auth-divider span {
+  padding: 0 10px;
 }
 .google-btn { 
   display: flex; align-items: center; justify-content: center; gap: 12px; 
