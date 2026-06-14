@@ -1,12 +1,13 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL)
+   K_K FASHION — app.js (FINAL - ADMIN PIN FIXED TO 0000)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
 const $    = id      => document.getElementById(id);
 
-let ADMIN_PIN            = load("admin_pin", "0000"); 
+// STRICTLY HARDCODED ADMIN PIN (IGNORES PREVIOUS LOCAL STORAGE)
+const ADMIN_PIN          = "0000"; 
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
@@ -318,11 +319,11 @@ function renderProfile() {
      imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
   }
   
-  // ADMIN PANEL TRIGGER: 10 TAPS ON PROFILE DISPLAY NAME
-  if (nameObj && !nameObj.dataset.listenerAttached) {
-    nameObj.dataset.listenerAttached = "true";
+  // ADMIN PANEL TRIGGER: 10 TAPS ON PROFILE AVATAR IMAGE
+  if (imgObj && !imgObj.dataset.listenerAttached) {
+    imgObj.dataset.listenerAttached = "true";
     let profileTapCount = 0, profileTapTimer = null;
-    nameObj.addEventListener("click", (e) => {
+    imgObj.addEventListener("click", (e) => {
        e.stopPropagation();
        profileTapCount++;
        if (profileTapTimer) clearTimeout(profileTapTimer);
