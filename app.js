@@ -6,7 +6,7 @@ const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JS
 const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
 const $    = id      => document.getElementById(id);
 
-let ADMIN_PIN            = load("admin_pin", "1555"); 
+let ADMIN_PIN            = load("admin_pin", "0000"); 
 let mainCategories       = [];
 let products             = [];
 let cart                 = load("knk_cart", []);
