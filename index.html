@@ -23,19 +23,19 @@
   <div id="authScreen" class="auth-screen hidden">
     <div class="auth-card">
       <h1 class="auth-brand">K_K Fashion</h1>
-      <p class="auth-sub">Unlock Elite Access. Sign in to continue.</p>
+      <p class="auth-sub">Welcome! Sign in to continue.</p>
       
       <div class="auth-form">
         <input type="tel" id="authMobile" class="auth-input" placeholder="10-Digit Mobile No." maxlength="10" autocomplete="off" />
         <input type="password" id="authPassword" class="auth-input" placeholder="Password (Min 6 chars)" />
-        <button id="authSubmitBtn" class="btn-primary full auth-submit" style="padding: 12px; font-size: 15px; border-radius: 12px; margin-bottom: 5px;">Login / Register</button>
+        <button id="authSubmitBtn" class="btn-primary full auth-submit">Login / Sign Up</button>
       </div>
 
       <div class="auth-divider"><span>OR</span></div>
 
       <button id="googleLoginBtn" class="google-btn">
         <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
-        Continue with Google Elite
+        Continue with Google
       </button>
 
       <button id="skipLoginBtn" style="background:none; border:none; color:var(--muted2); font-family:var(--font-body); margin-top:20px; font-size:14px; text-decoration:underline; cursor:pointer; letter-spacing:0.03em;">Skip & Explore</button>
@@ -49,7 +49,7 @@
       <div class="splash-sub">FASHION</div>
     </div>
     <div class="splash-line"></div>
-    <p class="splash-tagline">Premium Aesthetic Only</p>
+    <p class="splash-tagline">Premium Quality</p>
   </div>
 
   <div id="app" class="app hidden">
@@ -58,12 +58,7 @@
         <span class="brand-mark">K_K</span>
         <span class="brand-name">Fashion</span>
       </button>
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <button id="cartBtn" class="icon-btn" aria-label="Open cart">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span id="cartCount" class="badge hidden">0</span>
-        </button>
-      </div>
+      <div style="width: 20px;"></div>
     </header>
 
     <div id="mainAppContent">
@@ -74,7 +69,7 @@
               <circle cx="11" cy="11" r="7"/>
               <line x1="21" cy="21" x2="16.65" y2="16.65"/>
             </svg>
-            <input id="searchInput" class="search-input" type="text" placeholder="Search curated combos, premium drops..." autocomplete="off" />
+            <input id="searchInput" class="search-input" type="text" placeholder="Search watch, dress, earbuds, category..." autocomplete="off" />
             <button id="searchClear" class="search-clear hidden" aria-label="Clear search">✕</button>
           </div>
         </div>
@@ -107,93 +102,73 @@
       </div>
 
       <div id="contactPage" class="nav-page hidden">
-        <div class="premium-page-header">
-          <h2 class="page-heading Premium">Premium Support</h2>
-          <p class="page-sub Premium">Reach out to K_K Fashion for bespoke service, bulk orders, or styling queries.</p>
-        </div>
+        <h2 class="page-heading">Premium Support</h2>
+        <p class="page-sub">Reach out to K_K Fashion for support, queries or bulk orders.</p>
         
-        <div class="premium-contact-grid">
-          <a href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" class="p-contact-card wa-glass">
-            <div class="p-contact-icon-wrap">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="p-contact-icon"/>
-            </div>
-            <div class="p-contact-info">
-              <span class="p-contact-label">WhatsApp Luxury Chat</span>
-              <strong class="p-contact-value">K_K Fashion Support</strong>
-              <p class="p-contact-desc">Instant bespoke support for styles & orders.</p>
-            </div>
-            <div class="p-contact-action">Connect Now →</div>
+        <div class="contact-cards">
+          <a href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20some%20help." target="_blank" class="c-card wa-card">
+            <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div>
+            <div class="c-info"><span>Chat on WhatsApp</span><strong>K_K Fashion Support</strong></div>
           </a>
           
-          <a href="https://instagram.com/k_k_fashion_332" target="_blank" class="p-contact-card ig-glass">
-            <div class="p-contact-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="p-contact-icon svg"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-            </div>
-            <div class="p-contact-info">
-              <span class="p-contact-label">Instagram Aesthetic</span>
-              <strong class="p-contact-value">@k_k_fashion_332</strong>
-              <p class="p-contact-desc">Follow for latest combo drops & aesthetic trends.</p>
-            </div>
-            <div class="p-contact-action">View Portfolio →</div>
+          <a href="https://instagram.com/k_k_fashion_332" target="_blank" class="c-card ig-card">
+            <div class="c-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg></div>
+            <div class="c-info"><span>Follow on Instagram</span><strong>@k_k_fashion_332</strong></div>
           </a>
         </div>
       </div>
 
       <div id="orderPage" class="nav-page hidden">
         <h2 class="page-heading">My Orders</h2>
-        <p class="page-sub">Tap on an order to view full luxury details.</p>
+        <p class="page-sub">Tap on an order to view full details and tracking status.</p>
         <div id="myOrdersList" class="orders-list"></div>
       </div>
 
-      <div id="aboutPage" class="nav-page hidden">
-        <div class="premium-about-wrapper">
-          <div class="premium-about-card glassmorphism">
-            <div class="about-logo-mark">K_K</div>
-            <h2 class="premium-about-title">The K_K Legacy</h2>
-            <p class="premium-about-text">
-              K_K Fashion isn't just a store; it's a statement. We are the ultimate destination for <strong>Premium Gen-Z Aesthetic</strong> combos, where unmatched quality meets unparalleled style.
-              <br><br>
-              Founded on the pillars of absolute trust and luxury craftsmanship, we bring you the finest t-shirts, shirts, pants, and combinations. We don't just deliver apparel; we deliver an elite experience.
-              <br><br>
-              <span class="about-signature">Curated with Passion. KK.</span>
-            </p>
-            <div class="about-footer-accent"></div>
-          </div>
+      <div id="cartPage" class="nav-page hidden">
+        <h2 class="page-heading">Your Premium Cart</h2>
+        <p class="page-sub">Review your selected aesthetic combos before checkout.</p>
+        <div id="cartPageItems" class="drawer-body-page"></div>
+        <div id="cartPageFooter" class="drawer-foot-page hidden">
+          <div class="total"><span>Grand Total:</span><span id="cartPageTotal">₹0</span></div>
+          <button id="cartPageCheckoutBtn" class="btn-primary full auth-submit" style="padding:14px; border-radius:12px;">Proceed to Checkout</button>
+          <button id="cartPageClearBtn" class="link" style="margin-top:12px; font-weight:600;">Clear Premium Cart</button>
         </div>
       </div>
 
       <div id="profilePage" class="nav-page hidden">
-        <h2 class="page-heading">Elite Profile</h2>
-        <div class="profile-card premium-glass">
-          
-          <div class="p-avatar-wrap premium-border" style="border-color: var(--primary);">
-            <img id="profileImg" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png" alt="Profile" style="object-fit:cover; border-radius:50%;" />
-            <div class="p-avatar-edit unique-premium-edit" onclick="document.getElementById('profilePicInput').click()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+        <h2 class="page-heading">My Profile</h2>
+        <div class="profile-card">
+          <div class="p-avatar-wrap">
+            <img id="profileImg" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png" alt="Profile" style="cursor:pointer;" />
+            <div class="p-avatar-edit" onclick="document.getElementById('profilePicInput').click()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             </div>
             <input type="file" id="profilePicInput" accept="image/*" class="hidden" />
           </div>
           
-          <div class="p-status">K_K Fashion Elite Member</div>
+          <div class="p-status">Signed in as</div>
           <div id="profileDisplayName" class="p-name">Loading...</div>
           <div id="profileDisplayId" class="p-id">Loading...</div>
           
-          <button id="editProfileBtn" class="btn-outline sm-btn premium-edit-btn" style="margin-top:14px; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          <button id="editProfileBtn" class="btn-outline sm-btn" style="margin-top:10px; display:inline-flex; align-items:center; gap:6px; justify-content:center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
             Edit Name
           </button>
+
+          <div class="about-wrapper premium-about-container" style="margin-top:25px; border-top:1px solid var(--border); padding-top:20px; text-align:center;">
+            <div class="about-logo">K_K</div>
+            <h3 class="about-title" style="color:var(--primary); font-size:16px; margin-bottom:8px;">Welcome to K_K Fashion</h3>
+            <p class="about-text" style="font-size:12px; line-height:1.5; color:var(--muted2);">
+              K_K Fashion is your ultimate destination for premium, trend-setting Gen-Z apparel. We believe in delivering top-notch quality with an unmatched aesthetic. Join the revolution of style with us.
+            </p>
+          </div>
           
-          <div class="profile-links" style="margin-top:35px; border-top:1px solid var(--border2); padding-top:25px; text-align:left;">
-            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link">
-              📞 Premium Support <span>→</span>
-            </button>
-            <button onclick="switchNav('About')" class="p-link-btn premium-p-link">
-              ℹ️ The K_K Legacy <span>→</span>
-            </button>
+          <div class="profile-links" style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px; text-align:left;">
+            <button onclick="switchNav('Contact')" class="p-link-btn">📞 Contact Us <span style="float:right;">→</span></button>
           </div>
 
-          <button id="profileLogoutBtn" class="btn-outline full premium-logout" style="margin-top: 30px;">
-            🚪 Logout Elite Access
+          <button id="profileLogoutBtn" class="btn-outline full" style="margin-top: 25px; padding: 12px; font-size: 15px; border-color: var(--destructive); color: var(--destructive);">
+            🚪 Logout Securely
           </button>
         </div>
       </div>
@@ -207,7 +182,7 @@
       
       <button class="nav-item" id="navContact" onclick="switchNav('Contact')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-        <span class="nav-text">Support</span>
+        <span class="nav-text">Contact</span>
       </button>
       
       <div class="nav-fab-wrap" id="navOrderWrap" onclick="switchNav('Order')">
@@ -217,9 +192,12 @@
         <span class="nav-text fab-text">Orders</span>
       </div>
       
-      <button class="nav-item" id="navAbout" onclick="switchNav('About')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-        <span class="nav-text">Legacy</span>
+      <button class="nav-item" id="navCart" onclick="switchNav('Cart')">
+        <div style="position:relative; display:inline-block;">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <span id="navCartCount" class="badge hidden" style="top:-8px; right:-10px;">0</span>
+        </div>
+        <span class="nav-text">Cart</span>
       </button>
       
       <button class="nav-item" id="navProfile" onclick="switchNav('Profile')">
@@ -235,8 +213,7 @@
         <h2>Order Details</h2>
         <button onclick="document.getElementById('myOrderDetailModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
       </div>
-      <div class="drawer-body" id="myOrderDetailBody">
-      </div>
+      <div class="drawer-body" id="myOrderDetailBody"></div>
     </div>
   </div>
 
@@ -247,10 +224,7 @@
         <span>Back</span>
       </button>
       <span class="brand-mark" style="font-size:18px;">K_K</span>
-      <button id="pdCartBtn" class="icon-btn" aria-label="Open cart">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-        <span id="pdCartCount" class="badge hidden">0</span>
-      </button>
+      <button id="pdCartBtn" class="icon-btn" aria-label="Open cart" style="display:none;"></button>
     </div>
 
     <div class="pd-scroll" id="pdScroll">
@@ -276,21 +250,6 @@
     <div class="pd-action-bar">
       <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
       <button id="pdBuyNow" class="btn-primary">💳 Buy Now</button>
-    </div>
-  </div>
-
-  <div id="cartOverlay" class="overlay hidden" style="z-index: 70;">
-    <div class="drawer">
-      <div class="drawer-head">
-        <h2>Your Cart</h2>
-        <button id="cartClose" class="icon-btn">✕</button>
-      </div>
-      <div id="cartItems" class="drawer-body"></div>
-      <div id="cartFooter" class="drawer-foot hidden">
-        <div class="total"><span>Total</span><span id="cartTotal">₹0</span></div>
-        <button id="checkoutBtn" class="btn-primary full">Proceed to Checkout</button>
-        <button id="clearCartBtn" class="link">Clear cart</button>
-      </div>
     </div>
   </div>
 
@@ -598,14 +557,15 @@
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
-    // UPDATED FIREBASE CONFIG WITH NEW PROJECT DETAILS
+    // PASTE YOUR NEW SECURE CONFIGURATION KEY RECEIVED FROM FIREBASE HERE DIRECTLY
     const firebaseConfig = {
-      apiKey: "AIzaSyBrIfQnPpM4lywZWIiSxaz_v0o1S9PfOqg",
-      authDomain: "kkfashion-f51ff.firebaseapp.com",
-      projectId: "kkfashion-f51ff",
-      storageBucket: "kkfashion-f51ff.firebasestorage.app",
-      messagingSenderId: "720286728954",
-      appId: "1:720286728954:web:eebcf2a28f5ad696e87f43"
+      apiKey: "AIzaSyBXCtwKT6klj3xcZfTBkOIg8YACa_OgWwo",
+      authDomain: "kkfashion-aaa22.firebaseapp.com",
+      projectId: "kkfashion-aaa22",
+      storageBucket: "kkfashion-aaa22.firebasestorage.app",
+      messagingSenderId: "236160837133",
+      appId: "1:236160837133:web:531d73323c958f68849744",
+      measurementId: "G-MFZ80TQVKT"
     };
 
     const fbApp = initializeApp(firebaseConfig);
@@ -681,6 +641,11 @@
     window.updateOrderStatusInFirebase = async function(id, status) {
       try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) { console.error(e); }
     };
+
+    // TRACKING LINK STORAGE SYNC FUNCTION
+    window.updateOrderTrackingInFirebase = async function(id, trackingLink) {
+      try { await updateDoc(doc(db, "orders", id), { trackingLink }); alert("Shiprocket link synced successfully!"); } catch(e) { console.error(e); }
+    };
     
     window.deleteOrderFromFirebase = async function(id) {
       try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); }
@@ -699,39 +664,7 @@
     window.updateProductInFirebase = async function(id, data) {
       try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
     };
-
-    document.getElementById("addProductBtn").addEventListener("click", async () => {
-      const pName    = document.getElementById("pName").value.trim();
-      const rawImage = document.getElementById("pImage").value.trim();
-      const pPrice   = document.getElementById("pPrice").value;
-      const pDisc    = document.getElementById("pDiscount").value;
-      const pExtra   = document.getElementById("pExtra").value;
-      const pCatId   = document.getElementById("pMainCat").value;
-      const pSubCat  = document.getElementById("pSubCat").value || "";
-      const pInStock = document.getElementById("pInStock").checked;
-
-      const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-
-      if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
-      const btn = document.getElementById("addProductBtn");
-      btn.textContent = "Listing...";
-      try {
-        await addDoc(collection(db, "products"), {
-          name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat, inStock: pInStock, timestamp: new Date()
-        });
-        alert("Product listed successfully in Elite Collection! 🎉");
-        ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
-        fetchProducts();
-      } catch(e) {}
-      finally { btn.textContent = "Add Product to Collection"; }
-    });
   </script>
-
-  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon" />
-    <span class="help-text">Elite Help</span>
-  </a>
 
   <script src="app.js"></script>
 </body>
