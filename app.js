@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════
    K_K FASHION — app.js (FINAL - FULLY EXPANDED VERSION)
-   (Features: Shiprocket Tracking, Bottom Nav Cart, Profile Edit)
+   (Features: Shiprocket, Profile Fix, Dynamic Firebase Orders)
 ═══════════════════════════════════════════════════════ */
 
 const load = (k, fb) => {
@@ -24,7 +24,6 @@ const ADMIN_PIN = "0000"; // SECURITY ADMIN ACCESS LOGIC PIN
 let mainCategories = [];
 let products = [];
 let cart = load("knk_cart", []);
-let myOrders = load("knk_my_orders", []);
 let activeMainCatId = null;
 let activeSubCat = "All";
 let editingProductId = null;
@@ -32,6 +31,12 @@ let searchQuery = "";
 let currentDetailProduct = null;
 let isAppInitialized = false;
 let runtimeSkipped = false;
+
+// DYNAMIC UID BASED PROFILE IMAGE KEY
+function getProfileKey() {
+  const user = window.fbAuth ? window.fbAuth.currentUser : null;
+  return user ? "knk_profile_pic_" + user.uid : "knk_profile_pic_guest";
+}
 
 const genId = () => {
   return "cat_" + Date.now() + Math.floor(Math.random() * 1000);
@@ -123,6 +128,11 @@ window.addEventListener("DOMContentLoaded", () => {
           $("app").classList.add("hidden");
           $("splash").classList.add("hidden");
         }
+      }
+      
+      // Update orders view if order page is active
+      if (!$("orderPage").classList.contains("hidden")) {
+         window.renderMyOrders();
       }
     });
   }
@@ -251,7 +261,7 @@ window.switchNav = function (tab) {
   }
   if (tab === 'Order') {
     $("orderPage").classList.remove("hidden");
-    renderMyOrders();
+    window.renderMyOrders();
   }
   if (tab === 'Cart') {
     $("cartPage").classList.remove("hidden");
@@ -265,18 +275,30 @@ window.switchNav = function (tab) {
   window.scrollTo(0, 0);
 };
 
-// USER ORDERS LIST (WITH SHIPROCKET Live REDIRECT DETECT)
-function renderMyOrders() {
+// USER ORDERS LIST (STRICTLY FETCHED PER USER)
+window.renderMyOrders = function() {
   const list = $("myOrdersList");
+  const user = window.fbAuth ? window.fbAuth.currentUser : null;
+  const userEmail = user ? user.email : "guest";
+  const userMobile = userEmail.replace("@kkfashion.com", "");
+
+  // Fetching ONLY this user's orders from all Firebase Orders
+  let displayOrders = [];
+  if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) {
+      displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile);
+  } else {
+      let localOrders = load("knk_my_orders_" + userEmail, []);
+      displayOrders = localOrders;
+  }
   
-  if (!myOrders || myOrders.length === 0) {
+  if (!displayOrders || displayOrders.length === 0) {
     list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted); font-size:13px;">Aapne abhi tak koi order place nahi kiya hai.</div>`;
     return;
   }
 
   let html = "";
-  myOrders.forEach((o) => {
-    const dateStr = new Date(o.savedAt || Date.now()).toLocaleDateString();
+  displayOrders.forEach((o) => {
+    const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleDateString() : new Date(o.savedAt || Date.now()).toLocaleDateString();
     let thumb = "placeholder.jpg";
     
     if (o.items && o.items.length > 0) {
@@ -284,11 +306,16 @@ function renderMyOrders() {
       thumb = Array.isArray(pImg) ? pImg[0] : pImg;
     }
 
+    let statusDisplay = o.status || 'Processing';
+    if(statusDisplay === "Cancelled") {
+       statusDisplay = "❌ Cancelled";
+    }
+
     html += `
-    <div class="mo-card" onclick="openMyOrderModal('${o.savedAt}')">
+    <div class="mo-card" onclick="openMyOrderModal('${o.id || o.savedAt}')">
       <div class="mo-head">
         <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
-        <span class="mo-status">${o.status || 'Processing'}</span>
+        <span class="mo-status" style="${o.status === 'Cancelled' ? 'color:var(--destructive); background:rgba(224,85,85,0.1);' : ''}">${statusDisplay}</span>
       </div>
       <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
          <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
@@ -304,7 +331,12 @@ function renderMyOrders() {
 }
 
 window.openMyOrderModal = function (idStr) {
-  const o = myOrders.find((x) => x.savedAt.toString() === idStr.toString());
+  // Find order in Firebase list or Local
+  let allSrc = window.allFirebaseOrders || [];
+  const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
+  if(allSrc.length === 0) allSrc = load("knk_my_orders_" + userEmail, []);
+  
+  const o = allSrc.find((x) => (x.id && x.id === idStr) || (x.savedAt && x.savedAt.toString() === idStr.toString()));
   if (!o) return;
 
   let itemsHtml = o.items.map((i) => {
@@ -326,21 +358,34 @@ window.openMyOrderModal = function (idStr) {
     </div>`;
   }).join("");
 
-  const dateStr = new Date(o.savedAt || Date.now()).toLocaleString();
+  const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : new Date(o.savedAt || Date.now()).toLocaleString();
   const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
 
-  // SHIPROCKET LIVE TRACK BUTTON INJECTION LOGIC
-  let trackingButtonHtml = "";
-  if (o.trackingLink && o.trackingLink.trim() !== "") {
-    trackingButtonHtml = `
-      <a href="${o.trackingLink.trim()}" target="_blank" class="btn-primary full" style="background:#25D366; color:#000; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; margin-top:15px; padding:12px; border-radius:10px; font-size:14px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">
-        🚚 Track Live Order (Shiprocket)
-      </a>`;
+  // ENHANCED TRACKING UI LOGIC
+  let statusColor = "var(--primary)";
+  let statusText = "Processing / Packing 📦";
+  
+  if (o.status === "Cancelled") {
+     statusColor = "var(--destructive)";
+     statusText = "Order Cancelled ❌";
+  } else if (o.status === "Completed") {
+     statusColor = "#4cc968";
+     statusText = "Delivered / Completed ✅";
+  } else if (o.status === "Shipped" || (o.trackingLink && o.trackingLink.trim() !== "")) {
+     statusColor = "#3498db";
+     statusText = "Shipped 🚚";
   }
+
+  let trackingUI = `
+    <div style="background:var(--card); border:1px solid ${statusColor}; border-radius:10px; padding:15px; margin-top:15px; text-align:center;">
+       <div style="font-size:14px; font-weight:700; color:${statusColor}; margin-bottom:8px;">Status: ${statusText}</div>
+       ${o.trackingLink ? `<a href="${o.trackingLink}" target="_blank" class="btn-primary full" style="background:#25D366; color:#000; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; padding:12px; border-radius:8px; font-size:14px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">🚚 Track Live Order (Shiprocket)</a>` : (o.status === 'Cancelled' ? '' : `<p style="font-size:11px; color:var(--muted2); margin:0;">Tracking link will appear here once shipped.</p>`)}
+    </div>
+  `;
 
   $("myOrderDetailBody").innerHTML = `
     <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
-       <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Status: ${o.status || 'Processing'}</div>
+       <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Order Status: ${o.status || 'Recent'}</div>
        <div style="font-size:12px; color:var(--muted2);">Order Date: ${dateStr}</div>
        <div style="font-size:12px; color:var(--muted2); margin-top:4px;">Payment: ${payMode}</div>
     </div>
@@ -355,7 +400,7 @@ window.openMyOrderModal = function (idStr) {
        ${o.state} - ${o.pincode}
     </div>
 
-    ${trackingButtonHtml}
+    ${trackingUI}
 
     <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
@@ -466,7 +511,7 @@ function renderProfile() {
   const nameObj = $("profileDisplayName");
   const imgObj = $("profileImg");
 
-  const savedPic = localStorage.getItem("knk_profile_pic");
+  const savedPic = localStorage.getItem(getProfileKey());
 
   if (user) {
     let email = user.email || "";
@@ -566,7 +611,7 @@ if ($("profilePicInput")) {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
 
         try {
-          localStorage.setItem("knk_profile_pic", dataUrl);
+          localStorage.setItem(getProfileKey(), dataUrl);
           $("profileImg").src = dataUrl;
           $("profileImg").style.opacity = "1";
 
@@ -1157,6 +1202,8 @@ $("confirmOrderBtn").onclick = () => {
     balanceDue = finalTotal - amountPaid;
   }
 
+  const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
+
   const orderData = {
     name: $("chkName").value.trim(),
     mobile: $("chkMobile").value.trim(),
@@ -1171,6 +1218,7 @@ $("confirmOrderBtn").onclick = () => {
     balanceDue: balanceDue,
     utrNumber: utrValue,
     status: "Recent",
+    userEmail: userEmail,
     savedAt: Date.now()
   };
 
@@ -1182,8 +1230,10 @@ $("confirmOrderBtn").onclick = () => {
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
       if (success) {
-        myOrders.unshift(orderData);
-        save("knk_my_orders", myOrders);
+        let localUserOrders = load("knk_my_orders_" + userEmail, []);
+        localUserOrders.unshift(orderData);
+        save("knk_my_orders_" + userEmail, localUserOrders);
+        
         showStep3Success(payMethod, amountPaid, balanceDue);
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
@@ -1192,8 +1242,9 @@ $("confirmOrderBtn").onclick = () => {
       }
     });
   } else {
-    myOrders.unshift(orderData);
-    save("knk_my_orders", myOrders);
+    let localUserOrders = load("knk_my_orders_" + userEmail, []);
+    localUserOrders.unshift(orderData);
+    save("knk_my_orders_" + userEmail, localUserOrders);
     showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
@@ -1372,7 +1423,7 @@ function syncAddProductDropdowns() {
   });
 }
 
-// SHIPROCKET LOGIC INTEGRATION IN ADMIN CARD VIEW LIST
+// RESTORED ADMIN ORDER DETAILS (IMAGES & ADDRESS) WITH CANCEL OPTION
 window.renderAdminOrders = function (orders) {
   const list = $("adminOrdersList");
   if (!list) return;
@@ -1382,23 +1433,39 @@ window.renderAdminOrders = function (orders) {
   orders.forEach((o) => {
     const div = document.createElement("div");
     div.className = "admin-order-card";
+
+    let itemsHtml = (o.items || []).map(i => {
+       const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
+       return `<div class="order-item-row" style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+                 <img src="${img}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; border:1px solid var(--border);">
+                 <div style="font-size:12px; color:var(--fg);">${i.product.name} <strong style="color:var(--primary);">(x${i.qty})</strong></div>
+               </div>`;
+    }).join("");
     
     div.innerHTML = `
       <div class="order-head">
         <span>Name: ${o.name} (${o.mobile})</span>
         <strong>₹${o.totalAmount}</strong>
       </div>
-      <div style="font-size:12px; color:var(--muted2); margin:5px 0;">
-        Address: ${o.address}
+      <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;">
+        <strong>Address:</strong> ${o.address}<br>
+        ${o.state} - ${o.pincode}
       </div>
+      
+      <div class="order-items" style="background:var(--card); padding:10px; border-radius:8px; margin-bottom:10px;">
+        ${itemsHtml}
+      </div>
+
       <div class="order-actions" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
         <input type="text" id="trackInp_${o.id}" class="field" style="margin-bottom:0; padding:6px; font-size:12px;" placeholder="Paste Shiprocket Tracking URL" value="${o.trackingLink || ''}">
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button class="btn-primary sm-btn save-track-btn" style="padding:6px 12px; font-size:12px;" data-id="${o.id}">Save Tracking</button>
+          
           <select class="field small-field status-select" data-id="${o.id}" style="padding:4px;">
             <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option>
             <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
             <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
           </select>
         </div>
       </div>
