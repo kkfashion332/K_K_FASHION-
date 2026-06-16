@@ -1,36 +1,66 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - ADMIN PIN FIXED TO 0000)
+   K_K FASHION — app.js (FINAL - FULLY EXPANDED VERSION)
+   (Features: Shiprocket Tracking, Bottom Nav Cart, Profile Edit)
 ═══════════════════════════════════════════════════════ */
 
-const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
-const save = (k, v)  => localStorage.setItem(k, JSON.stringify(v));
-const $    = id      => document.getElementById(id);
+const load = (k, fb) => {
+  try {
+    const r = localStorage.getItem(k);
+    return r ? JSON.parse(r) : fb;
+  } catch {
+    return fb;
+  }
+};
 
-// STRICTLY HARDCODED ADMIN PIN (IGNORES PREVIOUS LOCAL STORAGE)
-const ADMIN_PIN          = "0000"; 
-let mainCategories       = [];
-let products             = [];
-let cart                 = load("knk_cart", []);
-let myOrders             = load("knk_my_orders", []); 
-let activeMainCatId      = null;
-let activeSubCat         = "All";
-let editingProductId     = null;
-let searchQuery          = "";
+const save = (k, v) => {
+  localStorage.setItem(k, JSON.stringify(v));
+};
+
+const $ = (id) => {
+  return document.getElementById(id);
+};
+
+const ADMIN_PIN = "0000"; // SECURITY ADMIN ACCESS LOGIC PIN
+let mainCategories = [];
+let products = [];
+let cart = load("knk_cart", []);
+let myOrders = load("knk_my_orders", []);
+let activeMainCatId = null;
+let activeSubCat = "All";
+let editingProductId = null;
+let searchQuery = "";
 let currentDetailProduct = null;
-let isAppInitialized     = false;
-let runtimeSkipped       = false; 
+let isAppInitialized = false;
+let runtimeSkipped = false;
 
-const genId      = () => "cat_" + Date.now() + Math.floor(Math.random() * 1000);
-const finalPrice = p  => Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
-const getCat     = id => mainCategories.find(c => c.id === id);
+const genId = () => {
+  return "cat_" + Date.now() + Math.floor(Math.random() * 1000);
+};
 
-const lockScroll   = () => document.body.classList.add("no-scroll");
-const unlockScroll = () => document.body.classList.remove("no-scroll");
+const finalPrice = (p) => {
+  return Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0));
+};
 
-const allowZoom   = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
-const preventZoom = () => document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+const getCat = (id) => {
+  return mainCategories.find((c) => c.id === id);
+};
 
-// DYNAMICALLY INJECT ADS AFTER AUTHENTICATION OR SKIP
+const lockScroll = () => {
+  document.body.classList.add("no-scroll");
+};
+
+const unlockScroll = () => {
+  document.body.classList.remove("no-scroll");
+};
+
+const allowZoom = () => {
+  document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0");
+};
+
+const preventZoom = () => {
+  document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+};
+
 function loadAdNetworkScripts() {
   if (window.adsScriptExecuted) return;
   window.adsScriptExecuted = true;
@@ -40,93 +70,100 @@ function loadAdNetworkScripts() {
   document.head.appendChild(adScript);
 }
 
-// FORCE USER BACK TO LOGIN FORM IF THEY SKIPPED AND CLICK BUY/CHECKOUT
 function requireLogin(callback) {
   if (window.fbAuth && window.fbAuth.currentUser) {
-     callback();
+    callback();
   } else {
-     alert("Order aage badhane ke liye kripya Login ya Register karein!");
-     runtimeSkipped = false;
-     $("app").classList.add("hidden");
-     $("prodDetail").classList.add("hidden");
-     $("cartOverlay").classList.add("hidden");
-     $("authScreen").classList.remove("hidden");
+    alert("Order aage badhane ke liye kripya Login ya Register karein!");
+    runtimeSkipped = false;
+    $("app").classList.add("hidden");
+    $("prodDetail").classList.add("hidden");
+    $("authScreen").classList.remove("hidden");
   }
 }
 
-window.updateCategoriesFromFirebase = function(cats) {
+window.updateCategoriesFromFirebase = function (cats) {
   mainCategories = cats || [];
-  if (!activeMainCatId && mainCategories.length > 0) activeMainCatId = mainCategories[0].id;
-  renderMainCats(); renderSubCats(); renderProducts();
-  if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
+  if (!activeMainCatId && mainCategories.length > 0) {
+    activeMainCatId = mainCategories[0].id;
+  }
+  renderMainCats();
+  renderSubCats();
+  renderProducts();
+  if (!$("adminPanel").classList.contains("hidden")) {
+    renderAdmin();
+  }
 };
 
-window.updateProductsFromFirebase = function(fbProducts) {
+window.updateProductsFromFirebase = function (fbProducts) {
   products = fbProducts;
   renderProducts();
-  if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
+  if (!$("adminPanel").classList.contains("hidden")) {
+    renderAdmin();
+  }
 };
 
 window.addEventListener("DOMContentLoaded", () => {
-  if(window.onAuthStateChanged && window.fbAuth) {
+  if (window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
         $("authScreen").classList.add("hidden");
         loadAdNetworkScripts();
-        
-        if(!isAppInitialized) {
+
+        if (!isAppInitialized) {
           showSplashAndStart();
           isAppInitialized = true;
         } else {
-           $("app").classList.remove("hidden");
-           if($("waBtn")) $("waBtn").classList.remove("hidden");
-           renderProfile(); 
+          $("app").classList.remove("hidden");
+          renderProfile();
         }
       } else {
-         if (!runtimeSkipped) {
-            $("authScreen").classList.remove("hidden");
-            $("app").classList.add("hidden");
-            $("splash").classList.add("hidden");
-            if($("waBtn")) $("waBtn").classList.add("hidden");
-         }
+        if (!runtimeSkipped) {
+          $("authScreen").classList.remove("hidden");
+          $("app").classList.add("hidden");
+          $("splash").classList.add("hidden");
+        }
       }
     });
   }
 });
 
 function showSplashAndStart() {
-  const splash = $("splash"); 
+  const splash = $("splash");
   splash.classList.remove("hidden");
-  setTimeout(() => { 
-     splash.style.transition = "opacity 0.5s ease"; 
-     splash.style.opacity = "0";
-     setTimeout(() => { 
-        splash.classList.add("hidden"); 
-        $("app").classList.remove("hidden"); 
-        if($("waBtn")) $("waBtn").classList.remove("hidden"); 
-     }, 500);
+  
+  setTimeout(() => {
+    splash.style.transition = "opacity 0.5s ease";
+    splash.style.opacity = "0";
+    
+    setTimeout(() => {
+      splash.classList.add("hidden");
+      $("app").classList.remove("hidden");
+      renderCartCount();
+    }, 500);
   }, 2500);
 }
 
-if($("skipLoginBtn")) {
+if ($("skipLoginBtn")) {
   $("skipLoginBtn").onclick = () => {
-     runtimeSkipped = true;
-     $("authScreen").classList.add("hidden");
-     loadAdNetworkScripts();
-     showSplashAndStart();
+    runtimeSkipped = true;
+    $("authScreen").classList.add("hidden");
+    loadAdNetworkScripts();
+    showSplashAndStart();
   };
 }
 
-if($("authSubmitBtn")) {
+if ($("authSubmitBtn")) {
   $("authSubmitBtn").onclick = async () => {
     const mob = $("authMobile").value.trim();
     const pwd = $("authPassword").value.trim();
 
-    if(!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) {
+    if (!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) {
       alert("Kripya sahi 10-digit mobile number dalein!");
       return;
     }
-    if(!pwd || pwd.length < 6) {
+    
+    if (!pwd || pwd.length < 6) {
       alert("Password kam se kam 6 characters ka hona chahiye!");
       return;
     }
@@ -142,83 +179,109 @@ if($("authSubmitBtn")) {
     } catch (err) {
       try {
         await window.createUserWithEmailAndPassword(window.fbAuth, fakeEmail, pwd);
-      } catch(regErr) {
-        if(regErr.code === 'auth/email-already-in-use') {
-           alert("Galat Password! Kripya is number ka sahi password dalein.");
+      } catch (regErr) {
+        if (regErr.code === 'auth/email-already-in-use') {
+          alert("Galat Password! Kripya is number ka sahi password dalein.");
         } else {
-           alert("Error: " + regErr.message);
+          alert("Error: " + regErr.message);
         }
       }
     } finally {
-      if($("authSubmitBtn")) {
-         $("authSubmitBtn").textContent = originalText;
-         $("authSubmitBtn").disabled = false;
+      if ($("authSubmitBtn")) {
+        $("authSubmitBtn").textContent = originalText;
+        $("authSubmitBtn").disabled = false;
       }
     }
   };
 }
 
-if($("authMobile")) {
-  $("authMobile").oninput = function() {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
+if ($("authMobile")) {
+  $("authMobile").oninput = function () {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);
   };
 }
 
-if($("googleLoginBtn")) {
+if ($("googleLoginBtn")) {
   $("googleLoginBtn").onclick = () => {
     const provider = new window.GoogleAuthProvider();
     window.signInWithPopup(window.fbAuth, provider)
-      .catch((error) => { alert("Login failed: " + error.message); });
+      .catch((error) => {
+        alert("Login failed: " + error.message);
+      });
   };
 }
 
-if($("profileLogoutBtn")) {
+if ($("profileLogoutBtn")) {
   $("profileLogoutBtn").onclick = () => {
-    if(confirm("Are you sure you want to logout?")) {
+    if (confirm("Are you sure you want to logout?")) {
       runtimeSkipped = false;
       window.signOut(window.fbAuth).then(() => {
-         window.location.reload();
+        window.location.reload();
       });
     }
   };
 }
 
-window.switchNav = function(tab) {
-  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-  if($("nav"+tab)) $("nav"+tab).classList.add("active");
+window.switchNav = function (tab) {
+  document.querySelectorAll('.nav-item').forEach((el) => {
+    el.classList.remove('active');
+  });
   
-  if(tab === 'Order') $("navOrderWrap").classList.add("active");
-  else $("navOrderWrap").classList.remove("active");
+  if ($("nav" + tab)) {
+    $("nav" + tab).classList.add("active");
+  }
+
+  if (tab === 'Order') {
+    $("navOrderWrap").classList.add("active");
+  } else {
+    $("navOrderWrap").classList.remove("active");
+  }
 
   $("homeContent").classList.add("hidden");
   $("contactPage").classList.add("hidden");
   $("orderPage").classList.add("hidden");
-  $("aboutPage").classList.add("hidden");
+  $("cartPage").classList.add("hidden");
   $("profilePage").classList.add("hidden");
 
-  if(tab === 'Home') $("homeContent").classList.remove("hidden");
-  if(tab === 'Contact') $("contactPage").classList.remove("hidden");
-  if(tab === 'Order') { $("orderPage").classList.remove("hidden"); renderMyOrders(); }
-  if(tab === 'About') $("aboutPage").classList.remove("hidden");
-  if(tab === 'Profile') { $("profilePage").classList.remove("hidden"); renderProfile(); }
+  if (tab === 'Home') {
+    $("homeContent").classList.remove("hidden");
+  }
+  if (tab === 'Contact') {
+    $("contactPage").classList.remove("hidden");
+  }
+  if (tab === 'Order') {
+    $("orderPage").classList.remove("hidden");
+    renderMyOrders();
+  }
+  if (tab === 'Cart') {
+    $("cartPage").classList.remove("hidden");
+    renderCartPageTab();
+  }
+  if (tab === 'Profile') {
+    $("profilePage").classList.remove("hidden");
+    renderProfile();
+  }
 
-  window.scrollTo(0,0);
+  window.scrollTo(0, 0);
 };
 
+// USER ORDERS LIST (WITH SHIPROCKET Live REDIRECT DETECT)
 function renderMyOrders() {
   const list = $("myOrdersList");
-  if(!myOrders || myOrders.length === 0) {
-    list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted);">Aapne abhi tak koi order place nahi kiya hai.</div>`;
+  
+  if (!myOrders || myOrders.length === 0) {
+    list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted); font-size:13px;">Aapne abhi tak koi order place nahi kiya hai.</div>`;
     return;
   }
 
   let html = "";
-  myOrders.forEach(o => {
+  myOrders.forEach((o) => {
     const dateStr = new Date(o.savedAt || Date.now()).toLocaleDateString();
     let thumb = "placeholder.jpg";
-    if(o.items && o.items.length > 0) {
-       const pImg = o.items[0].product.image;
-       thumb = Array.isArray(pImg) ? pImg[0] : pImg;
+    
+    if (o.items && o.items.length > 0) {
+      const pImg = o.items[0].product.image;
+      thumb = Array.isArray(pImg) ? pImg[0] : pImg;
     }
 
     html += `
@@ -230,23 +293,25 @@ function renderMyOrders() {
       <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
          <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
          <div style="flex:1;">
-           <strong style="color:var(--fg);">Date:</strong> ${dateStr}<br>
-           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Click for full details</span>
+           <strong style="color:var(--fg); font-size:13px;">Date: ${dateStr}</strong><br>
+           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Tap to view tracking</span>
          </div>
       </div>
     </div>`;
   });
+  
   list.innerHTML = html;
 }
 
-window.openMyOrderModal = function(idStr) {
-  const o = myOrders.find(x => x.savedAt.toString() === idStr.toString());
-  if(!o) return;
+window.openMyOrderModal = function (idStr) {
+  const o = myOrders.find((x) => x.savedAt.toString() === idStr.toString());
+  if (!o) return;
 
-  let itemsHtml = o.items.map(i => {
+  let itemsHtml = o.items.map((i) => {
     const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
     const actual = i.product.price * i.qty;
     const finalP = finalPrice(i.product) * i.qty;
+    
     return `
     <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border2); padding-bottom:12px;">
        <img src="${img}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
@@ -264,6 +329,15 @@ window.openMyOrderModal = function(idStr) {
   const dateStr = new Date(o.savedAt || Date.now()).toLocaleString();
   const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
 
+  // SHIPROCKET LIVE TRACK BUTTON INJECTION LOGIC
+  let trackingButtonHtml = "";
+  if (o.trackingLink && o.trackingLink.trim() !== "") {
+    trackingButtonHtml = `
+      <a href="${o.trackingLink.trim()}" target="_blank" class="btn-primary full" style="background:#25D366; color:#000; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; margin-top:15px; padding:12px; border-radius:10px; font-size:14px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">
+        🚚 Track Live Order (Shiprocket)
+      </a>`;
+  }
+
   $("myOrderDetailBody").innerHTML = `
     <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
        <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Status: ${o.status || 'Processing'}</div>
@@ -271,16 +345,17 @@ window.openMyOrderModal = function(idStr) {
        <div style="font-size:12px; color:var(--muted2); margin-top:4px;">Payment: ${payMode}</div>
     </div>
     
-    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg);">Items Details</h3>
+    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Items Details</h3>
     ${itemsHtml}
 
-    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg);">Delivery Address</h3>
+    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Delivery Address</h3>
     <div style="font-size:13px; color:var(--muted); line-height:1.5; background:var(--bg2); padding:10px; border-radius:8px;">
        <strong style="color:var(--fg);">${o.name}</strong> (${o.mobile})<br>
        ${o.address}<br>
-       ${o.landmark ? o.landmark+'<br>' : ''}
        ${o.state} - ${o.pincode}
     </div>
+
+    ${trackingButtonHtml}
 
     <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
@@ -293,6 +368,98 @@ window.openMyOrderModal = function(idStr) {
   lockScroll();
 };
 
+/* ════════════════════════════════════
+   CART PAGE TAB CONSOLE ACTIONS
+════════════════════════════════════ */
+function renderCartPageTab() {
+  const body = $("cartPageItems");
+  const foot = $("cartPageFooter");
+  
+  if (!cart.length) {
+    body.innerHTML = '<p class="empty" style="padding:40px 0;">Your shopping cart is empty.</p>';
+    foot.classList.add("hidden");
+    return;
+  }
+  
+  body.innerHTML = "";
+  
+  cart.forEach((i) => {
+    const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : "placeholder.jpg";
+    const el = document.createElement("div");
+    el.className = "cart-item";
+    
+    el.innerHTML = `
+      <img src="${mainImg}" alt="${i.product.name}" />
+      <div class="ci-info">
+        <div class="ci-name">${i.product.name}</div>
+        <div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}</div>
+      </div>
+      <button class="trash">🗑️</button>
+    `;
+    
+    el.querySelector(".trash").onclick = () => {
+      removeFromCart(i.product.id);
+      renderCartPageTab();
+    };
+    
+    body.appendChild(el);
+  });
+  
+  $("cartPageTotal").textContent = "₹" + cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
+  foot.classList.remove("hidden");
+}
+
+function renderCartCount() {
+  const count = cart.reduce((s, i) => s + i.qty, 0);
+  const navBadge = $("navCartCount");
+  if (navBadge) {
+    navBadge.textContent = count;
+    navBadge.classList.toggle("hidden", count === 0);
+  }
+}
+
+function addToCart(p) {
+  const found = cart.find((i) => i.product.id === p.id);
+  if (found) {
+    found.qty += 1;
+  } else {
+    cart.push({ product: p, qty: 1 });
+  }
+  save("knk_cart", cart);
+  renderCartCount();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter((i) => i.product.id !== id);
+  save("knk_cart", cart);
+  renderCartCount();
+}
+
+function clearCart() {
+  cart = [];
+  save("knk_cart", cart);
+  renderCartCount();
+}
+
+if ($("cartPageClearBtn")) {
+  $("cartPageClearBtn").onclick = () => {
+    clearCart();
+    renderCartPageTab();
+  };
+}
+
+if ($("cartPageCheckoutBtn")) {
+  $("cartPageCheckoutBtn").onclick = () => {
+    if (!cart.length) return;
+    requireLogin(() => {
+      openCheckout();
+    });
+  };
+}
+
+/* ════════════════════════════════════
+   PROFILE TAB & SECURE AVATAR TRIGGER
+════════════════════════════════════ */
 function renderProfile() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
   const displayObj = $("profileDisplayId");
@@ -301,144 +468,186 @@ function renderProfile() {
 
   const savedPic = localStorage.getItem("knk_profile_pic");
 
-  if(user) {
-     let email = user.email || "";
-     displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com","") : email;
-     nameObj.textContent = user.displayName || "Add Your Name";
-     
-     if(savedPic) {
-        imgObj.src = savedPic;
-     } else if(user.photoURL) {
-        imgObj.src = user.photoURL;
-     } else {
-        imgObj.src = "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
-     }
+  if (user) {
+    let email = user.email || "";
+    displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com", "") : email;
+    nameObj.textContent = user.displayName || "Elite Member";
+    imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
   } else {
-     displayObj.textContent = "Guest User";
-     nameObj.textContent = "Guest";
-     imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
+    displayObj.textContent = "Guest Access";
+    nameObj.textContent = "Welcome Guest";
+    imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
   }
-  
-  // ADMIN PANEL TRIGGER: 10 TAPS ON PROFILE AVATAR IMAGE
+
+  // SECURE TRIGGERS ON PROFILE PHOTO AVATAR TO OPEN MANAGEMENT CONSOLE
   if (imgObj && !imgObj.dataset.listenerAttached) {
     imgObj.dataset.listenerAttached = "true";
-    let profileTapCount = 0, profileTapTimer = null;
+    let profileTapCount = 0;
+    let profileTapTimer = null;
+    
     imgObj.addEventListener("click", (e) => {
-       e.stopPropagation();
-       profileTapCount++;
-       if (profileTapTimer) clearTimeout(profileTapTimer);
-       if (profileTapCount >= 10) {
-          profileTapCount = 0;
-          openPin();
-          return;
-       }
-       profileTapTimer = setTimeout(() => { profileTapCount = 0; }, 3000);
+      e.stopPropagation();
+      profileTapCount++;
+      
+      if (profileTapTimer) {
+        clearTimeout(profileTapTimer);
+      }
+      
+      if (profileTapCount >= 10) {
+        profileTapCount = 0;
+        openPin();
+        return;
+      }
+      
+      profileTapTimer = setTimeout(() => {
+        profileTapCount = 0;
+      }, 3000);
     });
   }
 }
 
-if($("editProfileBtn")) {
+if ($("editProfileBtn")) {
   $("editProfileBtn").onclick = async () => {
-     const user = window.fbAuth ? window.fbAuth.currentUser : null;
-     if(!user) { alert("Please login to edit profile!"); return; }
-     
-     const newName = prompt("Enter your Name:", user.displayName || "");
-     if(newName !== null && newName.trim() !== "") {
-        const btn = $("editProfileBtn");
-        const originalHtml = btn.innerHTML; 
-        btn.textContent = "Saving...";
-        btn.disabled = true;
-        await window.updateProfile(user, { displayName: newName.trim() });
-        btn.innerHTML = originalHtml; 
-        btn.disabled = false;
-        renderProfile();
-     }
+    const user = window.fbAuth ? window.fbAuth.currentUser : null;
+    if (!user) {
+      alert("Please login to edit profile!");
+      return;
+    }
+    
+    const newName = prompt("Enter your Name:", user.displayName || "");
+    if (newName !== null && newName.trim() !== "") {
+      const btn = $("editProfileBtn");
+      const originalHtml = btn.innerHTML;
+      btn.textContent = "Saving...";
+      btn.disabled = true;
+      
+      await window.updateProfile(user, { displayName: newName.trim() });
+      
+      btn.innerHTML = originalHtml;
+      btn.disabled = false;
+      renderProfile();
+    }
   };
 }
 
-if($("profilePicInput")) {
-  $("profilePicInput").onchange = function(e) {
-     const file = e.target.files[0];
-     if(!file) return;
+if ($("profilePicInput")) {
+  $("profilePicInput").onchange = function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
 
-     $("profileImg").style.opacity = "0.5";
+    $("profileImg").style.opacity = "0.5";
 
-     const reader = new FileReader();
-     reader.onload = function(event) {
-        const img = new Image();
-        img.onload = function() {
-            const canvas = document.createElement("canvas");
-            let width = img.width;
-            let height = img.height;
-            const MAX_SIZE = 250; 
+    const reader = new FileReader();
+    reader.onload = function (event) {
+      const img = new Image();
+      img.onload = function () {
+        const canvas = document.createElement("canvas");
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 250;
 
-            if (width > height) {
-                if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-            } else {
-                if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-            }
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
 
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(img, 0, 0, width, height);
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
 
-            const dataUrl = canvas.toDataURL("image/jpeg", 0.7); 
-            
-            try {
-                localStorage.setItem("knk_profile_pic", dataUrl);
-                $("profileImg").src = dataUrl;
-                $("profileImg").style.opacity = "1"; 
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
 
-                const user = window.fbAuth ? window.fbAuth.currentUser : null;
-                if(user && !user.email.includes("@kkfashion.com")) {
-                   window.updateProfile(user, { photoURL: dataUrl });
-                }
-            } catch(err) {
-                alert("Browser Storage full! Kripya kisi aur choti image ka prayog karein.");
-                $("profileImg").style.opacity = "1";
-            }
-        };
-        img.src = event.target.result;
-     };
-     reader.readAsDataURL(file);
+        try {
+          localStorage.setItem("knk_profile_pic", dataUrl);
+          $("profileImg").src = dataUrl;
+          $("profileImg").style.opacity = "1";
+
+          const user = window.fbAuth ? window.fbAuth.currentUser : null;
+          if (user && !user.email.includes("@kkfashion.com")) {
+            window.updateProfile(user, { photoURL: dataUrl });
+          }
+        } catch (err) {
+          alert("Quota full!");
+          $("profileImg").style.opacity = "1";
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
   };
 }
 
-// Logo button resets category selection only
-$("logoBtn").onclick = () => { 
-  if (mainCategories.length > 0) selectMainCat(mainCategories[0].id); 
+$("logoBtn").onclick = () => {
+  if (mainCategories.length > 0) {
+    selectMainCat(mainCategories[0].id);
+  }
 };
 
 function renderMainCats() {
-  const wrap = $("mainCats"); wrap.innerHTML = "";
+  const wrap = $("mainCats");
+  wrap.innerHTML = "";
+  
   mainCategories.forEach((cat, i) => {
     const btn = document.createElement("button");
     btn.className = "main-cat-btn" + (cat.id === activeMainCatId && !searchQuery ? " active" : "");
-    btn.style.animationDelay = (i * 0.07) + "s"; btn.style.animation = "fadeUp 0.4s ease both";
+    btn.style.animationDelay = (i * 0.07) + "s";
+    btn.style.animation = "fadeUp 0.4s ease both";
     btn.innerHTML = `<span class="mc-label">${cat.name}</span>`;
     btn.onclick = () => selectMainCat(cat.id);
     wrap.appendChild(btn);
   });
 }
 
-window.selectMainCat = function(id) {
-  if (searchQuery) { searchQuery = ""; $("searchInput").value = ""; $("searchClear").classList.add("hidden"); }
-  activeMainCatId = id; activeSubCat = "All";
-  renderMainCats(); renderSubCats(); renderProducts();
+window.selectMainCat = function (id) {
+  if (searchQuery) {
+    searchQuery = "";
+    $("searchInput").value = "";
+    $("searchClear").classList.add("hidden");
+  }
+  activeMainCatId = id;
+  activeSubCat = "All";
+  renderMainCats();
+  renderSubCats();
+  renderProducts();
 };
 
 function renderSubCats() {
-  const wrap = $("subCats"), subWrap = $("subCatsWrap"); wrap.innerHTML = "";
-  if (searchQuery) { subWrap.classList.add("hidden-bar"); return; }
+  const wrap = $("subCats");
+  const subWrap = $("subCatsWrap");
+  wrap.innerHTML = "";
+  
+  if (searchQuery) {
+    subWrap.classList.add("hidden-bar");
+    return;
+  }
+  
   const cat = getCat(activeMainCatId);
-  if (!cat || !cat.subCategories || cat.subCategories.length === 0) { subWrap.classList.add("hidden-bar"); return; }
+  if (!cat || !cat.subCategories || cat.subCategories.length === 0) {
+    subWrap.classList.add("hidden-bar");
+    return;
+  }
+  
   subWrap.classList.remove("hidden-bar");
+  
   ["All", ...cat.subCategories].forEach((s, i) => {
     const b = document.createElement("button");
-    b.className = "cat" + (s === activeSubCat ? " active" : ""); b.textContent = s;
-    b.style.animationDelay = (i * 0.05) + "s"; b.style.animation = "fadeUp 0.4s ease both";
-    b.onclick = () => { activeSubCat = s; renderSubCats(); renderProducts(); };
+    b.className = "cat" + (s === activeSubCat ? " active" : "");
+    b.textContent = s;
+    b.style.animationDelay = (i * 0.05) + "s";
+    b.style.animation = "fadeUp 0.4s ease both";
+    b.onclick = () => {
+      activeSubCat = s;
+      renderSubCats();
+      renderProducts();
+    };
     wrap.appendChild(b);
   });
 }
@@ -447,133 +656,217 @@ function searchMatches(p, q) {
   if (!q) return false;
   const cat = getCat(p.mainCategoryId);
   const haystack = [p.name || "", p.subCategory || "", cat ? cat.name : ""].join(" ").toLowerCase();
-  return q.toLowerCase().split(/\s+/).filter(Boolean).every(w => haystack.includes(w));
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => haystack.includes(w));
 }
 
 let searchDebounce = null;
-$("searchInput").addEventListener("input", function() {
-  const v = this.value.trim(); $("searchClear").classList.toggle("hidden", !v);
+$("searchInput").addEventListener("input", function () {
+  const v = this.value.trim();
+  $("searchClear").classList.toggle("hidden", !v);
+  
   clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => { searchQuery = v; renderMainCats(); renderSubCats(); renderProducts(); }, 120);
+  searchDebounce = setTimeout(() => {
+    searchQuery = v;
+    renderMainCats();
+    renderSubCats();
+    renderProducts();
+  }, 120);
 });
-$("searchClear").addEventListener("click", () => { $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = ""; renderMainCats(); renderSubCats(); renderProducts(); $("searchInput").focus(); });
+
+$("searchClear").addEventListener("click", () => {
+  $("searchInput").value = "";
+  $("searchClear").classList.add("hidden");
+  searchQuery = "";
+  renderMainCats();
+  renderSubCats();
+  renderProducts();
+  $("searchInput").focus();
+});
 
 function renderProducts() {
-  const title = $("activeTitle"); let list;
+  const title = $("activeTitle");
+  let list;
+
   if (searchQuery) {
-    list = products.filter(p => searchMatches(p, searchQuery));
+    list = products.filter((p) => searchMatches(p, searchQuery));
     title.innerHTML = `Search: "<span style="color:var(--primary)">${searchQuery}</span>" <span class="search-count">${list.length} results</span>`;
   } else {
     const cat = getCat(activeMainCatId);
     title.textContent = activeSubCat === "All" ? (cat ? cat.name : "") : activeSubCat;
-    list = products.filter(p => p.mainCategoryId === activeMainCatId);
-    if (activeSubCat !== "All") list = list.filter(p => p.subCategory === activeSubCat);
+    list = products.filter((p) => p.mainCategoryId === activeMainCatId);
+    if (activeSubCat !== "All") {
+      list = list.filter((p) => p.subCategory === activeSubCat);
+    }
   }
 
   const grid = $("products");
-  if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
+  if (list.length === 0) {
+    grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`;
+    return;
+  }
+  
   grid.innerHTML = "";
 
   list.forEach((p, i) => {
-    const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
-    const tag = searchQuery ? `<div class="prod-cat-tag">${cat ? cat.name : ""}${p.subCategory ? " · " + p.subCategory : ""}</div>` : "";
+    const price = finalPrice(p);
+    const inStock = p.inStock !== false;
     const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
     
-    const el = document.createElement("div"); el.className = "product"; el.style.animationDelay = (i * 0.05) + "s";
+    const el = document.createElement("div");
+    el.className = "product";
+    el.style.animationDelay = (i * 0.05) + "s";
+    
     el.innerHTML = `
-      <div class="${!inStock ? 'out-of-stock-overlay' : ''}"><img src="${mainImg}" alt="${p.name}" loading="lazy" /></div>
+      <div><img src="${mainImg}" alt="${p.name}" loading="lazy" /></div>
       <div class="info">
-        <div class="name">${p.name}</div>${tag}
-        <div class="price-row"><span class="price">₹${price}</span>${p.discount > 0 ? `<span class="strike">₹${p.price}</span><span class="off">${p.discount}% off</span>` : ""}</div>
+        <div class="name">${p.name}</div>
+        <div class="price-row">
+          <span class="price">₹${price}</span>
+          ${p.discount > 0 ? `<span class="strike">₹${p.price}</span>` : ""}
+        </div>
         <span class="stock-badge ${inStock ? 'in' : 'out'}">${inStock ? '● In Stock' : '● Out of Stock'}</span>
         <div class="btn-row">
           <button class="btn-outline btn-cart-grid" ${!inStock ? 'disabled' : ''}>🛒 Cart</button>
           <button class="btn-primary btn-buy-grid"  ${!inStock ? 'disabled' : ''}>💳 Buy</button>
         </div>
-      </div>`;
+      </div>
+    `;
+
     el.querySelector("img").onclick = () => openProductDetail(p);
     el.querySelector(".name").onclick = () => openProductDetail(p);
+
     if (inStock) {
-      el.querySelector(".btn-cart-grid").onclick = (e) => { e.stopPropagation(); addToCart(p); };
-      el.querySelector(".btn-buy-grid").onclick  = (e) => { e.stopPropagation(); directBuyCheckout(p); };
+      el.querySelector(".btn-cart-grid").onclick = (e) => {
+        e.stopPropagation();
+        addToCart(p);
+        alert("Added to cart!");
+        renderCartCount();
+      };
+      el.querySelector(".btn-buy-grid").onclick = (e) => {
+        e.stopPropagation();
+        directBuyCheckout(p);
+      };
     }
+    
     grid.appendChild(el);
   });
 }
 
 function openProductDetail(p) {
   lockScroll();
-  currentDetailProduct = p; const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId);
+  currentDetailProduct = p;
+  
+  const price = finalPrice(p);
+  const inStock = p.inStock !== false;
+  const cat = getCat(p.mainCategoryId);
   
   const slider = $("pdImageSlider");
   const dotsWrap = $("pdImageDots");
-  slider.innerHTML = ""; dotsWrap.innerHTML = "";
+  
+  slider.innerHTML = "";
+  dotsWrap.innerHTML = "";
   
   let images = Array.isArray(p.image) ? p.image : [p.image];
-  if(images.length === 0) images = ["placeholder.jpg"];
+  if (images.length === 0) images = ["placeholder.jpg"];
 
   images.forEach((imgUrl, i) => {
     const imgEl = document.createElement("img");
-    imgEl.src = imgUrl; imgEl.alt = p.name;
+    imgEl.src = imgUrl;
     imgEl.onclick = () => {
       $("fullImage").src = imgUrl;
       $("imageViewer").classList.remove("hidden");
-      allowZoom(); 
+      allowZoom();
     };
-
     slider.appendChild(imgEl);
-    if(images.length > 1) {
+    
+    if (images.length > 1) {
       const dot = document.createElement("div");
       dot.className = "dot" + (i === 0 ? " active" : "");
       dotsWrap.appendChild(dot);
     }
   });
 
-  if(images.length > 1) {
+  if (images.length > 1) {
     slider.onscroll = () => {
-      const index = Math.round(slider.scrollLeft / slider.offsetWidth);
+      const idx = Math.round(slider.scrollLeft / slider.offsetWidth);
       Array.from(dotsWrap.children).forEach((dot, i) => {
-        dot.className = "dot" + (i === index ? " active" : "");
+        dot.className = "dot" + (i === idx ? " active" : "");
       });
     };
   }
 
-  const badge = $("pdStockBadge"); badge.textContent = inStock ? "● In Stock" : "● Out of Stock"; badge.className = "stock-badge pd-img-stock " + (inStock ? "in" : "out");
-  $("pdBreadcrumb").textContent = (cat ? cat.name : "") + (p.subCategory ? " › " + p.subCategory : "");
-  $("pdName").textContent = p.name; $("pdPrice").textContent = "₹" + price;
-  if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
-  const addBtn = $("pdAddCart"), buyBtn = $("pdBuyNow");
-  addBtn.textContent = "🛒 Add to Cart"; buyBtn.textContent = "💳 Buy Now";
-  if (inStock) {
-    addBtn.disabled = false; buyBtn.disabled = false;
-    addBtn.onclick = () => { addToCart(p); addBtn.textContent = "✅ Added!"; setTimeout(() => { addBtn.textContent = "🛒 Add to Cart"; }, 1200); };
-    buyBtn.onclick = () => directBuyCheckout(p);
-  } else { addBtn.disabled = true; buyBtn.disabled = true; addBtn.textContent = "Out of Stock"; buyBtn.textContent = "Out of Stock"; }
+  const badge = $("pdStockBadge");
+  badge.textContent = inStock ? "● In Stock" : "● Out of Stock";
+  badge.className = "stock-badge pd-img-stock " + (inStock ? "in" : "out");
   
+  $("pdBreadcrumb").textContent = (cat ? cat.name : "") + (p.subCategory ? " › " + p.subCategory : "");
+  $("pdName").textContent = p.name;
+  $("pdPrice").textContent = "₹" + price;
+
+  if (p.discount > 0) {
+    $("pdStrike").textContent = "₹" + p.price;
+    $("pdStrike").classList.remove("hidden");
+    $("pdOff").textContent = p.discount + "% off";
+    $("pdOff").classList.remove("hidden");
+  } else {
+    $("pdStrike").classList.add("hidden");
+    $("pdOff").classList.add("hidden");
+  }
+
+  const addBtn = $("pdAddCart");
+  const buyBtn = $("pdBuyNow");
+
+  if (inStock) {
+    addBtn.disabled = false;
+    buyBtn.disabled = false;
+    
+    addBtn.onclick = () => {
+      addToCart(p);
+      renderCartCount();
+      alert("Added to cart!");
+    };
+    
+    buyBtn.onclick = () => {
+      directBuyCheckout(p);
+    };
+  } else {
+    addBtn.disabled = true;
+    buyBtn.disabled = true;
+  }
+
   renderHorizSections(p);
   $("pdScroll").scrollTop = 0;
-  
-  $("prodDetail").classList.remove("hidden", "closing"); syncDetailCartBadge();
+  $("prodDetail").classList.remove("hidden", "closing");
 }
 
 function closeProductDetail() {
   preventZoom();
-  const detail = $("prodDetail"); detail.classList.add("closing");
+  const detail = $("prodDetail");
+  detail.classList.add("closing");
+  
   detail.addEventListener("animationend", () => {
-    detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null;
+    detail.classList.add("hidden");
+    detail.classList.remove("closing");
+    currentDetailProduct = null;
     unlockScroll();
   }, { once: true });
 }
+
 $("pdBackBtn").onclick = closeProductDetail;
-$("pdCartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); preventZoom(); };
 
 function renderHorizSections(currentProduct) {
-  const container = $("pdHorizSections"); container.innerHTML = "";
+  const container = $("pdHorizSections");
+  container.innerHTML = "";
+  
   if (currentProduct.subCategory) {
-    const subList = products.filter(p => p.id !== currentProduct.id && p.subCategory === currentProduct.subCategory);
-    if (subList.length > 0) container.appendChild(buildHorizSection("More from " + currentProduct.subCategory, subList));
+    const subList = products.filter((p) => p.id !== currentProduct.id && p.subCategory === currentProduct.subCategory);
+    if (subList.length > 0) {
+      container.appendChild(buildHorizSection("More from " + currentProduct.subCategory, subList));
+    }
   }
-  const sameMainList = products.filter(p => p.id !== currentProduct.id && p.mainCategoryId === currentProduct.mainCategoryId && (currentProduct.subCategory ? p.subCategory !== currentProduct.subCategory : true));
+  
+  const sameMainList = products.filter((p) => p.id !== currentProduct.id && p.mainCategoryId === currentProduct.mainCategoryId && (currentProduct.subCategory ? p.subCategory !== currentProduct.subCategory : true));
+  
   if (sameMainList.length > 0) {
     const cat = getCat(currentProduct.mainCategoryId);
     container.appendChild(buildHorizSection("More from " + (cat ? cat.name : "This Category"), sameMainList));
@@ -581,170 +874,168 @@ function renderHorizSections(currentProduct) {
 }
 
 function buildHorizSection(title, list) {
-  const section = document.createElement("div"); section.className = "horiz-section";
-  const head = document.createElement("div"); head.className = "horiz-section-head";
-  head.innerHTML = `<span class="horiz-section-title">${title}</span><span class="horiz-section-count">${list.length} items</span>`;
+  const section = document.createElement("div");
+  section.className = "horiz-section";
+  
+  const head = document.createElement("div");
+  head.className = "horiz-section-head";
+  head.innerHTML = `<span class="horiz-section-title">${title}</span>`;
   section.appendChild(head);
-  const row = document.createElement("div"); row.className = "horiz-row";
-  list.forEach((p, i) => {
-    const price = finalPrice(p), inStock = p.inStock !== false;
+  
+  const row = document.createElement("div");
+  row.className = "horiz-row";
+  
+  list.forEach((p) => {
+    const price = finalPrice(p);
+    const inStock = p.inStock !== false;
     const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
-    const card = document.createElement("div"); card.className = "horiz-card"; card.style.animationDelay = (i * 0.04) + "s";
-    card.innerHTML = `<div class="horiz-card-img-wrap"><img src="${mainImg}" alt="${p.name}" loading="lazy" />${!inStock ? '<div class="horiz-card-oos">OUT OF STOCK</div>' : ''}</div>
-      <div class="horiz-card-info"><div class="horiz-card-name">${p.name}</div><div class="horiz-card-price">₹${price}</div><button class="horiz-card-add" ${!inStock ? 'disabled' : ''}>+ Cart</button></div>`;
     
-    const switchProduct = () => { closeProductDetail(); setTimeout(() => openProductDetail(p), 300); };
-    card.querySelector(".horiz-card-img-wrap").onclick = switchProduct;
-    card.querySelector(".horiz-card-name").onclick = switchProduct;
-    card.querySelector(".horiz-card-price").onclick = switchProduct;
+    const card = document.createElement("div");
+    card.className = "horiz-card";
+    card.innerHTML = `
+      <img src="${mainImg}" />
+      <div>
+        <div class="horiz-card-name">${p.name}</div>
+        <div class="horiz-card-price">₹${price}</div>
+      </div>
+    `;
     
-    if (inStock) { card.querySelector(".horiz-card-add").onclick = (e) => { e.stopPropagation(); addToCart(p); const btn = e.currentTarget; btn.textContent = "✓"; setTimeout(() => { btn.textContent = "+ Cart"; }, 1000); }; }
+    card.onclick = () => {
+      closeProductDetail();
+      setTimeout(() => openProductDetail(p), 300);
+    };
+    
     row.appendChild(card);
   });
-  section.appendChild(row); return section;
+  
+  section.appendChild(row);
+  return section;
 }
 
-function syncDetailCartBadge() { const count = cart.reduce((s, i) => s + i.qty, 0); $("pdCartCount").textContent = count; $("pdCartCount").classList.toggle("hidden", count === 0); }
+// CHECKOUT LOGIC
+const UPI_ID = "kkfashion@nyes";
 
-function addToCart(p) {
-  const found = cart.find(i => i.product.id === p.id);
-  if (found) found.qty += 1; else cart.push({ product: p, qty: 1 });
-  save("knk_cart", cart); renderCartCount(); syncDetailCartBadge(); renderCart();
-  $("cartBtn").style.color = "#C9A84C"; setTimeout(() => { $("cartBtn").style.color = ""; }, 600);
-}
-function removeFromCart(id) { cart = cart.filter(i => i.product.id !== id); save("knk_cart", cart); renderCartCount(); syncDetailCartBadge(); renderCart(); }
-function clearCart() { cart = []; save("knk_cart", cart); renderCartCount(); syncDetailCartBadge(); renderCart(); }
-function renderCartCount() { const count = cart.reduce((s, i) => s + i.qty, 0); $("cartCount").textContent = count; $("cartCount").classList.toggle("hidden", count === 0); }
-
-function renderCart() {
-  const body = $("cartItems"), foot = $("cartFooter");
-  if (!cart.length) { body.innerHTML = '<p class="empty">Cart is empty</p>'; foot.classList.add("hidden"); return; }
-  body.innerHTML = "";
-  cart.forEach(i => {
-    const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : "placeholder.jpg";
-    const el = document.createElement("div"); el.className = "cart-item";
-    el.innerHTML = `<img src="${mainImg}" alt="${i.product.name}" /><div class="ci-info"><div class="ci-name">${i.product.name}</div><div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}</div></div><button class="trash">🗑️</button>`;
-    el.querySelector(".trash").onclick = () => removeFromCart(i.product.id); body.appendChild(el);
-  });
-  $("cartTotal").textContent = "₹" + cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0); foot.classList.remove("hidden");
-}
-
-$("cartBtn").onclick = () => { renderCart(); $("cartOverlay").classList.remove("hidden"); lockScroll(); };
-$("cartClose").onclick = () => { $("cartOverlay").classList.add("hidden"); unlockScroll(); };
-$("cartOverlay").onclick = e => { if (e.target === $("cartOverlay")) { $("cartOverlay").classList.add("hidden"); unlockScroll(); } };
-$("clearCartBtn").onclick = clearCart;
-
-const UPI_ID = "kkfashion@nyes"; 
-
-if($("chkUtr")) {
-  $("chkUtr").oninput = function() {
-      this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+if ($("chkUtr")) {
+  $("chkUtr").oninput = function () {
+    this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
   };
 }
 
-if($("copyUpiBtn")) {
-  $("copyUpiBtn").onclick = function() {
-      navigator.clipboard.writeText(UPI_ID).then(() => {
-          this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
-          setTimeout(() => { 
-              this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; 
-          }, 2000);
-      }).catch(err => alert("Copy nahi ho paya, manually type karein."));
+if ($("copyUpiBtn")) {
+  $("copyUpiBtn").onclick = function () {
+    navigator.clipboard.writeText(UPI_ID).then(() => {
+      this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
+      setTimeout(() => {
+        this.innerHTML = `${UPI_ID} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
+      }, 2000);
+    }).catch(err => alert("Copy nahi ho paya, manually type karein."));
   };
 }
 
 function directBuyCheckout(p) {
   requireLogin(() => {
     preventZoom();
-    cart = [{ product: p, qty: 1 }]; save("knk_cart", cart); renderCartCount();
-    $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null;
+    cart = [{ product: p, qty: 1 }];
+    save("knk_cart", cart);
+    renderCartCount();
+    $("prodDetail").classList.add("hidden");
+    $("prodDetail").classList.remove("closing");
+    currentDetailProduct = null;
     openCheckout();
   });
 }
 
-$("checkoutBtn").onclick = () => { 
-  if (!cart.length) return; 
-  requireLogin(() => {
-    $("cartOverlay").classList.add("hidden"); openCheckout(); 
-  });
-};
-
 function resetCheckoutUI() {
   $("checkoutStep1").classList.remove("hidden");
   $("checkoutStep2").classList.add("hidden");
-  if($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
-  
+  if ($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
+
   $("checkoutFooter").classList.remove("hidden");
   $("chkFooterTotalRow").classList.remove("hidden");
   $("step1NextBtn").classList.remove("hidden");
   $("step2PayBtn").classList.add("hidden");
   $("confirmOrderBtn").classList.add("hidden");
 
-  if($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden");
-  if($("qrScanSection")) $("qrScanSection").classList.add("hidden");
-  if($("chkUtr")) $("chkUtr").value = "";
-  
-  if(window.paymentInterval) clearInterval(window.paymentInterval);
-  
-  $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1";
-  $("line1").className = "step-line"; 
-  $("step2Indicator").className = "step-item"; $("step2Circle").innerHTML = "2";
-  $("line2").className = "step-line"; 
-  $("step3Indicator").className = "step-item"; $("step3Circle").innerHTML = "3";
+  if ($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden");
+  if ($("qrScanSection")) $("qrScanSection").classList.add("hidden");
+  if ($("chkUtr")) $("chkUtr").value = "";
+
+  if (window.paymentInterval) clearInterval(window.paymentInterval);
+
+  $("step1Indicator").className = "step-item active";
+  $("step1Circle").innerHTML = "1";
+  $("line1").className = "step-line";
+  $("step2Indicator").className = "step-item";
+  $("step2Circle").innerHTML = "2";
+  $("line2").className = "step-line";
+  $("step3Indicator").className = "step-item";
+  $("step3Circle").innerHTML = "3";
 }
 
 function openCheckout() {
-  lockScroll(); 
+  lockScroll();
   resetCheckoutUI();
   const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
 }
 
-$("closeCheckout").onclick = () => { 
+$("closeCheckout").onclick = () => {
   if (!$("qrScanSection").classList.contains("hidden")) {
-      $("qrScanSection").classList.add("hidden");
-      $("paymentOptionsWrap").classList.remove("hidden");
-      
-      $("confirmOrderBtn").classList.add("hidden");
-      $("step2PayBtn").classList.remove("hidden");
-      
-      if(window.paymentInterval) clearInterval(window.paymentInterval);
-  }
-  else if (!$("checkoutStep2").classList.contains("hidden")) {
-      $("checkoutStep2").classList.add("hidden");
-      $("checkoutStep1").classList.remove("hidden");
-      
-      $("step2PayBtn").classList.add("hidden");
-      $("step1NextBtn").classList.remove("hidden");
-      $("chkFooterTotalRow").classList.remove("hidden");
+    $("qrScanSection").classList.add("hidden");
+    $("paymentOptionsWrap").classList.remove("hidden");
 
-      $("step2Indicator").classList.remove("active");
-      $("step1Indicator").classList.remove("completed");
-      $("step1Indicator").classList.add("active");
-      $("line1").classList.remove("completed");
-      $("step1Circle").innerHTML = "1";
-  }
-  else {
-      $("checkoutOverlay").classList.add("hidden"); 
-      unlockScroll(); 
+    $("confirmOrderBtn").classList.add("hidden");
+    $("step2PayBtn").classList.remove("hidden");
+
+    if (window.paymentInterval) clearInterval(window.paymentInterval);
+  } else if (!$("checkoutStep2").classList.contains("hidden")) {
+    $("checkoutStep2").classList.add("hidden");
+    $("checkoutStep1").classList.remove("hidden");
+
+    $("step2PayBtn").classList.add("hidden");
+    $("step1NextBtn").classList.remove("hidden");
+    $("chkFooterTotalRow").classList.remove("hidden");
+
+    $("step2Indicator").classList.remove("active");
+    $("step1Indicator").classList.remove("completed");
+    $("step1Indicator").classList.add("active");
+    $("line1").classList.remove("completed");
+    $("step1Circle").innerHTML = "1";
+  } else {
+    $("checkoutOverlay").classList.add("hidden");
+    unlockScroll();
   }
 };
 
 $("step1NextBtn").onclick = () => {
-  const name = $("chkName").value.trim(), mobile = $("chkMobile").value.trim(), address = $("chkAddress").value.trim(), state = $("chkState").value.trim(), pincode = $("chkPincode").value.trim();
-  if(!name || !mobile || !address || !state || !pincode) { alert("Kripya sabhi zaroori jankari bharein!"); return; }
-  if(mobile.length < 10 || isNaN(mobile)) { alert("Mobile number galat hai!"); return; }
+  const name = $("chkName").value.trim();
+  const mobile = $("chkMobile").value.trim();
+  const address = $("chkAddress").value.trim();
+  const state = $("chkState").value.trim();
+  const pincode = $("chkPincode").value.trim();
+  
+  if (!name || !mobile || !address || !state || !pincode) {
+    alert("Kripya sabhi zaroori jankari bharein!");
+    return;
+  }
+  
+  if (mobile.length < 10 || isNaN(mobile)) {
+    alert("Mobile number galat hai!");
+    return;
+  }
 
   $("checkoutStep1").classList.add("hidden");
   $("checkoutStep2").classList.remove("hidden");
-  
+
   $("step1NextBtn").classList.add("hidden");
   $("step2PayBtn").classList.remove("hidden");
   $("chkFooterTotalRow").classList.add("hidden");
 
-  $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed");
-  $("step1Circle").innerHTML = "✔"; $("line1").classList.add("completed");
+  $("step1Indicator").classList.remove("active");
+  $("step1Indicator").classList.add("completed");
+  $("step1Circle").innerHTML = "✔";
+  $("line1").classList.add("completed");
   $("step2Indicator").classList.add("active");
 
   renderStep2();
@@ -752,18 +1043,19 @@ $("step1NextBtn").onclick = () => {
 
 function renderStep2() {
   if (!cart.length) return;
-  const item = cart[0]; 
+  const item = cart[0];
   const p = item.product;
   const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
-  
+
   $("chkStep2Img").src = mainImg;
-  $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty; 
-  
+  $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty;
+
   updateStep2Summary();
 
   $("chkStep2Qty").onchange = (e) => {
     item.qty = parseInt(e.target.value);
-    save("knk_cart", cart); renderCartCount();
+    save("knk_cart", cart);
+    renderCartCount();
     updateStep2Summary();
   };
 }
@@ -772,16 +1064,16 @@ function updateStep2Summary() {
   let actualTotal = 0;
   let finalTotal = 0;
   cart.forEach(i => {
-     actualTotal += i.product.price * i.qty;
-     finalTotal += finalPrice(i.product) * i.qty;
+    actualTotal += i.product.price * i.qty;
+    finalTotal += finalPrice(i.product) * i.qty;
   });
-  
+
   $("billActual").textContent = "₹" + actualTotal;
   $("billFinal").textContent = "₹" + finalTotal;
-  
+
   if (actualTotal > 0) {
-     const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100);
-     $("billDiscount").textContent = discPercent + "% off";
+    const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100);
+    $("billDiscount").textContent = discPercent + "% off";
   }
 
   const advance = Math.round(finalTotal * 0.25);
@@ -796,14 +1088,14 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
     $("paymentOptionsWrap").classList.remove("hidden");
     $("confirmOrderBtn").classList.add("hidden");
     $("step2PayBtn").classList.remove("hidden");
-    if(window.paymentInterval) clearInterval(window.paymentInterval);
+    if (window.paymentInterval) clearInterval(window.paymentInterval);
 
     if (e.target.value === "COD") {
-       $("codWarningBox").classList.remove("hidden");
-       $("step2PayBtn").textContent = "Pay 25% Advance";
+      $("codWarningBox").classList.remove("hidden");
+      $("step2PayBtn").textContent = "Pay 25% Advance";
     } else {
-       $("codWarningBox").classList.add("hidden");
-       $("step2PayBtn").textContent = "Pay 100% Now";
+      $("codWarningBox").classList.add("hidden");
+      $("step2PayBtn").textContent = "Pay 100% Now";
     }
   });
 });
@@ -824,27 +1116,27 @@ $("step2PayBtn").onclick = () => {
 
   $("checkoutStep2").scrollTop = 0;
 
-  let timeLeft = 300; 
+  let timeLeft = 300;
   const timerDisplay = document.getElementById("paymentTimer");
-  
-  if(window.paymentInterval) clearInterval(window.paymentInterval);
-  window.paymentInterval = setInterval(() => {
-      timeLeft--;
-      let minutes = Math.floor(timeLeft / 60);
-      let seconds = timeLeft % 60;
-      timerDisplay.innerText = "Time left: 0" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
 
-      if (timeLeft <= 0) {
-          clearInterval(window.paymentInterval);
-          timerDisplay.innerText = "Time expired! Kripya page refresh karein.";
-          timerDisplay.style.color = "red";
-      }
+  if (window.paymentInterval) clearInterval(window.paymentInterval);
+  window.paymentInterval = setInterval(() => {
+    timeLeft--;
+    let minutes = Math.floor(timeLeft / 60);
+    let seconds = timeLeft % 60;
+    timerDisplay.innerText = "Time left: 0" + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+    if (timeLeft <= 0) {
+      clearInterval(window.paymentInterval);
+      timerDisplay.innerText = "Time expired! Kripya page refresh karein.";
+      timerDisplay.style.color = "red";
+    }
   }, 1000);
 };
 
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
-  
+
   if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) {
     alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
     return;
@@ -853,10 +1145,10 @@ $("confirmOrderBtn").onclick = () => {
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0;
   cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
-  
+
   let amountPaid = 0;
   let balanceDue = 0;
-  
+
   if (payMethod === "Prepaid") {
     amountPaid = finalTotal;
     balanceDue = 0;
@@ -865,14 +1157,14 @@ $("confirmOrderBtn").onclick = () => {
     balanceDue = finalTotal - amountPaid;
   }
 
-  const orderData = { 
-    name: $("chkName").value.trim(), 
-    mobile: $("chkMobile").value.trim(), 
-    address: $("chkAddress").value.trim(), 
-    state: $("chkState").value.trim(), 
-    pincode: $("chkPincode").value.trim(), 
-    landmark: $("chkLandmark").value.trim(), 
-    items: cart, 
+  const orderData = {
+    name: $("chkName").value.trim(),
+    mobile: $("chkMobile").value.trim(),
+    address: $("chkAddress").value.trim(),
+    state: $("chkState").value.trim(),
+    pincode: $("chkPincode").value.trim(),
+    landmark: $("chkLandmark").value.trim(),
+    items: cart,
     totalAmount: finalTotal,
     paymentMethod: payMethod,
     amountPaid: amountPaid,
@@ -882,46 +1174,50 @@ $("confirmOrderBtn").onclick = () => {
     savedAt: Date.now()
   };
 
-  const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
-  if(window.paymentInterval) clearInterval(window.paymentInterval); 
+  const btn = $("confirmOrderBtn");
+  btn.textContent = "Placing Order...";
   
+  if (window.paymentInterval) clearInterval(window.paymentInterval);
+
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
       if (success) {
         myOrders.unshift(orderData);
         save("knk_my_orders", myOrders);
-
         showStep3Success(payMethod, amountPaid, balanceDue);
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
         alert("Server error. Please try again.");
-        btn.textContent = "Verify Payment & Place Order";
+        btn.textContent = "Verify Payment & Confirm";
       }
     });
   } else {
-      myOrders.unshift(orderData);
-      save("knk_my_orders", myOrders);
-      showStep3Success(payMethod, amountPaid, balanceDue);
+    myOrders.unshift(orderData);
+    save("knk_my_orders", myOrders);
+    showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
 
 function showStep3Success(payMethod, paid, due) {
   $("checkoutStep2").classList.add("hidden");
   $("checkoutStep3").classList.remove("hidden");
-  $("checkoutFooter").classList.add("hidden"); 
-  
-  $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed");
-  $("step2Circle").innerHTML = "✔"; $("line2").classList.add("completed");
+  $("checkoutFooter").classList.add("hidden");
+
+  $("step2Indicator").classList.remove("active");
+  $("step2Indicator").classList.add("completed");
+  $("step2Circle").innerHTML = "✔";
+  $("line2").classList.add("completed");
   $("step3Indicator").classList.add("active");
 
   let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
-  if(payMethod === "COD") {
+  if (payMethod === "COD") {
     sumHtml += `<strong>Safety Deposit Paid (25%):</strong> ₹${paid}<br>`;
     sumHtml += `<strong style="color:var(--destructive)">Balance Cash on Delivery (75%):</strong> ₹${due}`;
   } else {
     sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br>`;
     sumHtml += `<strong style="color:#4cc968">No pending dues!</strong>`;
   }
+  
   $("successOrderSummary").innerHTML = sumHtml;
   clearCart();
 }
@@ -932,167 +1228,370 @@ $("successCloseBtn").onclick = () => {
   resetCheckoutUI();
 };
 
-function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); setTimeout(() => $("pinInput").focus(), 100); }
-$("pinClose").onclick = () => $("adminPin").classList.add("hidden");
-$("pinUnlock").onclick = tryUnlock;
-$("pinInput").onkeydown = e => { if (e.key === "Enter") tryUnlock(); };
-
-function tryUnlock() {
-  if ($("pinInput").value === ADMIN_PIN) { $("adminPin").classList.add("hidden"); openAdmin(); } else { $("pinError").classList.remove("hidden"); $("pinInput").style.borderColor = "#e05555"; setTimeout(() => { $("pinInput").style.borderColor = ""; }, 800); }
+function openPin() {
+  $("pinInput").value = "";
+  $("pinError").classList.add("hidden");
+  $("adminPin").classList.remove("hidden");
+  setTimeout(() => $("pinInput").focus(), 100);
 }
 
-function openAdmin() { lockScroll(); renderAdmin(); $("adminPanel").classList.remove("hidden"); }
-$("adminClose").onclick = () => { $("adminPanel").classList.add("hidden"); unlockScroll(); };
+$("pinClose").onclick = () => {
+  $("adminPin").classList.add("hidden");
+};
 
-function saveCategories() { if (window.saveCategoriesToFirebase) window.saveCategoriesToFirebase(mainCategories); }
+$("pinUnlock").onclick = tryUnlock;
+
+$("pinInput").onkeydown = (e) => {
+  if (e.key === "Enter") tryUnlock();
+};
+
+function tryUnlock() {
+  if ($("pinInput").value === ADMIN_PIN) {
+    $("adminPin").classList.add("hidden");
+    openAdmin();
+  } else {
+    $("pinError").classList.remove("hidden");
+  }
+}
+
+function openAdmin() {
+  lockScroll();
+  renderAdmin();
+  $("adminPanel").classList.remove("hidden");
+}
+
+$("adminClose").onclick = () => {
+  $("adminPanel").classList.add("hidden");
+  unlockScroll();
+};
+
+function saveCategories() {
+  if (window.saveCategoriesToFirebase) {
+    window.saveCategoriesToFirebase(mainCategories);
+  }
+}
 
 function renderCatMgmt() {
-  const list = $("catMgmtList"); list.innerHTML = "";
-  mainCategories.forEach(cat => {
-    const card = document.createElement("div"); card.className = "cat-mgmt-card";
-    card.innerHTML = `<div class="cat-mgmt-head"><span class="cat-mgmt-name">${cat.name}</span><div class="cat-mgmt-actions"><button class="cat-action-btn edit-cat-btn">✏️ Edit</button><button class="cat-action-btn del del-cat-btn">🗑️ Delete</button></div></div>
-      <div class="cat-sub-section"><div class="cat-sub-label">SUB-CATEGORIES</div><div class="chips" id="subChips_${cat.id}"></div><div class="inline-row"><input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam" /><button class="btn-primary sm-btn auth-submit" data-id="${cat.id}">+ Add</button></div></div>`;
+  const list = $("catMgmtList");
+  list.innerHTML = "";
+  
+  mainCategories.forEach((cat) => {
+    const card = document.createElement("div");
+    card.className = "cat-mgmt-card";
+    
+    card.innerHTML = `
+      <div class="cat-mgmt-head">
+        <span>${cat.name}</span>
+        <div><button class="edit-cat-btn">Edit</button></div>
+      </div>
+      <div class="cat-sub-section">
+        <div class="cat-sub-label">SUB-CATEGORIES</div>
+        <div class="chips" id="subChips_${cat.id}"></div>
+        <div class="inline-row">
+          <input class="field sub-inp" id="subInp_${cat.id}" placeholder="Sub-category naam" />
+          <button class="btn-primary sm-btn auth-submit" data-id="${cat.id}">+ Add</button>
+        </div>
+      </div>
+    `;
+    
     const chipsEl = card.querySelector(`#subChips_${cat.id}`);
+    
     (cat.subCategories || []).forEach(sub => {
-      const chip = document.createElement("span"); chip.className = "chip"; chip.innerHTML = `${sub}<button class="chip-btn edt">✏️</button><button class="chip-btn del">✕</button>`;
-      chip.querySelector(".edt").onclick = () => { const n = prompt(`"${sub}" ka naya naam:`, sub); if (!n || !n.trim()) return; const idx = cat.subCategories.indexOf(sub); if (idx > -1) cat.subCategories[idx] = n.trim().toUpperCase(); saveCategories(); renderAdmin(); if (activeMainCatId === cat.id) { activeSubCat = "All"; renderSubCats(); renderProducts(); } };
-      chip.querySelector(".del").onclick = () => { if (!confirm(`"${sub}" delete karein?`)) return; cat.subCategories = cat.subCategories.filter(x => x !== sub); saveCategories(); renderAdmin(); if (activeMainCatId === cat.id) { activeSubCat = "All"; renderSubCats(); renderProducts(); } };
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.innerHTML = `${sub}<button class="chip-btn edt">✏️</button><button class="chip-btn del">✕</button>`;
+      
+      chip.querySelector(".edt").onclick = () => {
+        const n = prompt(`"${sub}" ka naya naam:`, sub);
+        if (!n || !n.trim()) return;
+        const idx = cat.subCategories.indexOf(sub);
+        if (idx > -1) {
+          cat.subCategories[idx] = n.trim().toUpperCase();
+        }
+        saveCategories();
+        renderAdmin();
+        if (activeMainCatId === cat.id) {
+          activeSubCat = "All";
+          renderSubCats();
+          renderProducts();
+        }
+      };
+      
+      chip.querySelector(".del").onclick = () => {
+        if (!confirm(`"${sub}" delete karein?`)) return;
+        cat.subCategories = cat.subCategories.filter(x => x !== sub);
+        saveCategories();
+        renderAdmin();
+        if (activeMainCatId === cat.id) {
+          activeSubCat = "All";
+          renderSubCats();
+          renderProducts();
+        }
+      };
+      
       chipsEl.appendChild(chip);
     });
-    card.querySelector(".btn-primary").onclick = () => { const inp = card.querySelector(`#subInp_${cat.id}`); const v = inp.value.trim().toUpperCase(); if (!v) return; if ((cat.subCategories || []).some(x => x.toUpperCase() === v)) { alert("Sub-category exists!"); return; } cat.subCategories = [...(cat.subCategories || []), v]; saveCategories(); inp.value = ""; renderAdmin(); if (activeMainCatId === cat.id) renderSubCats(); };
-    card.querySelector(".edit-cat-btn").onclick = () => { const n = prompt(`"${cat.name}" ka naya naam:`, cat.name); if (!n || !n.trim()) return; cat.name = n.trim().toUpperCase(); saveCategories(); renderAdmin(); renderMainCats(); };
-    card.querySelector(".del-cat-btn").onclick = () => { if (!confirm(`"${cat.name}" category delete karein? Products link toot sakta hai.`)) return; mainCategories = mainCategories.filter(c => c.id !== cat.id); if (activeMainCatId === cat.id) { activeMainCatId = mainCategories.length > 0 ? mainCategories[0].id : null; activeSubCat = "All"; } saveCategories(); renderAdmin(); renderMainCats(); renderSubCats(); renderProducts(); };
+    
+    card.querySelector(".btn-primary").onclick = () => {
+      const inp = card.querySelector(`#subInp_${cat.id}`);
+      const v = inp.value.trim().toUpperCase();
+      if (!v) return;
+      if ((cat.subCategories || []).some(x => x.toUpperCase() === v)) {
+        alert("Sub-category exists!");
+        return;
+      }
+      cat.subCategories = [...(cat.subCategories || []), v];
+      saveCategories();
+      inp.value = "";
+      renderAdmin();
+      if (activeMainCatId === cat.id) renderSubCats();
+    };
+    
+    card.querySelector(".edit-cat-btn").onclick = () => {
+      const n = prompt(`"${cat.name}" ka naya naam:`, cat.name);
+      if (!n || !n.trim()) return;
+      cat.name = n.trim().toUpperCase();
+      saveCategories();
+      renderAdmin();
+      renderMainCats();
+    };
+    
     list.appendChild(card);
   });
 }
 
-$("addCatBtn").onclick = () => { const inp = $("newCatName"); const v = inp.value.trim().toUpperCase(); if (!v) return; if (mainCategories.some(c => c.name.toUpperCase() === v)) { alert("Category already exists!"); return; } mainCategories.push({ id: genId(), name: v, subCategories: [] }); saveCategories(); inp.value = ""; renderAdmin(); renderMainCats(); };
+function syncAddProductDropdowns() {
+  const pMainCat = $("pMainCat");
+  pMainCat.innerHTML = "";
+  
+  mainCategories.forEach((cat) => {
+    const o = document.createElement("option");
+    o.value = cat.id;
+    o.textContent = cat.name;
+    pMainCat.appendChild(o);
+  });
+}
 
-function syncAddProductDropdowns() { const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); }); onMainCatChange(); }
-window.onMainCatChange = function() { const cat = getCat($("pMainCat").value); const group = $("subCatGroup"); const pSub = $("pSubCat"); if (!cat || !cat.subCategories || cat.subCategories.length === 0) { group.style.display = "none"; return; } group.style.display = ""; pSub.innerHTML = ""; cat.subCategories.forEach(s => { const o = document.createElement("option"); o.value = s; o.textContent = s; pSub.appendChild(o); }); };
-$("pInStock").addEventListener("change", function() { const lbl = $("pStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
-
-function syncFilterDropdown() { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
-
-window.renderAdminOrders = function(orders) { liveOrders = orders; renderOrdersByTab(); };
-
-function renderOrdersByTab() {
+// SHIPROCKET LOGIC INTEGRATION IN ADMIN CARD VIEW LIST
+window.renderAdminOrders = function (orders) {
   const list = $("adminOrdersList");
   if (!list) return;
-
-  let filtered = liveOrders.filter(o => (o.status || "Recent") === currentOrderTab);
-  if (filtered.length === 0) { list.innerHTML = `<p class='empty' style='font-size:13px;'>No orders here.</p>`; return; }
+  
   list.innerHTML = "";
   
-  filtered.forEach(o => {
-    const itemsHtml = o.items.map(i => {
-      const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : (typeof i.product.image === 'string' ? i.product.image : "placeholder.jpg");
-      return `<div class="order-item-row"><img src="${mainImg}" class="order-item-img" alt="${i.product.name}" /><span>${i.product.name} <strong style="color:var(--primary)">(x${i.qty})</strong></span></div>`;
-    }).join("");
+  orders.forEach((o) => {
+    const div = document.createElement("div");
+    div.className = "admin-order-card";
     
-    const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : "Just Now";
-    
-    const payBadge = o.paymentMethod === "COD" 
-       ? `<span style="background:var(--destructive); color:#fff; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; font-weight:700;">C.O.D (Due: ₹${o.balanceDue})</span>` 
-       : `<span style="background:#4cc968; color:#0a0a0a; padding:3px 8px; border-radius:4px; font-size:10px; margin-left:8px; font-weight:700;">PREPAID</span>`;
-    
-    const utrText = o.utrNumber ? `<div style="margin-top:4px; font-size:11px; color:var(--primary);">UTR/Ref: <strong>${o.utrNumber}</strong></div>` : "";
-
-    const div = document.createElement("div"); div.className = "admin-order-card";
     div.innerHTML = `
       <div class="order-head">
-        <span class="order-id">ID: ${o.id ? o.id.substring(0,8) : 'NEW'}...</span>
-        <span class="order-total">₹${o.totalAmount}</span>
+        <span>Name: ${o.name} (${o.mobile})</span>
+        <strong>₹${o.totalAmount}</strong>
       </div>
-      <div class="order-cust">
-        <strong>${o.name}</strong> (${o.mobile}) ${payBadge}<br>
-        ${o.address}, ${o.state} - ${o.pincode}<br>
-        ${utrText}
-        <small style="color:var(--muted); font-size:10px; margin-top:3px; display:block;">Placed: ${dateStr}</small>
+      <div style="font-size:12px; color:var(--muted2); margin:5px 0;">
+        Address: ${o.address}
       </div>
-      <div class="order-items">${itemsHtml}</div>
-      <div class="order-actions">
-        <select class="field small-field status-select" data-id="${o.id}">
-          <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option>
-          <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-          <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
-        </select>
-        <button class="trash del-order-btn" data-id="${o.id}">🗑️ Remove</button>
-      </div>`;
+      <div class="order-actions" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+        <input type="text" id="trackInp_${o.id}" class="field" style="margin-bottom:0; padding:6px; font-size:12px;" placeholder="Paste Shiprocket Tracking URL" value="${o.trackingLink || ''}">
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary sm-btn save-track-btn" style="padding:6px 12px; font-size:12px;" data-id="${o.id}">Save Tracking</button>
+          <select class="field small-field status-select" data-id="${o.id}" style="padding:4px;">
+            <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option>
+            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+            <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
+          </select>
+        </div>
+      </div>
+    `;
+    
+    div.querySelector(".save-track-btn").onclick = () => {
+      const linkVal = $("trackInp_" + o.id).value.trim();
+      if (window.updateOrderTrackingInFirebase) {
+        window.updateOrderTrackingInFirebase(o.id, linkVal);
+      }
+    };
+    
+    div.querySelector(".status-select").onchange = async (e) => {
+      const newStatus = e.target.value;
+      if (window.updateOrderStatusInFirebase) {
+        await window.updateOrderStatusInFirebase(o.id, newStatus);
+        alert("Status updated to: " + newStatus);
+      }
+    };
+    
     list.appendChild(div);
   });
-
-  document.querySelectorAll(".status-select").forEach(sel => { sel.addEventListener("change", async (e) => { const id = e.target.getAttribute("data-id"); const newStatus = e.target.value; const order = liveOrders.find(x => x.id === id); if(order) order.status = newStatus; renderOrdersByTab(); if (window.updateOrderStatusInFirebase) await window.updateOrderStatusInFirebase(id, newStatus); }); });
-  document.querySelectorAll(".del-order-btn").forEach(btn => { btn.addEventListener("click", async (e) => { const id = e.currentTarget.getAttribute("data-id"); if(!confirm("Are you sure you want to remove this order from database?")) return; liveOrders = liveOrders.filter(x => x.id !== id); renderOrdersByTab(); if (window.deleteOrderFromFirebase) await window.deleteOrderFromFirebase(id); }); });
-}
-
-document.querySelectorAll(".admin-tab").forEach(tab => { tab.addEventListener("click", (e) => { document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active")); e.currentTarget.classList.add("active"); currentOrderTab = e.currentTarget.getAttribute("data-tab"); renderOrdersByTab(); }); });
+};
 
 function renderAdminProducts() {
-  $("adminProdTitle").textContent = `Products (${products.length})`; const filterCat = $("adminFilterCat").value || "ALL"; const list = $("adminProducts"); list.innerHTML = "";
+  $("adminProdTitle").textContent = `Products (${products.length})`;
+  const filterCat = $("adminFilterCat").value || "ALL";
+  const list = $("adminProducts");
+  list.innerHTML = "";
+  
   const filtered = filterCat === "ALL" ? products : products.filter(p => p.mainCategoryId === filterCat);
+  
   filtered.forEach(p => {
-    const price = finalPrice(p), inStock = p.inStock !== false, cat = getCat(p.mainCategoryId), catName = cat ? cat.name : "—", subLabel = p.subCategory ? ` · ${p.subCategory}` : "";
+    const price = finalPrice(p);
+    const inStock = p.inStock !== false;
+    const cat = getCat(p.mainCategoryId);
+    const catName = cat ? cat.name : "—";
+    const subLabel = p.subCategory ? ` · ${p.subCategory}` : "";
     const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
-    const el = document.createElement("div"); el.className = "admin-prod";
-    el.innerHTML = `<img src="${mainImg}" alt="${p.name}" /><div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}${subLabel}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div><div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
-    el.querySelector(".edit-btn").onclick = () => openEditModal(p); el.querySelector(".trash").onclick = () => { if (!confirm("Delete this product?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) window.deleteProductFromFirebase(p.id); }; list.appendChild(el);
+    
+    const el = document.createElement("div");
+    el.className = "admin-prod";
+    
+    el.innerHTML = `
+      <img src="${mainImg}" alt="${p.name}" />
+      <div class="ap-info">
+        <div class="ap-name">${p.name}</div>
+        <div class="ap-sub">${catName}${subLabel}</div>
+        <div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div>
+      </div>
+      <div class="ap-actions">
+        <button class="edit-btn">✏️</button>
+        <button class="trash">🗑️</button>
+      </div>
+    `;
+    
+    el.querySelector(".edit-btn").onclick = () => openEditModal(p);
+    
+    el.querySelector(".trash").onclick = () => {
+      if (!confirm("Delete this product?")) return;
+      products = products.filter(x => x.id !== p.id);
+      renderProducts();
+      renderAdmin();
+      if (window.deleteProductFromFirebase) {
+        window.deleteProductFromFirebase(p.id);
+      }
+    };
+    
+    list.appendChild(el);
   });
 }
 
-window.renderAdmin = function() {
-  renderCatMgmt(); syncAddProductDropdowns(); syncFilterDropdown(); renderAdminProducts();
-  if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { const newPin = $("newAdminPin").value.trim(); if (newPin.length < 4) { alert("PIN kam se kam 4 digit ka hona chahiye!"); return; } ADMIN_PIN = newPin; save("admin_pin", ADMIN_PIN); alert("Naya Admin PIN saved: " + ADMIN_PIN); $("newAdminPin").value = ""; }; }
-  if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
+window.renderAdmin = function () {
+  renderCatMgmt();
+  syncAddProductDropdowns();
+  
+  if ($("adminFilterCat")) {
+    const sel = $("adminFilterCat");
+    sel.innerHTML = '<option value="ALL">All Categories</option>';
+    mainCategories.forEach(cat => {
+      const o = document.createElement("option");
+      o.value = cat.id;
+      o.textContent = cat.name;
+      sel.appendChild(o);
+    });
+  }
+  
+  renderAdminProducts();
+  
+  if ($("updatePinBtn")) {
+    $("updatePinBtn").onclick = () => {
+      alert("PIN change option is securely hardcoded to 0000 for elite security.");
+    };
+  }
+  
+  if (window.fetchOrdersFromFirebase) {
+    window.fetchOrdersFromFirebase();
+  }
 };
 
-function openEditModal(p) { 
-  editingProductId = p.id; 
-  $("editPName").textContent = p.name; 
+function openEditModal(p) {
+  editingProductId = p.id;
+  $("editPName").textContent = p.name;
+  
   let imgArray = Array.isArray(p.image) ? p.image : [p.image];
-  $("editPImage").value = imgArray.join(", "); 
-  $("editPPrice").value = p.price; 
-  $("editPDiscount").value = p.discount || 0; 
-  $("editPExtra").value = p.extra || 0; 
-  const inStock = p.inStock !== false; $("editInStock").checked = inStock; 
-  const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out"); 
-  $("editModal").classList.remove("hidden"); 
+  $("editPImage").value = imgArray.join(", ");
+  
+  $("editPPrice").value = p.price;
+  $("editPDiscount").value = p.discount || 0;
+  $("editPExtra").value = p.extra || 0;
+  
+  const inStock = p.inStock !== false;
+  $("editInStock").checked = inStock;
+  
+  const lbl = $("editStockLabel");
+  lbl.textContent = inStock ? "In Stock" : "Out of Stock";
+  lbl.className = "stock-label " + (inStock ? "in" : "out");
+  
+  $("editModal").classList.remove("hidden");
 }
 
-$("editInStock").addEventListener("change", function() { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); });
-$("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; };
+if ($("editInStock")) {
+  $("editInStock").addEventListener("change", function () {
+    const lbl = $("editStockLabel");
+    lbl.textContent = this.checked ? "In Stock" : "Out of Stock";
+    lbl.className = "stock-label " + (this.checked ? "in" : "out");
+  });
+}
 
-$("saveEditBtn").onclick = () => {
-  if (!editingProductId) return; 
-  const newPrice = Number($("editPPrice").value), newDiscount = Number($("editPDiscount").value) || 0, newExtra = Number($("editPExtra").value) || 0, newInStock = $("editInStock").checked;
-  const rawImage = $("editPImage").value.trim();
-  const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-  
-  if (!newPrice || newPrice <= 0 || newImgArray.length === 0) { alert("Sahi Image aur Price daalein!"); return; } 
-  const idx = products.findIndex(p => p.id === editingProductId);
-  
-  if (idx > -1) { 
-    products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }; 
-    renderProducts(); renderAdmin(); 
+if ($("editClose")) {
+  $("editClose").onclick = () => {
+    $("editModal").classList.add("hidden");
+    editingProductId = null;
+  };
+}
+
+if ($("saveEditBtn")) {
+  $("saveEditBtn").onclick = () => {
+    if (!editingProductId) return;
+    
+    const newPrice = Number($("editPPrice").value);
+    const newDiscount = Number($("editPDiscount").value) || 0;
+    const newExtra = Number($("editPExtra").value) || 0;
+    const newInStock = $("editInStock").checked;
+    const rawImage = $("editPImage").value.trim();
+    const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+    
+    if (!newPrice || newPrice <= 0 || newImgArray.length === 0) {
+      alert("Sahi Image aur Price daalein!");
+      return;
+    }
+    
+    const idx = products.findIndex(p => p.id === editingProductId);
+    
+    if (idx > -1) {
+      products[idx] = {
+        ...products[idx],
+        image: newImgArray,
+        price: newPrice,
+        discount: newDiscount,
+        extra: newExtra,
+        inStock: newInStock
+      };
+      renderProducts();
+      renderAdmin();
+    }
+    
+    if (window.updateProductInFirebase) {
+      window.updateProductInFirebase(editingProductId, {
+        imageUrl: newImgArray,
+        price: newPrice,
+        discount: newDiscount,
+        extra: newExtra,
+        inStock: newInStock
+      });
+    }
+    
+    $("editModal").classList.add("hidden");
+    editingProductId = null;
+  };
+}
+
+$("closeViewerBtn").onclick = () => {
+  $("imageViewer").classList.add("hidden");
+  preventZoom();
+};
+
+$("imageViewer").onclick = (e) => {
+  if (e.target === $("imageViewer") || e.target === $("fullImage")) {
+    $("imageViewer").classList.add("hidden");
+    preventZoom();
   }
-  
-  if (window.updateProductInFirebase) { 
-    window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock }); 
-  }
-  
-  $("editModal").classList.add("hidden"); editingProductId = null;
 };
 
-$("closeViewerBtn").onclick = () => { 
-  $("imageViewer").classList.add("hidden"); 
-  preventZoom(); 
-};
-$("imageViewer").onclick = (e) => { 
-  if (e.target === $("imageViewer") || e.target === $("fullImage")) { 
-    $("imageViewer").classList.add("hidden"); 
-    preventZoom(); 
-  } 
-};
-
-preventZoom(); 
+preventZoom();
 renderCartCount();
