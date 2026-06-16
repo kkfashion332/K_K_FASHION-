@@ -138,7 +138,7 @@
 
       <div id="orderPage" class="nav-page hidden">
         <h2 class="page-heading">My Orders</h2>
-        <p class="page-sub">Tap on an order to view full luxury details.</p>
+        <p class="page-sub">Tap on an order to view full luxury details and tracking.</p>
         <div id="myOrdersList" class="orders-list"></div>
       </div>
 
@@ -234,7 +234,7 @@
         <h2>Order Details</h2>
         <button onclick="document.getElementById('myOrderDetailModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
       </div>
-      <div class="drawer-body" id="myOrderDetailBody">
+      <div class="drawer-body" id="myOrderDetailBody" style="padding-bottom: 30px;">
       </div>
     </div>
   </div>
@@ -490,6 +490,7 @@
           <button class="admin-tab active" data-tab="Recent">Recent</button>
           <button class="admin-tab" data-tab="Pending">Pending</button>
           <button class="admin-tab" data-tab="Completed">Completed</button>
+          <button class="admin-tab" data-tab="Cancelled">Cancelled</button>
         </div>
         <div id="adminOrdersList">Loading orders...</div>
       </section>
@@ -649,13 +650,19 @@
       try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Elite Order save error: " + e.message); return false; }
     };
 
+    // UPDATE: SAVING FIREBASE ORDERS GLOBALLY FOR FILTERING
     window.fetchOrdersFromFirebase = async function() {
       try {
         const snap = await getDocs(collection(db, "orders"));
         const list = [];
         snap.forEach(d => list.push({ id: d.id, ...d.data() }));
         list.sort((a,b) => b.timestamp - a.timestamp);
+        
+        window.allFirebaseOrders = list; // Saving to global to allow user specific filtering
+        
         if (window.renderAdminOrders) window.renderAdminOrders(list);
+        if (typeof window.renderMyOrders === "function") window.renderMyOrders();
+        
       } catch (e) { console.error("Fetch elite orders error:", e); }
     };
 
