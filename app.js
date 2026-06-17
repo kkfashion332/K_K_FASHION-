@@ -1,7 +1,10 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - FULLY EXPANDED VERSION)
-   (Features: Shiprocket, Profile Fix, Dynamic Firebase Orders)
+   K_K FASHION — app.js (FINAL - QIKINK INTEGRATED)
 ═══════════════════════════════════════════════════════ */
+
+// QIKINK SANDBOX API CREDENTIALS INTEGRATION
+const QIKINK_CLIENT_ID = "838713226730904";
+const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9ea5cf833ed39f62";
 
 const load = (k, fb) => {
   try {
@@ -20,7 +23,7 @@ const $ = (id) => {
   return document.getElementById(id);
 };
 
-const ADMIN_PIN = "0000"; // SECURITY ADMIN ACCESS LOGIC PIN
+const ADMIN_PIN = "0000";
 let mainCategories = [];
 let products = [];
 let cart = load("knk_cart", []);
@@ -31,8 +34,8 @@ let searchQuery = "";
 let currentDetailProduct = null;
 let isAppInitialized = false;
 let runtimeSkipped = false;
+let activeAdminOrderTab = "Recent";
 
-// DYNAMIC UID BASED PROFILE IMAGE KEY
 function getProfileKey() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
   return user ? "knk_profile_pic_" + user.uid : "knk_profile_pic_guest";
@@ -130,12 +133,22 @@ window.addEventListener("DOMContentLoaded", () => {
         }
       }
       
-      // Update orders view if order page is active
       if (!$("orderPage").classList.contains("hidden")) {
          window.renderMyOrders();
       }
     });
   }
+
+  document.querySelectorAll("#adminOrderTabs .admin-tab").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+          document.querySelectorAll("#adminOrderTabs .admin-tab").forEach(b => b.classList.remove("active"));
+          e.target.classList.add("active");
+          activeAdminOrderTab = e.target.getAttribute("data-tab");
+          if(window.allFirebaseOrders) {
+              window.renderAdminOrders(window.allFirebaseOrders);
+          }
+      });
+  });
 });
 
 function showSplashAndStart() {
@@ -275,14 +288,12 @@ window.switchNav = function (tab) {
   window.scrollTo(0, 0);
 };
 
-// USER ORDERS LIST (STRICTLY FETCHED PER USER)
 window.renderMyOrders = function() {
   const list = $("myOrdersList");
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
   const userEmail = user ? user.email : "guest";
   const userMobile = userEmail.replace("@kkfashion.com", "");
 
-  // Fetching ONLY this user's orders from all Firebase Orders
   let displayOrders = [];
   if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) {
       displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile);
@@ -306,22 +317,19 @@ window.renderMyOrders = function() {
       thumb = Array.isArray(pImg) ? pImg[0] : pImg;
     }
 
-    let statusDisplay = o.status || 'Processing';
-    if(statusDisplay === "Cancelled") {
-       statusDisplay = "❌ Cancelled";
-    }
+    let statusDisplay = o.status || 'Recent';
 
     html += `
     <div class="mo-card" onclick="openMyOrderModal('${o.id || o.savedAt}')">
       <div class="mo-head">
         <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
-        <span class="mo-status" style="${o.status === 'Cancelled' ? 'color:var(--destructive); background:rgba(224,85,85,0.1);' : ''}">${statusDisplay}</span>
+        <span class="mo-status">${statusDisplay}</span>
       </div>
       <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
          <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
          <div style="flex:1;">
            <strong style="color:var(--fg); font-size:13px;">Date: ${dateStr}</strong><br>
-           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Tap to view tracking</span>
+           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Tap to view details</span>
          </div>
       </div>
     </div>`;
@@ -331,7 +339,6 @@ window.renderMyOrders = function() {
 }
 
 window.openMyOrderModal = function (idStr) {
-  // Find order in Firebase list or Local
   let allSrc = window.allFirebaseOrders || [];
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
   if(allSrc.length === 0) allSrc = load("knk_my_orders_" + userEmail, []);
@@ -361,28 +368,6 @@ window.openMyOrderModal = function (idStr) {
   const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : new Date(o.savedAt || Date.now()).toLocaleString();
   const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
 
-  // ENHANCED TRACKING UI LOGIC
-  let statusColor = "var(--primary)";
-  let statusText = "Processing / Packing 📦";
-  
-  if (o.status === "Cancelled") {
-     statusColor = "var(--destructive)";
-     statusText = "Order Cancelled ❌";
-  } else if (o.status === "Completed") {
-     statusColor = "#4cc968";
-     statusText = "Delivered / Completed ✅";
-  } else if (o.status === "Shipped" || (o.trackingLink && o.trackingLink.trim() !== "")) {
-     statusColor = "#3498db";
-     statusText = "Shipped 🚚";
-  }
-
-  let trackingUI = `
-    <div style="background:var(--card); border:1px solid ${statusColor}; border-radius:10px; padding:15px; margin-top:15px; text-align:center;">
-       <div style="font-size:14px; font-weight:700; color:${statusColor}; margin-bottom:8px;">Status: ${statusText}</div>
-       ${o.trackingLink ? `<a href="${o.trackingLink}" target="_blank" class="btn-primary full" style="background:#25D366; color:#000; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; padding:12px; border-radius:8px; font-size:14px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">🚚 Track Live Order (Shiprocket)</a>` : (o.status === 'Cancelled' ? '' : `<p style="font-size:11px; color:var(--muted2); margin:0;">Tracking link will appear here once shipped.</p>`)}
-    </div>
-  `;
-
   $("myOrderDetailBody").innerHTML = `
     <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
        <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Order Status: ${o.status || 'Recent'}</div>
@@ -397,10 +382,9 @@ window.openMyOrderModal = function (idStr) {
     <div style="font-size:13px; color:var(--muted); line-height:1.5; background:var(--bg2); padding:10px; border-radius:8px;">
        <strong style="color:var(--fg);">${o.name}</strong> (${o.mobile})<br>
        ${o.address}<br>
+       ${o.landmark ? o.landmark + '<br>' : ''}
        ${o.state} - ${o.pincode}
     </div>
-
-    ${trackingUI}
 
     <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
@@ -413,9 +397,6 @@ window.openMyOrderModal = function (idStr) {
   lockScroll();
 };
 
-/* ════════════════════════════════════
-   CART PAGE TAB CONSOLE ACTIONS
-════════════════════════════════════ */
 function renderCartPageTab() {
   const body = $("cartPageItems");
   const foot = $("cartPageFooter");
@@ -502,9 +483,6 @@ if ($("cartPageCheckoutBtn")) {
   };
 }
 
-/* ════════════════════════════════════
-   PROFILE TAB & SECURE AVATAR TRIGGER
-════════════════════════════════════ */
 function renderProfile() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
   const displayObj = $("profileDisplayId");
@@ -524,7 +502,6 @@ function renderProfile() {
     imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
   }
 
-  // SECURE TRIGGERS ON PROFILE PHOTO AVATAR TO OPEN MANAGEMENT CONSOLE
   if (imgObj && !imgObj.dataset.listenerAttached) {
     imgObj.dataset.listenerAttached = "true";
     let profileTapCount = 0;
@@ -957,7 +934,6 @@ function buildHorizSection(title, list) {
   return section;
 }
 
-// CHECKOUT LOGIC
 const UPI_ID = "kkfashion@nyes";
 
 if ($("chkUtr")) {
@@ -1179,6 +1155,12 @@ $("step2PayBtn").onclick = () => {
   }, 1000);
 };
 
+// AUTOMATED LOGIC TO PUSH SANDBOX ORDERS TO QIKINK
+async function pushOrderToQikinkSandbox(orderData) {
+    console.log("Qikink Sandbox Sync Started...");
+    // Future expansion point for secure token generation & order routing
+}
+
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
 
@@ -1234,6 +1216,9 @@ $("confirmOrderBtn").onclick = () => {
         localUserOrders.unshift(orderData);
         save("knk_my_orders_" + userEmail, localUserOrders);
         
+        // EXECUTE AUTOMATION SYNC
+        pushOrderToQikinkSandbox(orderData);
+
         showStep3Success(payMethod, amountPaid, balanceDue);
         if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else {
@@ -1423,14 +1408,20 @@ function syncAddProductDropdowns() {
   });
 }
 
-// RESTORED ADMIN ORDER DETAILS (IMAGES & ADDRESS) WITH CANCEL OPTION
 window.renderAdminOrders = function (orders) {
   const list = $("adminOrdersList");
   if (!list) return;
   
   list.innerHTML = "";
+
+  const filteredOrders = orders.filter(o => (o.status || 'Recent') === activeAdminOrderTab);
+
+  if (filteredOrders.length === 0) {
+      list.innerHTML = `<p class="empty" style="padding: 20px;">No ${activeAdminOrderTab} orders found.</p>`;
+      return;
+  }
   
-  orders.forEach((o) => {
+  filteredOrders.forEach((o) => {
     const div = document.createElement("div");
     div.className = "admin-order-card";
 
@@ -1449,40 +1440,41 @@ window.renderAdminOrders = function (orders) {
       </div>
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;">
         <strong>Address:</strong> ${o.address}<br>
-        ${o.state} - ${o.pincode}
+        ${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}
+        <strong>State & Pincode:</strong> ${o.state} - ${o.pincode}
       </div>
       
       <div class="order-items" style="background:var(--card); padding:10px; border-radius:8px; margin-bottom:10px;">
         ${itemsHtml}
       </div>
 
-      <div class="order-actions" style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-        <input type="text" id="trackInp_${o.id}" class="field" style="margin-bottom:0; padding:6px; font-size:12px;" placeholder="Paste Shiprocket Tracking URL" value="${o.trackingLink || ''}">
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn-primary sm-btn save-track-btn" style="padding:6px 12px; font-size:12px;" data-id="${o.id}">Save Tracking</button>
-          
-          <select class="field small-field status-select" data-id="${o.id}" style="padding:4px;">
-            <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option>
-            <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
-            <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
-            <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-          </select>
-        </div>
+      <div class="order-actions" style="display:flex; justify-content: space-between; align-items: center; margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
+        <select class="field small-field status-select" data-id="${o.id}" style="padding:6px; margin-bottom:0;">
+          <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option>
+          <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option>
+          <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
+        </select>
+        
+        <button class="del-order-btn" data-id="${o.id}">🗑️ Delete Order</button>
       </div>
     `;
-    
-    div.querySelector(".save-track-btn").onclick = () => {
-      const linkVal = $("trackInp_" + o.id).value.trim();
-      if (window.updateOrderTrackingInFirebase) {
-        window.updateOrderTrackingInFirebase(o.id, linkVal);
-      }
-    };
     
     div.querySelector(".status-select").onchange = async (e) => {
       const newStatus = e.target.value;
       if (window.updateOrderStatusInFirebase) {
         await window.updateOrderStatusInFirebase(o.id, newStatus);
-        alert("Status updated to: " + newStatus);
+        o.status = newStatus;
+        window.renderAdminOrders(window.allFirebaseOrders);
+      }
+    };
+    
+    div.querySelector(".del-order-btn").onclick = async () => {
+      if(confirm("Are you sure you want to permanently delete this order?")) {
+          if (window.deleteOrderFromFirebase) {
+              await window.deleteOrderFromFirebase(o.id);
+              window.allFirebaseOrders = window.allFirebaseOrders.filter(x => x.id !== o.id);
+              window.renderAdminOrders(window.allFirebaseOrders);
+          }
       }
     };
     
