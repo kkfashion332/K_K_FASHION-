@@ -86,7 +86,6 @@ body.no-scroll { overflow: hidden !important; }
 .drawer-body { flex: 1; overflow-y: auto; padding: 16px; }
 .drawer-foot { padding: 16px; border-top: 1px solid var(--border); }
 
-/* --- CSS FOR CART PAGE --- */
 .drawer-body-page { flex: 1; overflow-y: auto; padding: 10px 0; }
 .drawer-foot-page { padding: 20px 0 0; border-top: 1px solid var(--border); margin-top: auto; }
 
@@ -383,7 +382,6 @@ body.no-scroll { overflow: hidden !important; }
 .mo-status { font-size: 10px; font-weight: 700; background: rgba(201,168,76,0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
 .mo-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-/* CSS FOR PREMIUM ABOUT CONTAINER IN PROFILE */
 .premium-about-container { text-align: center; padding: 25px 15px; background: var(--card2); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
 .profile-card { text-align: center; padding: 30px 20px; background: var(--card); border-radius: 16px; border: 1px solid var(--border); }
