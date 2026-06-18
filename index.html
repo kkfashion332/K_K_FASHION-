@@ -108,8 +108,13 @@
       </div>
 
       <div id="shopsPage" class="nav-page hidden">
-        <h2 class="page-heading">Our Boutiques</h2>
+        <h2 class="page-heading">OTHER STYLISH STORY</h2>
         <p class="page-sub">Explore exclusive premium collections directly from top shops.</p>
+        
+        <select id="shopCityFilter" class="field" style="margin-bottom:20px; background:var(--card2); border-color:var(--border);">
+           <option value="ALL">All Cities</option>
+        </select>
+        
         <div id="shopsGrid" class="shops-grid"></div>
       </div>
 
@@ -400,7 +405,7 @@
           
           <div id="paymentTimer" style="color:#d9534f; font-weight:bold; font-size:14px; margin-bottom:10px; background:#fff3f3; padding:5px; border-radius:5px; display:inline-block;">Time left: 05:00</div>
           <br>
-          <img src="62673.png" alt="QR Code" style="width:200px; height:auto; max-height:220px; object-fit:contain; border-radius:8px; margin-bottom:10px; border:2px solid #f0f0f0; padding:5px;" />
+          <img id="chkQrImage" src="62673.png" alt="QR Code" style="width:200px; height:auto; max-height:220px; object-fit:contain; border-radius:8px; margin-bottom:10px; border:2px solid #f0f0f0; padding:5px;" />
           
           <div style="color:#666; font-size:12px; margin-bottom:8px; text-transform:uppercase;">Or Pay via UPI ID</div>
           
@@ -494,6 +499,20 @@
       </div>
 
       <section class="card">
+        <h3>Shop Management (Marketplace)</h3>
+        <p class="section-hint">Multiple shops add karein jinki dynamic UPI use hogi.</p>
+        <div id="adminShopsList" style="margin-bottom: 10px;"></div>
+        <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
+          <input id="newShopName" class="field" placeholder="Shop Name (e.g. Trendy Boutique)" />
+          <input id="newShopCity" class="field" placeholder="City Name (e.g. Baran)" />
+          <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
+          <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
+          <input id="newShopQR" class="field" placeholder="Shop QR Code Image URL" />
+          <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
+        </div>
+      </section>
+
+      <section class="card">
         <h3>Order Management</h3>
         <p class="section-hint">Customer ke orders check aur manage karein.</p>
         <div class="admin-tabs" id="adminOrderTabs">
@@ -503,22 +522,10 @@
         </div>
         <div id="adminOrdersList">Loading orders...</div>
       </section>
-      
-      <section class="card">
-        <h3>Shop Management (Marketplace)</h3>
-        <p class="section-hint">Multiple shops add karein jinki dynamic UPI use hogi.</p>
-        <div id="adminShopsList" style="margin-bottom: 10px;"></div>
-        <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-          <input id="newShopName" class="field" placeholder="Shop Name (e.g. Trendy Boutique)" />
-          <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
-          <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
-          <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
-        </div>
-      </section>
 
       <section class="card">
         <h3>Categories</h3>
-        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein.</p>
+        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein. (Yeh saari shops ke liye lagu hongi)</p>
         <div id="catMgmtList"></div>
         <div class="inline-row" style="margin-top:8px;">
           <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
@@ -628,7 +635,6 @@
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.updateProfile = updateProfile;
 
-    // FETCH SHOPS FUNCTION ADDED
     async function fetchShops() {
       try {
         const snap = await getDocs(collection(db, "shops"));
@@ -676,7 +682,7 @@
             extra: data.extra || 0,
             mainCategoryId: data.mainCategoryId || (data.mainCategory === "OTHER" ? "cat_other" : "cat_genz"),
             subCategory: data.subCategory || data.category || "",
-            shopId: data.shopId || "", // LINKED TO SHOP
+            shopId: data.shopId || "",
             inStock: data.inStock !== false
           });
         });
@@ -711,7 +717,6 @@
       try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); }
     };
 
-    // CALL FETCH SHOPS ALONG WITH OTHERS
     fetchShops(); fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
 
     window.saveCategoriesToFirebase = async function(cats) {
@@ -722,7 +727,6 @@
       try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
     };
 
-    // EXPOSE FIREBASE DB FUNCTIONS TO WINDOW FOR GLOBAL APP.JS USE (For Shop Admin Panel)
     window.fbAddDoc = addDoc;
     window.fbCollection = collection;
     window.fbDb = db;
@@ -741,7 +745,7 @@
       const pExtra   = document.getElementById("pExtra").value;
       const pCatId   = document.getElementById("pMainCat").value;
       const pSubCat  = document.getElementById("pSubCat").value || "";
-      const pShopId  = document.getElementById("pShop").value || ""; // NEW: Shop Association
+      const pShopId  = document.getElementById("pShop").value || "";
       const pInStock = document.getElementById("pInStock").checked;
 
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
@@ -762,7 +766,7 @@
     });
   </script>
 
-  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float">
+  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
     <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon" />
     <span class="help-text">Elite Help</span>
   </a>
