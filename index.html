@@ -98,10 +98,6 @@
         </div>
 
         <main class="main">
-          <div id="activeShopBanner" class="hidden" style="background: var(--primary); color: #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px;">
-            <span id="activeShopText">Store: </span>
-            <button onclick="clearShopFilter()" style="background: rgba(0,0,0,0.1); border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; color: #000;">✕ Clear</button>
-          </div>
           <h2 id="activeTitle" class="section-title"></h2>
           <div id="products" class="grid"></div>
         </main>
@@ -211,7 +207,7 @@
     </div>
 
     <nav class="bottom-nav">
-      <button class="nav-item active" id="navHome" onclick="switchNav('Home')">
+      <button class="nav-item active" id="navHome" onclick="clearShopFilterAndGoHome()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span class="nav-text">Home</span>
       </button>
@@ -525,11 +521,17 @@
 
       <section class="card">
         <h3>Categories</h3>
-        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein. (Yeh saari shops ke liye lagu hongi)</p>
+        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein.</p>
         <div id="catMgmtList"></div>
-        <div class="inline-row" style="margin-top:8px;">
-          <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
-          <button id="addCatBtn" class="btn-primary sm-btn auth-submit">+ Add</button>
+        <div class="field-group" style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
+          <label class="field-label">Assign Category to Shop (Optional)</label>
+          <select id="newCatShop" class="field small-field">
+            <option value="GLOBAL">Global (All Shops)</option>
+          </select>
+          <div class="inline-row" style="margin-top:8px;">
+            <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
+            <button id="addCatBtn" class="btn-primary sm-btn auth-submit">+ Add</button>
+          </div>
         </div>
       </section>
 
@@ -768,7 +770,7 @@
 
   <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
     <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon" />
-    <span class="help-text">Elite Help</span>
+    <span class="help-text">HELP</span>
   </a>
 
   <script src="app.js"></script>
