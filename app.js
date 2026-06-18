@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - FULLY UPDATED AND FIXED)
+   K_K FASHION — app.js (FINAL - HOMEPAGE FIXES, BANNER, EDIT SHOP)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -26,16 +26,19 @@ const ADMIN_PIN = "0000";
 let mainCategories = [];
 let products = [];
 let shops = [];
+let homeBanners = [];
 let cart = load("knk_cart", []);
 let activeMainCatId = null;
 let activeSubCat = "All";
 let activeShopId = null;
 let editingProductId = null;
+let editingShopId = null;
 let searchQuery = "";
 let currentDetailProduct = null;
 let isAppInitialized = false;
 let runtimeSkipped = false;
 let activeAdminOrderTab = "Recent";
+let bannerScrollInterval = null;
 
 function getProfileKey() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
@@ -91,6 +94,14 @@ function requireLogin(callback) {
   }
 }
 
+window.updateBannersFromFirebase = function (fetchedBanners) {
+    homeBanners = fetchedBanners || [];
+    renderHomeBanners();
+    if (!$("adminPanel").classList.contains("hidden")) {
+        renderAdmin();
+    }
+}
+
 window.updateShopsFromFirebase = function (fetchedShops) {
   shops = fetchedShops || [];
   renderShopsPage();
@@ -132,7 +143,7 @@ window.addEventListener("DOMContentLoaded", () => {
           isAppInitialized = true;
         } else {
           $("app").classList.remove("hidden");
-          $("waBtn").classList.remove("hidden");
+          $("waBtn").classList.remove("hidden"); // SHOW PERMANENTLY
           renderProfile();
         }
       } else {
@@ -192,8 +203,9 @@ function showSplashAndStart() {
     setTimeout(() => {
       splash.classList.add("hidden");
       $("app").classList.remove("hidden");
-      $("waBtn").classList.remove("hidden");
+      $("waBtn").classList.remove("hidden"); // SHOW PERMANENTLY AFTER SPLASH
       renderCartCount();
+      initBannerAutoScroll();
     }, 500);
   }, 2500);
 }
@@ -300,7 +312,10 @@ window.switchNav = function (tab) {
   $("cartPage").classList.add("hidden");
   $("profilePage").classList.add("hidden");
 
-  if (tab === 'Home') $("homeContent").classList.remove("hidden");
+  if (tab === 'Home') {
+      $("homeContent").classList.remove("hidden");
+      initBannerAutoScroll();
+  }
   if (tab === 'Shops') $("shopsPage").classList.remove("hidden");
   if (tab === 'Contact') $("contactPage").classList.remove("hidden");
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
@@ -318,22 +333,68 @@ window.clearShopFilterAndGoHome = function() {
     renderProducts();
 }
 
+function renderHomeBanners() {
+    const wrap = $("homeBannersWrap");
+    const slider = $("homeBannersSlider");
+    if(!wrap || !slider) return;
+    
+    if (homeBanners.length === 0) {
+        wrap.classList.add("hidden");
+        return;
+    }
+    
+    wrap.classList.remove("hidden");
+    slider.innerHTML = "";
+    
+    homeBanners.forEach(b => {
+        const div = document.createElement("div");
+        div.className = "banner-slide";
+        div.innerHTML = `<img src="${b.image}" alt="Banner" loading="lazy" />`;
+        if (b.link) {
+            div.onclick = () => window.open(b.link, '_blank');
+        }
+        slider.appendChild(div);
+    });
+    
+    initBannerAutoScroll();
+}
+
+function initBannerAutoScroll() {
+    clearInterval(bannerScrollInterval);
+    const slider = $("homeBannersSlider");
+    if(!slider || homeBanners.length <= 1) return;
+    
+    bannerScrollInterval = setInterval(() => {
+        const scrollAmt = slider.offsetWidth;
+        if (slider.scrollLeft + scrollAmt >= slider.scrollWidth - 10) {
+            slider.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+            slider.scrollBy({ left: scrollAmt, behavior: 'smooth' });
+        }
+    }, 3000);
+}
+
 function renderShopsGrid() {
     const grid = $("shopsGrid");
-    const filterEl = $("shopCityFilter");
-    if(!grid || !filterEl) return;
+    const cityFilterEl = $("shopCityFilter");
+    const typeFilterEl = $("shopTypeFilter");
+    if(!grid || !cityFilterEl || !typeFilterEl) return;
     
     grid.innerHTML = "";
     
-    const filterVal = filterEl.value;
+    const cityVal = cityFilterEl.value;
+    const typeVal = typeFilterEl.value;
     let list = shops;
     
-    if(filterVal !== "ALL") {
-        list = list.filter(s => s.city === filterVal);
+    if(cityVal !== "ALL") {
+        list = list.filter(s => s.city === cityVal);
+    }
+    if(typeVal !== "ALL") {
+        list = list.filter(s => s.type === typeVal);
     }
     
     if(list.length === 0) {
-        grid.innerHTML = "<p class='empty' style='grid-column:1/-1;'>No shops listed right now.</p>";
+        grid.innerHTML = "<p class='empty' style='grid-column:1/-1;'>No shops found for this selection.</p>";
         return;
     }
 
@@ -356,22 +417,36 @@ function renderShopsGrid() {
 }
 
 function renderShopsPage() {
-    const filterEl = $("shopCityFilter");
-    if(!filterEl) return;
+    const cityFilterEl = $("shopCityFilter");
+    const typeFilterEl = $("shopTypeFilter");
+    if(!cityFilterEl || !typeFilterEl) return;
     
-    const currentFilter = filterEl.value || "ALL";
+    const currentCity = cityFilterEl.value || "ALL";
+    const currentType = typeFilterEl.value || "ALL";
+    
     const uniqueCities = [...new Set(shops.map(s => s.city).filter(Boolean))];
+    const uniqueTypes = [...new Set(shops.map(s => s.type).filter(Boolean))];
     
-    filterEl.innerHTML = '<option value="ALL">All Cities</option>';
+    cityFilterEl.innerHTML = '<option value="ALL">All Cities</option>';
     uniqueCities.forEach(c => {
         const opt = document.createElement("option");
         opt.value = c;
         opt.textContent = c;
-        if(c === currentFilter) opt.selected = true;
-        filterEl.appendChild(opt);
+        if(c === currentCity) opt.selected = true;
+        cityFilterEl.appendChild(opt);
     });
     
-    filterEl.onchange = () => { renderShopsGrid(); };
+    typeFilterEl.innerHTML = '<option value="ALL">All Types</option>';
+    uniqueTypes.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        if(t === currentType) opt.selected = true;
+        typeFilterEl.appendChild(opt);
+    });
+    
+    cityFilterEl.onchange = () => { renderShopsGrid(); };
+    typeFilterEl.onchange = () => { renderShopsGrid(); };
     renderShopsGrid();
 }
 
@@ -695,19 +770,23 @@ if ($("profilePicInput")) {
 }
 
 $("logoBtn").onclick = () => {
-  if (mainCategories.length > 0) {
-    selectMainCat(mainCategories[0].id);
-  }
+    clearShopFilterAndGoHome();
 };
 
 function renderMainCats() {
+  const wrapDiv = $("mainCatsWrap");
   const wrap = $("mainCats");
   wrap.innerHTML = "";
   
-  let visibleCats = mainCategories;
-  if (activeShopId) {
-      visibleCats = mainCategories.filter(c => c.shopId === activeShopId || c.shopId === "GLOBAL" || !c.shopId);
+  if (!activeShopId) {
+      wrapDiv.classList.add("hidden");
+      $("subCatsWrap").classList.add("hidden-bar");
+      return;
   }
+  
+  wrapDiv.classList.remove("hidden");
+  
+  let visibleCats = mainCategories.filter(c => c.shopId === activeShopId);
   
   visibleCats.forEach((cat, i) => {
     const btn = document.createElement("button");
@@ -738,13 +817,13 @@ function renderSubCats() {
   const subWrap = $("subCatsWrap");
   wrap.innerHTML = "";
   
-  if (searchQuery) {
+  if (searchQuery || !activeShopId) {
     subWrap.classList.add("hidden-bar");
     return;
   }
   
   const cat = getCat(activeMainCatId);
-  if (!cat || !cat.subCategories || cat.subCategories.length === 0) {
+  if (!cat || !cat.subCategories || cat.subCategories.length === 0 || cat.shopId !== activeShopId) {
     subWrap.classList.add("hidden-bar");
     return;
   }
@@ -799,22 +878,32 @@ $("searchClear").addEventListener("click", () => {
 
 function renderProducts() {
   const title = $("activeTitle");
-  let list;
+  let list = products;
 
   if (searchQuery) {
-    list = products.filter((p) => searchMatches(p, searchQuery));
+    list = list.filter((p) => searchMatches(p, searchQuery));
     title.innerHTML = `Search: "<span style="color:var(--primary)">${searchQuery}</span>" <span class="search-count">${list.length} results</span>`;
   } else {
-    const cat = getCat(activeMainCatId);
-    title.textContent = activeSubCat === "All" ? (cat ? cat.name : "") : activeSubCat;
-    list = products.filter((p) => p.mainCategoryId === activeMainCatId);
-    if (activeSubCat !== "All") {
-      list = list.filter((p) => p.subCategory === activeSubCat);
-    }
+      if (!activeShopId) {
+          title.textContent = "ALL PREMIUM COLLECTIONS";
+      } else {
+          const cat = getCat(activeMainCatId);
+          title.textContent = activeSubCat === "All" ? (cat ? cat.name : "STORE PRODUCTS") : activeSubCat;
+          list = list.filter(p => p.shopId === activeShopId);
+          if (activeMainCatId) {
+              list = list.filter(p => p.mainCategoryId === activeMainCatId);
+              if (activeSubCat !== "All") {
+                  list = list.filter(p => p.subCategory === activeSubCat);
+              }
+          }
+      }
   }
 
+  // SHOP BANNER LOGIC REMOVED FROM UI (Title suffices)
   if (activeShopId) {
-      list = list.filter(p => p.shopId === activeShopId);
+      $("activeShopBanner").classList.add("hidden");
+  } else {
+      $("activeShopBanner").classList.add("hidden");
   }
 
   const grid = $("products");
@@ -824,6 +913,11 @@ function renderProducts() {
   }
   
   grid.innerHTML = "";
+
+  // SHUFFLE ONLY IF HOME PAGE (NO SHOP SELECTED)
+  if(!activeShopId && !searchQuery) {
+      list = [...list].sort(() => Math.random() - 0.5);
+  }
 
   list.forEach((p, i) => {
     const price = finalPrice(p);
@@ -1427,31 +1521,110 @@ function saveCategories() {
   }
 }
 
+// BANNERS ADD/DELETE
+if ($("addBannerBtn")) {
+    $("addBannerBtn").onclick = async () => {
+        const i = $("newBannerImg").value.trim();
+        const l = $("newBannerLink").value.trim();
+        if(!i) return alert("Banner Image URL zaroori hai!");
+        
+        $("addBannerBtn").textContent = "Adding...";
+        const newBanner = { id: genId(), image: i, link: l };
+        homeBanners.push(newBanner);
+        if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners);
+        
+        $("newBannerImg").value = "";
+        $("newBannerLink").value = "";
+        renderAdmin();
+        renderHomeBanners();
+        alert("Banner Add Ho Gaya!");
+        $("addBannerBtn").textContent = "+ Add Banner";
+    };
+}
+
 if ($("addShopBtn")) {
     $("addShopBtn").onclick = async () => {
         const n = $("newShopName").value.trim();
         const c = $("newShopCity").value.trim();
+        const t = $("newShopType").value.trim();
         const l = $("newShopImage").value.trim();
         const u = $("newShopUPI").value.trim();
         const q = $("newShopQR").value.trim();
         
         if(!n || !c || !l || !u) return alert("Shop Name, City, Logo URL, aur UPI ID sab zaroori hain!");
         
-        $("addShopBtn").textContent = "Adding...";
+        $("addShopBtn").textContent = "Adding/Updating...";
         try {
-            if(window.fbAddDoc && window.fbCollection && window.fbDb) {
-                const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { 
-                    name: n, city: c, logo: l, upi: u, qr: q, timestamp: new Date() 
+            if(editingShopId && window.fbUpdateDoc && window.fbDoc && window.fbDb) {
+                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { 
+                    name: n, city: c, type: t, logo: l, upi: u, qr: q 
                 });
-                shops.push({ id: docRef.id, name: n, city: c, logo: l, upi: u, qr: q });
-                $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = "";
+                const idx = shops.findIndex(s => s.id === editingShopId);
+                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q };
+                alert("Dukaan Update Ho Gayi!");
+            } else if(window.fbAddDoc && window.fbCollection && window.fbDb) {
+                const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { 
+                    name: n, city: c, type: t, logo: l, upi: u, qr: q, timestamp: new Date() 
+                });
+                shops.push({ id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q });
+                alert("Nai Dukaan Add Ho Gayi!");
+            }
+            $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = "";
+            editingShopId = null;
+            $("addShopBtn").textContent = "+ Add Shop";
+            renderAdmin();
+            renderShopsPage();
+        } catch(e) { console.error(e); alert("Error in shop operation!"); $("addShopBtn").textContent = "+ Add Shop"; }
+    };
+}
+
+if ($("saveEditShopBtn")) {
+    $("saveEditShopBtn").onclick = async () => {
+        if(!editingShopId) return;
+        const n = $("editSName").value.trim();
+        const c = $("editSCity").value.trim();
+        const t = $("editSType").value.trim();
+        const l = $("editSImage").value.trim();
+        const u = $("editSUPI").value.trim();
+        const q = $("editSQR").value.trim();
+        
+        if(!n || !c || !l || !u) return alert("Name, City, Logo, UPI required!");
+        $("saveEditShopBtn").textContent = "Saving...";
+        
+        try {
+            if(window.fbUpdateDoc && window.fbDoc && window.fbDb) {
+                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { 
+                    name: n, city: c, type: t, logo: l, upi: u, qr: q 
+                });
+                const idx = shops.findIndex(s => s.id === editingShopId);
+                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q };
                 renderAdmin();
                 renderShopsPage();
-                alert("Nai dukaan add ho gayi!");
             }
-        } catch(e) { console.error(e); alert("Error adding shop!"); }
-        $("addShopBtn").textContent = "+ Add Shop";
+        } catch(e) {}
+        
+        $("editShopModal").classList.add("hidden");
+        editingShopId = null;
+        $("saveEditShopBtn").textContent = "Save Shop";
     };
+}
+
+if ($("editShopClose")) {
+    $("editShopClose").onclick = () => {
+        $("editShopModal").classList.add("hidden");
+        editingShopId = null;
+    }
+}
+
+function openEditShopModal(shop) {
+    editingShopId = shop.id;
+    $("editSName").value = shop.name || "";
+    $("editSCity").value = shop.city || "";
+    $("editSType").value = shop.type || "";
+    $("editSImage").value = shop.logo || "";
+    $("editSUPI").value = shop.upi || "";
+    $("editSQR").value = shop.qr || "";
+    $("editShopModal").classList.remove("hidden");
 }
 
 function renderCatMgmt() {
@@ -1471,7 +1644,10 @@ function renderCatMgmt() {
     card.innerHTML = `
       <div class="cat-mgmt-head">
         <span>${cat.name} <small style="color:var(--primary); font-size:10px;">(${shopLabel})</small></span>
-        <div><button class="edit-cat-btn">Edit</button></div>
+        <div>
+           <button class="edit-cat-btn" style="margin-right:8px;">Edit</button>
+           <button class="del-cat-btn" style="color:var(--destructive); background:none; border:1px solid rgba(224,85,85,0.3); border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer;">Delete</button>
+        </div>
       </div>
       <div class="cat-sub-section">
         <div class="cat-sub-label">SUB-CATEGORIES</div>
@@ -1482,6 +1658,16 @@ function renderCatMgmt() {
         </div>
       </div>
     `;
+    
+    card.querySelector(".del-cat-btn").onclick = () => {
+        if(confirm(`Are you sure you want to permanently delete the category "${cat.name}" and all its sub-categories?`)) {
+            mainCategories = mainCategories.filter(c => c.id !== cat.id);
+            saveCategories();
+            renderAdmin();
+            renderMainCats();
+            renderProducts();
+        }
+    };
     
     const chipsEl = card.querySelector(`#subChips_${cat.id}`);
     
@@ -1728,6 +1914,34 @@ window.renderAdmin = function () {
     });
   }
 
+  // RENDER BANNERS IN ADMIN
+  const blist = $("adminBannersList");
+  if(blist) {
+      blist.innerHTML = "";
+      homeBanners.forEach(b => {
+          const d = document.createElement("div");
+          d.className = "admin-prod";
+          d.innerHTML = `
+              <img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" />
+              <div class="ap-info">
+                  <div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div>
+              </div>
+              <div class="ap-actions">
+                  <button class="trash del-banner" data-id="${b.id}">🗑️</button>
+              </div>
+          `;
+          d.querySelector('.del-banner').onclick = async () => {
+              if(confirm("Delete this Banner?")) {
+                  homeBanners = homeBanners.filter(x => x.id !== b.id);
+                  if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners);
+                  renderAdmin();
+                  renderHomeBanners();
+              }
+          };
+          blist.appendChild(d);
+      });
+  }
+
   const slist = $("adminShopsList");
   if(slist) {
       slist.innerHTML = "";
@@ -1737,13 +1951,17 @@ window.renderAdmin = function () {
           d.innerHTML = `
               <img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" />
               <div class="ap-info">
-                  <div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'})</span></div>
+                  <div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div>
                   <div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi}</div>
               </div>
               <div class="ap-actions">
+                  <button class="edit-btn edit-shop" data-id="${s.id}">✏️</button>
                   <button class="trash del-shop" data-id="${s.id}">🗑️</button>
               </div>
           `;
+          d.querySelector('.edit-shop').onclick = () => {
+              openEditShopModal(s);
+          };
           d.querySelector('.del-shop').onclick = async () => {
               if(confirm("Delete this Shop completely?")) {
                   if(window.fbDeleteDoc && window.fbDoc && window.fbDb) {
