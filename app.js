@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - WITH DYNAMIC SHOPS)
+   K_K FASHION — app.js (FINAL - DYNAMIC CITY, QR, ORDERS)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -25,11 +25,11 @@ const $ = (id) => {
 const ADMIN_PIN = "0000";
 let mainCategories = [];
 let products = [];
-let shops = []; // NEW: Shops Array
+let shops = [];
 let cart = load("knk_cart", []);
 let activeMainCatId = null;
 let activeSubCat = "All";
-let activeShopId = null; // NEW: Active Shop Filter
+let activeShopId = null;
 let editingProductId = null;
 let searchQuery = "";
 let currentDetailProduct = null;
@@ -91,7 +91,6 @@ function requireLogin(callback) {
   }
 }
 
-// NEW: FETCH SHOPS DATA
 window.updateShopsFromFirebase = function (fetchedShops) {
   shops = fetchedShops || [];
   renderShopsPage();
@@ -133,6 +132,7 @@ window.addEventListener("DOMContentLoaded", () => {
           isAppInitialized = true;
         } else {
           $("app").classList.remove("hidden");
+          $("waBtn").classList.remove("hidden");
           renderProfile();
         }
       } else {
@@ -172,6 +172,7 @@ function showSplashAndStart() {
     setTimeout(() => {
       splash.classList.add("hidden");
       $("app").classList.remove("hidden");
+      $("waBtn").classList.remove("hidden");
       renderCartCount();
     }, 500);
   }, 2500);
@@ -260,7 +261,6 @@ window.switchNav = function (tab) {
     el.classList.remove('active');
   });
   
-  // NOTE: Contact tab is accessed via Profile now, so no bottom nav item to highlight.
   if ($("nav" + tab)) {
     $("nav" + tab).classList.add("active");
   } else if (tab === 'Contact') {
@@ -290,17 +290,26 @@ window.switchNav = function (tab) {
   window.scrollTo(0, 0);
 };
 
-// NEW: RENDER MULTIPLE SHOPS/CATEGORIES PAGE
-function renderShopsPage() {
+function renderShopsGrid() {
     const grid = $("shopsGrid");
-    if(!grid) return;
+    const filterEl = $("shopCityFilter");
+    if(!grid || !filterEl) return;
+    
     grid.innerHTML = "";
-    if(shops.length === 0) {
+    
+    const filterVal = filterEl.value;
+    let list = shops;
+    
+    if(filterVal !== "ALL") {
+        list = list.filter(s => s.city === filterVal);
+    }
+    
+    if(list.length === 0) {
         grid.innerHTML = "<p class='empty' style='grid-column:1/-1;'>No shops listed right now.</p>";
         return;
     }
 
-    shops.forEach(s => {
+    list.forEach(s => {
         const div = document.createElement("div");
         div.className = "shop-card";
         div.innerHTML = `
@@ -316,7 +325,26 @@ function renderShopsPage() {
     });
 }
 
-// CLEAR SHOP FILTER FROM HOME PAGE
+function renderShopsPage() {
+    const filterEl = $("shopCityFilter");
+    if(!filterEl) return;
+    
+    const currentFilter = filterEl.value || "ALL";
+    const uniqueCities = [...new Set(shops.map(s => s.city).filter(Boolean))];
+    
+    filterEl.innerHTML = '<option value="ALL">All Cities</option>';
+    uniqueCities.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        if(c === currentFilter) opt.selected = true;
+        filterEl.appendChild(opt);
+    });
+    
+    filterEl.onchange = () => { renderShopsGrid(); };
+    renderShopsGrid();
+}
+
 window.clearShopFilter = function() {
     activeShopId = null;
     renderProducts();
@@ -755,7 +783,6 @@ function renderProducts() {
     }
   }
 
-  // NEW: FILTER BY SHOP
   if (activeShopId) {
       $("activeShopBanner").classList.remove("hidden");
       const sh = shops.find(x => x.id === activeShopId);
@@ -978,7 +1005,6 @@ function buildHorizSection(title, list) {
   return section;
 }
 
-// GLOBAL DYNAMIC UPI VARIABLE
 let currentDynamicUpi = "kkfashion@nyes";
 
 if ($("chkUtr")) {
@@ -1045,16 +1071,18 @@ function openCheckout() {
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
   
-  // DYNAMIC UPI SETTING BASED ON CART
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp && sp.upi) {
-          currentDynamicUpi = sp.upi;
+      if (sp) {
+          currentDynamicUpi = sp.upi || "kkfashion@nyes";
+          $("chkQrImage").src = sp.qr || "62673.png";
       } else {
           currentDynamicUpi = "kkfashion@nyes";
+          $("chkQrImage").src = "62673.png";
       }
   } else {
       currentDynamicUpi = "kkfashion@nyes";
+      $("chkQrImage").src = "62673.png";
   }
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 }
@@ -1213,7 +1241,6 @@ $("step2PayBtn").onclick = () => {
   }, 1000);
 };
 
-// AUTOMATED LOGIC TO PUSH SANDBOX ORDERS TO QIKINK
 async function pushOrderToQikinkSandbox(orderData) {
     console.log("Qikink Sandbox Sync Started...");
 }
@@ -1243,6 +1270,17 @@ $("confirmOrderBtn").onclick = () => {
 
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
 
+  // FETCH SHOP INFO FOR ORDER DATA
+  let orderShopName = "K_K Fashion";
+  let orderShopLogo = "placeholder.jpg";
+  if (cart.length > 0 && cart[0].product.shopId) {
+      const sp = shops.find(s => s.id === cart[0].product.shopId);
+      if (sp) {
+          orderShopName = sp.name;
+          orderShopLogo = sp.logo || "placeholder.jpg";
+      }
+  }
+
   const orderData = {
     name: $("chkName").value.trim(),
     mobile: $("chkMobile").value.trim(),
@@ -1258,6 +1296,8 @@ $("confirmOrderBtn").onclick = () => {
     utrNumber: utrValue,
     status: "Recent",
     userEmail: userEmail,
+    shopName: orderShopName,
+    shopLogo: orderShopLogo,
     savedAt: Date.now()
   };
 
@@ -1363,23 +1403,24 @@ function saveCategories() {
   }
 }
 
-// NEW: ADMIN ADD/DELETE SHOP LOGIC
 if ($("addShopBtn")) {
     $("addShopBtn").onclick = async () => {
         const n = $("newShopName").value.trim();
+        const c = $("newShopCity").value.trim();
         const l = $("newShopImage").value.trim();
         const u = $("newShopUPI").value.trim();
+        const q = $("newShopQR").value.trim();
         
-        if(!n || !l || !u) return alert("Shop Name, Logo URL, aur UPI ID sab zaroori hain!");
+        if(!n || !c || !l || !u) return alert("Shop Name, City, Logo URL, aur UPI ID sab zaroori hain!");
         
         $("addShopBtn").textContent = "Adding...";
         try {
             if(window.fbAddDoc && window.fbCollection && window.fbDb) {
                 const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { 
-                    name: n, logo: l, upi: u, timestamp: new Date() 
+                    name: n, city: c, logo: l, upi: u, qr: q, timestamp: new Date() 
                 });
-                shops.push({ id: docRef.id, name: n, logo: l, upi: u });
-                $("newShopName").value = ""; $("newShopImage").value = ""; $("newShopUPI").value = "";
+                shops.push({ id: docRef.id, name: n, city: c, logo: l, upi: u, qr: q });
+                $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = "";
                 renderAdmin();
                 renderShopsPage();
                 alert("Nai dukaan add ho gayi!");
@@ -1489,14 +1530,13 @@ function syncAddProductDropdowns() {
     pMainCat.appendChild(o);
   });
 
-  // SYNC SHOP DROPDOWN IN ADMIN PRODUCT ADD
   const pShop = $("pShop");
   if(pShop) {
       pShop.innerHTML = '<option value="">K_K Fashion (Default Store)</option>';
       shops.forEach(s => {
           const o = document.createElement("option");
           o.value = s.id;
-          o.textContent = s.name;
+          o.textContent = s.name + " (" + (s.city || 'City') + ")";
           pShop.appendChild(o);
       });
   }
@@ -1532,6 +1572,13 @@ window.renderAdminOrders = function (orders) {
         <span>Name: ${o.name} (${o.mobile})</span>
         <strong>₹${o.totalAmount}</strong>
       </div>
+      
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);">
+         <img src="${o.shopLogo || 'placeholder.jpg'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--primary);">
+         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'K_K Fashion'}</strong>
+         <span style="margin-left:auto; font-size:11px; font-weight:700; background:var(--card2); padding:4px 8px; border-radius:4px; color:${o.paymentMethod==='COD'?'var(--destructive)':'#4cc968'}">${o.paymentMethod}</span>
+      </div>
+
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;">
         <strong>Address:</strong> ${o.address}<br>
         ${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}
@@ -1639,7 +1686,6 @@ window.renderAdmin = function () {
     });
   }
 
-  // NEW: RENDER SHOPS LIST IN ADMIN
   const slist = $("adminShopsList");
   if(slist) {
       slist.innerHTML = "";
@@ -1649,7 +1695,7 @@ window.renderAdmin = function () {
           d.innerHTML = `
               <img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" />
               <div class="ap-info">
-                  <div class="ap-name">${s.name}</div>
+                  <div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'})</span></div>
                   <div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi}</div>
               </div>
               <div class="ap-actions">
@@ -1745,7 +1791,6 @@ if ($("saveEditBtn")) {
         discount: newDiscount,
         extra: newExtra,
         inStock: newInStock
-        // SHOP ID PRESERVED AS IS
       };
       renderProducts();
       renderAdmin();
