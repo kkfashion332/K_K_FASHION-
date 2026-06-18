@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - DYNAMIC CITY, QR, ORDERS)
+   K_K FASHION — app.js (FINAL - FULLY UPDATED AND FIXED)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -149,6 +149,26 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // GLOBAL ADD CATEGORY LOGIC
+  if ($("addCatBtn")) {
+      $("addCatBtn").onclick = () => {
+          const n = $("newCatName").value.trim().toUpperCase();
+          const shopSel = $("newCatShop");
+          const sId = shopSel ? shopSel.value : "GLOBAL";
+          
+          if (!n) {
+              alert("Category ka naam daalein!");
+              return;
+          }
+          
+          mainCategories.push({ id: genId(), name: n, subCategories: [], shopId: sId });
+          saveCategories();
+          $("newCatName").value = "";
+          renderAdmin();
+          renderMainCats();
+      };
+  }
+
   document.querySelectorAll("#adminOrderTabs .admin-tab").forEach(btn => {
       btn.addEventListener("click", (e) => {
           document.querySelectorAll("#adminOrderTabs .admin-tab").forEach(b => b.classList.remove("active"));
@@ -290,6 +310,14 @@ window.switchNav = function (tab) {
   window.scrollTo(0, 0);
 };
 
+window.clearShopFilterAndGoHome = function() {
+    activeShopId = null;
+    switchNav('Home');
+    renderMainCats();
+    renderSubCats();
+    renderProducts();
+}
+
 function renderShopsGrid() {
     const grid = $("shopsGrid");
     const filterEl = $("shopCityFilter");
@@ -319,6 +347,8 @@ function renderShopsGrid() {
         div.onclick = () => {
             activeShopId = s.id;
             switchNav('Home');
+            renderMainCats();
+            renderSubCats();
             renderProducts();
         };
         grid.appendChild(div);
@@ -343,11 +373,6 @@ function renderShopsPage() {
     
     filterEl.onchange = () => { renderShopsGrid(); };
     renderShopsGrid();
-}
-
-window.clearShopFilter = function() {
-    activeShopId = null;
-    renderProducts();
 }
 
 window.renderMyOrders = function() {
@@ -679,7 +704,12 @@ function renderMainCats() {
   const wrap = $("mainCats");
   wrap.innerHTML = "";
   
-  mainCategories.forEach((cat, i) => {
+  let visibleCats = mainCategories;
+  if (activeShopId) {
+      visibleCats = mainCategories.filter(c => c.shopId === activeShopId || c.shopId === "GLOBAL" || !c.shopId);
+  }
+  
+  visibleCats.forEach((cat, i) => {
     const btn = document.createElement("button");
     btn.className = "main-cat-btn" + (cat.id === activeMainCatId && !searchQuery ? " active" : "");
     btn.style.animationDelay = (i * 0.07) + "s";
@@ -784,12 +814,7 @@ function renderProducts() {
   }
 
   if (activeShopId) {
-      $("activeShopBanner").classList.remove("hidden");
-      const sh = shops.find(x => x.id === activeShopId);
-      $("activeShopText").textContent = "Store: " + (sh ? sh.name : "Unknown");
       list = list.filter(p => p.shopId === activeShopId);
-  } else {
-      $("activeShopBanner").classList.add("hidden");
   }
 
   const grid = $("products");
@@ -1270,7 +1295,6 @@ $("confirmOrderBtn").onclick = () => {
 
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
 
-  // FETCH SHOP INFO FOR ORDER DATA
   let orderShopName = "K_K Fashion";
   let orderShopLogo = "placeholder.jpg";
   if (cart.length > 0 && cart[0].product.shopId) {
@@ -1435,12 +1459,18 @@ function renderCatMgmt() {
   list.innerHTML = "";
   
   mainCategories.forEach((cat) => {
+    let shopLabel = "Global";
+    if (cat.shopId && cat.shopId !== "GLOBAL") {
+        const sp = shops.find(s => s.id === cat.shopId);
+        if (sp) shopLabel = sp.name;
+    }
+
     const card = document.createElement("div");
     card.className = "cat-mgmt-card";
     
     card.innerHTML = `
       <div class="cat-mgmt-head">
-        <span>${cat.name}</span>
+        <span>${cat.name} <small style="color:var(--primary); font-size:10px;">(${shopLabel})</small></span>
         <div><button class="edit-cat-btn">Edit</button></div>
       </div>
       <div class="cat-sub-section">
@@ -1531,6 +1561,8 @@ function syncAddProductDropdowns() {
   });
 
   const pShop = $("pShop");
+  const newCatShop = $("newCatShop");
+  
   if(pShop) {
       pShop.innerHTML = '<option value="">K_K Fashion (Default Store)</option>';
       shops.forEach(s => {
@@ -1538,6 +1570,16 @@ function syncAddProductDropdowns() {
           o.value = s.id;
           o.textContent = s.name + " (" + (s.city || 'City') + ")";
           pShop.appendChild(o);
+      });
+  }
+  
+  if(newCatShop) {
+      newCatShop.innerHTML = '<option value="GLOBAL">Global (All Shops)</option>';
+      shops.forEach(s => {
+          const o = document.createElement("option");
+          o.value = s.id;
+          o.textContent = s.name;
+          newCatShop.appendChild(o);
       });
   }
 }
