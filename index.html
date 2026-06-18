@@ -89,7 +89,11 @@
           <script src="https://www.highperformanceformat.com/ba6c9de278ab2c4b63f23a73afbdb80c/invoke.js"></script>
         </div>
 
-        <div class="main-cats-wrap">
+        <div id="homeBannersWrap" class="home-banners-wrap hidden">
+           <div class="home-banners-slider" id="homeBannersSlider"></div>
+        </div>
+
+        <div id="mainCatsWrap" class="main-cats-wrap hidden">
           <div id="mainCats" class="main-cats"></div>
         </div>
 
@@ -98,7 +102,11 @@
         </div>
 
         <main class="main">
-          <h2 id="activeTitle" class="section-title"></h2>
+          <div id="activeShopBanner" class="hidden" style="background: var(--primary); color: #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px;">
+            <span id="activeShopText">Store: </span>
+            <button onclick="clearShopFilterAndGoHome()" style="background: rgba(0,0,0,0.1); border: none; padding: 4px 8px; border-radius: 4px; font-weight: bold; cursor: pointer; color: #000;">✕ Clear</button>
+          </div>
+          <h2 id="activeTitle" class="section-title">ALL PREMIUM COLLECTIONS</h2>
           <div id="products" class="grid"></div>
         </main>
       </div>
@@ -107,9 +115,14 @@
         <h2 class="page-heading">OTHER STYLISH STORY</h2>
         <p class="page-sub">Explore exclusive premium collections directly from top shops.</p>
         
-        <select id="shopCityFilter" class="field" style="margin-bottom:20px; background:var(--card2); border-color:var(--border);">
-           <option value="ALL">All Cities</option>
-        </select>
+        <div class="row2" style="margin-bottom:20px;">
+          <select id="shopCityFilter" class="field" style="margin-bottom:0; background:var(--card2); border-color:var(--border);">
+             <option value="ALL">All Cities</option>
+          </select>
+          <select id="shopTypeFilter" class="field" style="margin-bottom:0; background:var(--card2); border-color:var(--border);">
+             <option value="ALL">All Types</option>
+          </select>
+        </div>
         
         <div id="shopsGrid" class="shops-grid"></div>
       </div>
@@ -450,6 +463,22 @@
     </div>
   </div>
 
+  <div id="editShopModal" class="overlay center hidden" style="z-index: 125;">
+    <div class="pin-box wide-box">
+      <button id="editShopClose" class="icon-btn close-abs">✕</button>
+      <h2>Edit Shop</h2>
+      <div class="field-group" style="width: 100%; margin-top: 12px;">
+        <input id="editSName" class="field" placeholder="Shop Name" />
+        <input id="editSCity" class="field" placeholder="City" />
+        <input id="editSType" class="field" placeholder="Type (e.g. Shoes, Clothes)" />
+        <input id="editSImage" class="field" placeholder="Logo URL" />
+        <input id="editSUPI" class="field" placeholder="UPI ID" />
+        <input id="editSQR" class="field" placeholder="QR Image URL" />
+      </div>
+      <button id="saveEditShopBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Shop</button>
+    </div>
+  </div>
+
   <div id="editModal" class="overlay center hidden" style="z-index: 120;">
     <div class="pin-box wide-box">
       <button id="editClose" class="icon-btn close-abs">✕</button>
@@ -496,15 +525,27 @@
 
       <section class="card">
         <h3>Shop Management (Marketplace)</h3>
-        <p class="section-hint">Multiple shops add karein jinki dynamic UPI use hogi.</p>
+        <p class="section-hint">Multiple shops add/edit karein jinki dynamic UPI use hogi.</p>
         <div id="adminShopsList" style="margin-bottom: 10px;"></div>
         <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
           <input id="newShopName" class="field" placeholder="Shop Name (e.g. Trendy Boutique)" />
           <input id="newShopCity" class="field" placeholder="City Name (e.g. Baran)" />
+          <input id="newShopType" class="field" placeholder="Product Type (e.g. Shoes, Clothes)" />
           <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
           <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
           <input id="newShopQR" class="field" placeholder="Shop QR Code Image URL" />
           <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Home Page Banners</h3>
+        <p class="section-hint">Auto-sliding banners add/remove karein.</p>
+        <div id="adminBannersList" style="margin-bottom: 10px;"></div>
+        <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
+          <input id="newBannerImg" class="field" placeholder="Banner Image URL" />
+          <input id="newBannerLink" class="field" placeholder="Target Link (Optional)" />
+          <button id="addBannerBtn" class="btn-primary sm-btn auth-submit">+ Add Banner</button>
         </div>
       </section>
 
@@ -521,10 +562,10 @@
 
       <section class="card">
         <h3>Categories</h3>
-        <p class="section-hint">Main categories add, edit, delete karein. Har category ke andar sub-categories bhi manage karein.</p>
+        <p class="section-hint">Main categories add/delete karein. Har category ke andar sub-categories bhi manage karein.</p>
         <div id="catMgmtList"></div>
         <div class="field-group" style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
-          <label class="field-label">Assign Category to Shop (Optional)</label>
+          <label class="field-label">Assign Category to Shop</label>
           <select id="newCatShop" class="field small-field">
             <option value="GLOBAL">Global (All Shops)</option>
           </select>
@@ -651,17 +692,19 @@
     async function fetchSettings() {
       try {
         const snap = await getDoc(doc(db, "settings", "storeData"));
-        let cats;
-        if (snap.exists() && snap.data().mainCategories) {
-          cats = snap.data().mainCategories;
+        let cats, bannersData;
+        if (snap.exists()) {
+          cats = snap.data().mainCategories || [];
+          bannersData = snap.data().banners || [];
         } else {
           cats = [
-            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: ["PUMA COMBO","PREMIUM COMBO"] },
-            { id: "cat_other", name: "OTHER",          subCategories: [] }
+            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: ["PUMA COMBO","PREMIUM COMBO"], shopId: "GLOBAL" }
           ];
-          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true });
+          bannersData = [];
+          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData }, { merge: true });
         }
         if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats);
+        if (window.updateBannersFromFirebase) window.updateBannersFromFirebase(bannersData);
       } catch(e) { console.error(e); }
     }
 
@@ -682,7 +725,7 @@
             price: data.price,
             discount: data.discount || 0,
             extra: data.extra || 0,
-            mainCategoryId: data.mainCategoryId || (data.mainCategory === "OTHER" ? "cat_other" : "cat_genz"),
+            mainCategoryId: data.mainCategoryId || "",
             subCategory: data.subCategory || data.category || "",
             shopId: data.shopId || "",
             inStock: data.inStock !== false
@@ -724,6 +767,10 @@
     window.saveCategoriesToFirebase = async function(cats) {
       try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
     };
+    
+    window.saveBannersToFirebase = async function(bData) {
+      try { await setDoc(doc(db, "settings", "storeData"), { banners: bData }, { merge: true }); } catch(e) {}
+    };
 
     window.deleteProductFromFirebase = async function(id) {
       try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
@@ -734,6 +781,7 @@
     window.fbDb = db;
     window.fbDeleteDoc = deleteDoc;
     window.fbDoc = doc;
+    window.fbUpdateDoc = updateDoc;
 
     window.updateProductInFirebase = async function(id, data) {
       try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
