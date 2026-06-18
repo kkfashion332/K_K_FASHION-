@@ -55,6 +55,14 @@ body.no-scroll { overflow: hidden !important; }
 .main { padding: 16px 14px; padding-bottom: 110px; }
 .section-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--fg); letter-spacing: 0.05em; margin-bottom: 14px; }
 .section-title .search-count { font-size: 13px; font-weight: 500; color: var(--primary); font-family: var(--font-body); letter-spacing: 0.04em; margin-left: 8px; }
+
+/* NEW SHOP GRID CSS */
+.shops-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+.shop-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: transform 0.2s, border-color 0.2s; animation: cardFadeUp 0.4s ease both; }
+.shop-card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(201,168,76,0.1); }
+.shop-card img { width: 75px; height: 75px; border-radius: 50%; margin-bottom: 12px; object-fit: cover; border: 2px solid var(--primary); background: var(--bg2); }
+.shop-card h3 { font-size: 14px; color: var(--fg); font-weight: 600; font-family: var(--font-body); letter-spacing: 0.02em; }
+
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .empty { text-align: center; color: var(--muted); margin-top: 60px; font-size: 14px; grid-column: 1 / -1; }
 .product { border: 1px solid var(--border); border-radius: 16px; background: var(--card); overflow: hidden; transition: transform 0.25s ease, border-color 0.25s ease; animation: cardFadeUp 0.5s ease both; }
@@ -260,6 +268,7 @@ body.no-scroll { overflow: hidden !important; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
+/* FIX: Ensure WhatsApp button is always visible globally */
 .whatsapp-float {
     position: fixed;
     bottom: 95px;     
@@ -268,7 +277,7 @@ body.no-scroll { overflow: hidden !important; }
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    z-index: 999; 
+    z-index: 9999; 
     cursor: pointer;
     animation: fadeUp 0.5s ease forwards;
 }
