@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - UI PREMIUM FIXES, SIZES, COLORS)
+   K_K FASHION — app.js (FINAL - SUPER ADMIN SECURE ACCESS)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -13,6 +13,10 @@ const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
 
 const ADMIN_PIN = "0000";
+const SUPER_ADMIN_PIN = "89497"; // 👑 SUPER ADMIN PIN 👑
+let superAdminTapCount = 0;
+let superAdminTapTimer = null;
+
 let mainCategories = [];
 let products = [];
 let shops = [];
@@ -133,6 +137,20 @@ window.addEventListener("DOMContentLoaded", () => {
           if(window.allFirebaseOrders) window.renderAdminOrders(window.allFirebaseOrders);
       });
   });
+
+  // 👑 SUPER ADMIN UNLOCK LOGIC 👑
+  if ($("tabProdsBtn")) {
+      $("tabProdsBtn").addEventListener("click", (e) => {
+          superAdminTapCount++;
+          if (superAdminTapTimer) clearTimeout(superAdminTapTimer);
+          if (superAdminTapCount >= 10) { 
+              superAdminTapCount = 0; 
+              openSuperAdminPin(); 
+              return; 
+          }
+          superAdminTapTimer = setTimeout(() => { superAdminTapCount = 0; }, 3000);
+      });
+  }
 });
 
 window.switchAdminTab = function(event, tabId) {
@@ -638,11 +656,10 @@ $("pdBackBtn").onclick = closeProductDetail;
 
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
-  // Fix for displaying related products even on home page (no activeShopId)
   const sameMainList = products.filter((p) => {
       if (p.id === currentProduct.id) return false;
       if (p.mainCategoryId !== currentProduct.mainCategoryId) return false;
-      if (activeShopId && p.shopId !== activeShopId) return false;
+      if (currentProduct.shopId && currentProduct.shopId !== "GLOBAL" && p.shopId !== currentProduct.shopId) return false;
       return true;
   });
   
@@ -880,13 +897,69 @@ $("pinClose").onclick = () => { $("adminPin").classList.add("hidden"); };
 $("pinUnlock").onclick = tryUnlock;
 $("pinInput").onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
 
+// 🔒 RESTRICTED VENDOR UNLOCK
 function tryUnlock() {
-  if ($("pinInput").value === ADMIN_PIN) { $("adminPin").classList.add("hidden"); openAdmin(); } 
-  else { $("pinError").classList.remove("hidden"); }
+  if ($("pinInput").value === ADMIN_PIN) { 
+      $("adminPin").classList.add("hidden"); 
+      openAdminAsVendor(); 
+  } else { 
+      $("pinError").classList.remove("hidden"); 
+  }
 }
 
-function openAdmin() { lockScroll(); renderAdmin(); $("adminPanel").classList.remove("hidden"); }
-$("adminClose").onclick = () => { $("adminPanel").classList.add("hidden"); unlockScroll(); };
+// 👑 SUPER ADMIN UNLOCK
+function openSuperAdminPin() {
+    $("superPinInput").value = "";
+    $("superPinError").classList.add("hidden");
+    $("superAdminPinModal").classList.remove("hidden");
+    setTimeout(() => $("superPinInput").focus(), 100);
+}
+
+$("superPinClose").onclick = () => { $("superAdminPinModal").classList.add("hidden"); };
+$("superPinInput").onkeydown = (e) => { if (e.key === "Enter") trySuperUnlock(); };
+$("superPinUnlock").onclick = trySuperUnlock;
+
+function trySuperUnlock() {
+    if ($("superPinInput").value === SUPER_ADMIN_PIN) {
+        $("superAdminPinModal").classList.add("hidden");
+        // 🚀 UNLOCK ALL TABS FOR SUPER ADMIN
+        $("tabShopsBtn").classList.remove("hidden");
+        $("tabOrdersBtn").classList.remove("hidden");
+        $("tabCatsBtn").classList.remove("hidden");
+        $("tabSettingsBtn").classList.remove("hidden");
+    } else {
+        $("superPinError").classList.remove("hidden");
+    }
+}
+
+// 🔒 VENDOR VIEW (RESTRICTED TO PRODUCTS ONLY)
+function openAdminAsVendor() { 
+  lockScroll(); 
+  renderAdmin(); 
+  $("adminPanel").classList.remove("hidden"); 
+  
+  // HIDE SENSITIVE TABS
+  $("tabShopsBtn").classList.add("hidden");
+  $("tabOrdersBtn").classList.add("hidden");
+  $("tabCatsBtn").classList.add("hidden");
+  $("tabSettingsBtn").classList.add("hidden");
+
+  // SWITCH TO PRODUCTS TAB AUTOMATICALLY
+  document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
+  $("tabProdsBtn").classList.add('active');
+  $("amProds").classList.remove('hidden');
+}
+
+// SECURELY RESET TABS ON CLOSE
+$("adminClose").onclick = () => { 
+    $("adminPanel").classList.add("hidden"); 
+    unlockScroll(); 
+    $("tabShopsBtn").classList.add("hidden");
+    $("tabOrdersBtn").classList.add("hidden");
+    $("tabCatsBtn").classList.add("hidden");
+    $("tabSettingsBtn").classList.add("hidden");
+};
 
 function saveCategories() { if (window.saveCategoriesToFirebase) { window.saveCategoriesToFirebase(mainCategories); } }
 
