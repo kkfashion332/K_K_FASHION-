@@ -20,6 +20,10 @@
 </head>
 <body>
 
+  <div id="initLoader" style="position:fixed; inset:0; background:#0a0a0a; z-index:99999; display:flex; align-items:center; justify-content:center; color:#C9A84C; font-family:'Inter', sans-serif; font-weight:600; font-size:14px;">
+    Loading K_K Fashion...
+  </div>
+
   <div id="authScreen" class="auth-screen hidden">
     <div class="auth-card">
       <h1 class="auth-brand">K_K Fashion</h1>
@@ -781,6 +785,8 @@
     <img id="fullImage" src="" alt="Full View" style="max-width: 100vw; max-height: 100vh; transition: transform 0.3s ease;" />
   </div>
 
+  <script defer src="app.js"></script>
+
   <script type="module">
     import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
@@ -810,6 +816,11 @@
     window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.updateProfile = updateProfile;
+
+    // REMOVE INIT LOADER AS FIREBASE IS LOADED
+    if(document.getElementById('initLoader')) {
+        document.getElementById('initLoader').style.display = 'none';
+    }
 
     async function fetchShops() {
       try {
@@ -933,11 +944,5 @@
     });
   </script>
 
-  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon" />
-    <span class="help-text">HELP</span>
-  </a>
-
-  <script src="app.js"></script>
 </body>
 </html>
