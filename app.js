@@ -1,10 +1,11 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - UI PREMIUM FIXES, SIZES, COLORS)
+   K_K FASHION — app.js (FINAL - ALL BUGS FIXED & STABLE)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
 const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9ea5cf833ed39f62";
 
+// 🚀 KASHIF BHAI: YAHAN APNA TELEGRAM BOT TOKEN AUR CHAT ID DAALEIN 🚀
 const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN_HERE"; 
 const TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE";
 
@@ -24,16 +25,17 @@ let editingProductId = null;
 let editingShopId = null;
 let searchQuery = "";
 let currentDetailProduct = null;
-let currentSelectedSize = null; 
+let currentSelectedSize = null; // SIZES TRACKER
 let isAppInitialized = false;
 let runtimeSkipped = false;
 let activeAdminOrderTab = "Recent";
 let bannerScrollInterval = null;
 
+// THEME SYSTEM
 let currentTheme = load("knk_app_theme", "dark");
 window.setAppTheme = function(t) {
     document.body.className = document.body.className.replace(/theme-\w+/g, '').trim();
-    document.body.classList.remove('light-theme'); 
+    document.body.classList.remove('light-theme'); // fallback clear
     if(t !== 'dark') document.body.classList.add('theme-' + t);
     currentTheme = t;
     save("knk_app_theme", t);
@@ -54,6 +56,7 @@ const unlockScroll = () => { document.body.classList.remove("no-scroll"); };
 const allowZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0"); };
 const preventZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"); };
 
+// 🛡️ ADSTERRA ADS LIMITER (MAX 2 TIMES PER SESSION)
 function loadAdNetworkScripts() {
   if (window.adsScriptExecuted) return;
   let adCount = parseInt(sessionStorage.getItem("knk_ad_loads") || "0");
@@ -636,13 +639,13 @@ function closeProductDetail() {
 }
 $("pdBackBtn").onclick = closeProductDetail;
 
+// FIXED: Displaying related products correctly based on category and shop/global selection.
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
-  // Fix for displaying related products even on home page (no activeShopId)
   const sameMainList = products.filter((p) => {
       if (p.id === currentProduct.id) return false;
       if (p.mainCategoryId !== currentProduct.mainCategoryId) return false;
-      if (activeShopId && p.shopId !== activeShopId) return false;
+      if (currentProduct.shopId && currentProduct.shopId !== "GLOBAL" && p.shopId !== currentProduct.shopId) return false;
       return true;
   });
   
@@ -1058,4 +1061,7 @@ function openEditModal(p) {
 if ($("editInStock")) { $("editInStock").addEventListener("change", function () { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); }); }
 if ($("editClose")) { $("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; }; }
 
-if ($("save
+if ($("saveEditBtn")) {
+  $("saveEditBtn").onclick = () => {
+    if (!editingProductId) return;
+    const newPrice = Number($("editPPrice").value); const newDiscount = Number($("
