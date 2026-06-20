@@ -6,21 +6,40 @@
   --font-display: 'Cormorant Garamond', serif; --font-body: 'Inter', system-ui, sans-serif;
 }
 
-/* LIGHT THEME VARIABLES (JADOO 🪄) */
-body.light-theme {
+/* 🎨 THEME 1: LIGHT PEARL */
+body.theme-light {
   --bg: #f8f8f8; --bg2: #ffffff; --fg: #111111; --card: #ffffff; --card2: #f0f0f0;
   --muted: #888888; --muted2: #555555; --primary: #a87f28; --primary-dim: #8b661d;
   --primary-fg: #ffffff; --secondary: #fdf5e6; --secondary-fg: #5a4a29;
   --border: #e0e0e0; --border2: #cccccc;
 }
-body.light-theme .search-input { color: #111; }
-body.light-theme .header { background: rgba(255,255,255,0.92); }
-body.light-theme .bottom-nav { background: rgba(255,255,255,0.95); }
-body.light-theme .splash-brand { background: linear-gradient(135deg, #c5a030, #a87f28, #7a5c18); -webkit-background-clip: text; }
-body.light-theme .brand-mark { background: linear-gradient(135deg, #c5a030, #a87f28, #7a5c18); -webkit-background-clip: text; }
-body.light-theme .nav-fab { background: var(--primary); color: #fff; border-color: var(--bg); }
-body.light-theme .auth-card { box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-body.light-theme .shop-card { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+body.theme-light .search-input { color: #111; }
+body.theme-light .header { background: rgba(255,255,255,0.92); }
+body.theme-light .bottom-nav { background: rgba(255,255,255,0.95); }
+body.theme-light .splash-brand, body.theme-light .brand-mark { background: linear-gradient(135deg, #c5a030, #a87f28, #7a5c18); -webkit-background-clip: text; }
+body.theme-light .nav-fab { background: var(--primary); color: #fff; border-color: var(--bg); }
+body.theme-light .auth-card { box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+body.theme-light .shop-card { box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+/* 🌌 THEME 2: MIDNIGHT BLUE */
+body.theme-blue {
+  --bg: #090e17; --bg2: #0d1421; --fg: #e2e8f0; --card: #111a2c; --card2: #18243c;
+  --muted: #64748b; --muted2: #94a3b8; --primary: #38bdf8; --primary-dim: #0284c7;
+  --primary-fg: #0f172a; --secondary: #1e293b; --secondary-fg: #cbd5e1;
+  --border: #334155; --border2: #475569;
+}
+body.theme-blue .splash-brand, body.theme-blue .brand-mark { background: linear-gradient(135deg, #7dd3fc, #38bdf8, #0284c7); -webkit-background-clip: text; }
+body.theme-blue .nav-fab { background: var(--primary); color: var(--primary-fg); border-color: var(--bg); }
+
+/* 🌲 THEME 3: FOREST GREEN */
+body.theme-green {
+  --bg: #0a120e; --bg2: #0e1a14; --fg: #e6f0eb; --card: #122119; --card2: #1a2f24;
+  --muted: #677a6f; --muted2: #93a89d; --primary: #4ade80; --primary-dim: #22c55e;
+  --primary-fg: #052e16; --secondary: #14532d; --secondary-fg: #bbf7d0;
+  --border: #2e4d3a; --border2: #3d634d;
+}
+body.theme-green .splash-brand, body.theme-green .brand-mark { background: linear-gradient(135deg, #86efac, #4ade80, #16a34a); -webkit-background-clip: text; }
+body.theme-green .nav-fab { background: var(--primary); color: var(--primary-fg); border-color: var(--bg); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
 body { font-family: var(--font-body); background: var(--bg); color: var(--fg); -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; transition: background 0.3s, color 0.3s; }
@@ -65,7 +84,7 @@ body.no-scroll { overflow: hidden !important; }
 .main-cats { display: flex; flex-direction: row; gap: 10px; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .main-cats::-webkit-scrollbar { display: none; }
 .main-cat-btn { flex-shrink: 0; display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: 999px; border: 1.5px solid var(--border2); background: var(--card2); color: var(--muted2); cursor: pointer; font-family: var(--font-body); transition: all 0.25s ease; position: relative; overflow: hidden; white-space: nowrap; }
-.main-cat-btn.active { background: linear-gradient(135deg, #1a1400, var(--secondary)); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 20px rgba(201,168,76,0.15); }
+.main-cat-btn.active { background: linear-gradient(135deg, var(--bg2), var(--secondary)); border-color: var(--primary); color: var(--primary); box-shadow: 0 0 20px rgba(201,168,76,0.15); }
 .mc-label { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; }
 
 .main { padding: 16px 14px; padding-bottom: 110px; }
