@@ -391,17 +391,17 @@
             </div>
           </label>
 
-          <label class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
+          <label id="payCODLabel" class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
             <input type="radio" name="payMethod" value="COD" id="payCOD" style="margin-top: 3px; accent-color: var(--primary);" />
             <div class="pay-option-info" style="font-size: 13px; line-height: 1.4;">
               <strong style="color: var(--fg); font-weight: 600; display: block; margin-bottom: 2px;">Cash on Delivery (C.O.D)</strong>
-              <span style="color: var(--muted2); font-size: 12px;">Requires 25% Safety Deposit online. Pay 75% balance during delivery 🚚</span>
+              <span id="codTextDesc" style="color: var(--muted2); font-size: 12px;">Safety Deposit online required. Balance during delivery 🚚</span>
             </div>
           </label>
 
           <div id="codWarningBox" class="cod-warning-box hidden" style="margin-top: 12px; padding: 12px; border: 1px dashed var(--primary); background: rgba(201,168,76,0.04); border-radius: 10px;">
             <span style="color: var(--destructive); font-weight: 700; font-size: 12px; display: block; margin-bottom: 4px; letter-spacing: 0.03em;">⚠️ SAFETY DEPOSIT REQUIRED</span>
-            <p style="font-size: 12px; color: var(--fg); line-height: 1.5;">Fake orders ko rokne ke liye aapko abhi <strong id="codAdvanceAmt" style="color:var(--primary);">₹0</strong> (25% Advance) online pay karna hoga. Baaki ka <strong id="codBalanceAmt" style="color:var(--primary);">₹0</strong> (75%) order milne par dena hoga.</p>
+            <p style="font-size: 12px; color: var(--fg); line-height: 1.5;">Fake orders ko rokne ke liye aapko abhi <strong id="codAdvanceAmt" style="color:var(--primary);">₹0</strong> online pay karna hoga. Baaki ka <strong id="codBalanceAmt" style="color:var(--primary);">₹0</strong> order milne par dena hoga.</p>
           </div>
         </div>
 
@@ -470,6 +470,14 @@
         <input id="editSImage" class="field" placeholder="Logo URL" />
         <input id="editSUPI" class="field" placeholder="UPI ID" />
         <input id="editSQR" class="field" placeholder="QR Image URL" />
+        <input id="editSCodAmt" class="field" type="number" placeholder="COD Advance Amount (₹)" />
+        <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:10px;">
+          <span class="field-label">Enable C.O.D.</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="editSCodStatus" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
       </div>
       <button id="saveEditShopBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Shop</button>
     </div>
@@ -539,6 +547,14 @@
               <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
               <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
               <input id="newShopQR" class="field" placeholder="Shop QR Code Image URL" />
+              <input id="newShopCodAmt" class="field" type="number" placeholder="COD Advance Amt (₹) e.g. 100" />
+              <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:6px;">
+                <span class="field-label">Enable C.O.D.</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="newShopCodStatus" checked />
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
               <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
             </div>
           </section>
@@ -560,7 +576,7 @@
       <div id="amCats" class="admin-section hidden">
           <section class="card">
             <h3>Category Management</h3>
-            <p class="section-hint">Har shop ki alag main categories banayein aur delete karein.</p>
+            <p class="section-hint">Har shop ki alag categories banayein aur delete karein.</p>
             <div id="catMgmtList"></div>
             <div class="field-group" style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
               <label class="field-label">Assign Category to Shop</label>
@@ -628,11 +644,13 @@
 
       <div id="amSettings" class="admin-section hidden">
           <section class="card">
-            <h3>Theme Settings 🪄</h3>
-            <p class="section-hint">Website ka pura look change karein (Light/Dark Mode).</p>
-            <div class="inline-row" style="margin-top:8px; justify-content:space-between;">
-              <span id="themeStatus" style="font-weight:600; font-size:14px;">Dark Mode Active</span>
-              <button id="themeToggleBtn" class="btn-outline sm-btn auth-submit" style="margin:0;">Toggle Theme</button>
+            <h3>App Themes 🪄</h3>
+            <p class="section-hint">Website ka pura look change karein.</p>
+            <div class="theme-picker" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('dark')">Dark Gold (Default)</button>
+               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('light')">Light Pearl</button>
+               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('blue')">Midnight Blue</button>
+               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('green')">Forest Green</button>
             </div>
           </section>
           
@@ -698,9 +716,7 @@
       try {
         const snap = await getDocs(collection(db, "shops"));
         const list = [];
-        snap.forEach(d => {
-          list.push({ id: d.id, ...d.data() });
-        });
+        snap.forEach(d => { list.push({ id: d.id, ...d.data() }); });
         if (window.updateShopsFromFirebase) window.updateShopsFromFirebase(list);
       } catch(e) { console.error(e); }
     }
@@ -713,9 +729,7 @@
           cats = snap.data().mainCategories || [];
           bannersData = snap.data().banners || [];
         } else {
-          cats = [
-            { id: "cat_genz",  name: "GEN-Z PREMIUM", shopId: "GLOBAL" }
-          ];
+          cats = [{ id: "cat_genz",  name: "GEN-Z PREMIUM", shopId: "GLOBAL" }];
           bannersData = [];
           await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData }, { merge: true });
         }
@@ -731,19 +745,10 @@
         snap.forEach(d => {
           const data = d.data();
           let imgData = [];
-          if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } 
-          else if(data.imageUrl) { imgData = [data.imageUrl]; }
-
+          if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } else if(data.imageUrl) { imgData = [data.imageUrl]; }
           list.push({
-            id: d.id,
-            name: data.name,
-            image: imgData,
-            price: data.price,
-            discount: data.discount || 0,
-            extra: data.extra || 0,
-            mainCategoryId: data.mainCategoryId || "",
-            shopId: data.shopId || "",
-            inStock: data.inStock !== false
+            id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0,
+            mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false
           });
         });
         if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
@@ -760,12 +765,9 @@
         const list = [];
         snap.forEach(d => list.push({ id: d.id, ...d.data() }));
         list.sort((a,b) => b.timestamp - a.timestamp);
-        
         window.allFirebaseOrders = list;
-        
         if (window.renderAdminOrders) window.renderAdminOrders(list);
         if (typeof window.renderMyOrders === "function") window.renderMyOrders();
-        
       } catch (e) { console.error("Fetch elite orders error:", e); }
     };
 
@@ -791,12 +793,7 @@
       try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
     };
 
-    window.fbAddDoc = addDoc;
-    window.fbCollection = collection;
-    window.fbDb = db;
-    window.fbDeleteDoc = deleteDoc;
-    window.fbDoc = doc;
-    window.fbUpdateDoc = updateDoc;
+    window.fbAddDoc = addDoc; window.fbCollection = collection; window.fbDb = db; window.fbDeleteDoc = deleteDoc; window.fbDoc = doc; window.fbUpdateDoc = updateDoc;
 
     window.updateProductInFirebase = async function(id, data) {
       try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
@@ -815,8 +812,7 @@
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
 
       if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
-      const btn = document.getElementById("addProductBtn");
-      btn.textContent = "Listing...";
+      const btn = document.getElementById("addProductBtn"); btn.textContent = "Listing...";
       try {
         await addDoc(collection(db, "products"), {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
