@@ -97,6 +97,10 @@
           <div id="mainCats" class="main-cats"></div>
         </div>
 
+        <div id="subCatsWrap" class="sub-cats-wrap hidden-bar">
+          <div id="subCats" class="cats"></div>
+        </div>
+
         <main class="main">
           <div id="activeShopBanner" class="hidden" style="background: var(--primary); color: #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px;">
             <span id="activeShopText">Store: </span>
@@ -194,7 +198,7 @@
             Edit Name
           </button>
 
-          <div class="premium-about-container" style="margin-top:30px; margin-bottom:15px;">
+          <div class="premium-about-container" style="margin-top:30px;">
             <div class="about-logo-mark" style="font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--primary);">K_K</div>
             <h3 style="color:var(--fg); font-size:16px; margin: 8px 0; font-family: var(--font-display);">The K_K Legacy</h3>
             <p style="font-size:13px; line-height:1.6; color:var(--muted2);">
@@ -203,10 +207,10 @@
           </div>
           
           <div class="profile-links" style="margin-top:25px; border-top:1px solid var(--border2); padding-top:20px; text-align:left;">
-            <button onclick="openPolicy('returnPolicy')" class="p-link-btn premium-p-link">📜 Return Policy <span>→</span></button>
-            <button onclick="openPolicy('howToReturn')" class="p-link-btn premium-p-link">📦 How to Return <span>→</span></button>
-            <button onclick="openPolicy('privacyPolicy')" class="p-link-btn premium-p-link">🔒 Privacy Policy <span>→</span></button>
-            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link" style="margin-top:10px;">📞 Premium Support <span>→</span></button>
+            <button onclick="switchNav('ReturnPolicy')" class="p-link-btn premium-p-link">📜 Return Policy <span>→</span></button>
+            <button onclick="switchNav('HowToReturn')" class="p-link-btn premium-p-link">↩️ How to Return <span>→</span></button>
+            <button onclick="switchNav('PrivacyPolicy')" class="p-link-btn premium-p-link">🛡️ Privacy Policy <span>→</span></button>
+            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link">📞 Premium Support <span>→</span></button>
           </div>
 
           <button id="profileLogoutBtn" class="btn-outline full premium-logout" style="margin-top: 25px;">
@@ -214,6 +218,57 @@
           </button>
         </div>
       </div>
+
+      <div id="returnPolicyPage" class="nav-page hidden">
+        <h2 class="page-heading">Return Policy</h2>
+        <div class="premium-about-container" style="text-align:left;">
+          <p style="font-size:14px; line-height:1.8; color:var(--fg); margin-bottom:15px;">
+            At <strong>K_K Fashion</strong>, we aim to ensure you are fully satisfied with your premium purchases. Please note the following important details regarding returns:
+          </p>
+          <ul style="font-size:13px; color:var(--muted2); line-height:1.8; margin-left:20px; margin-bottom:15px;">
+            <li>Returns may take <strong>8-9 business days</strong> to be fully processed from the date of the request.</li>
+            <li>Our seller partners will contact you directly to ask a few verification questions regarding the reason for your return.</li>
+            <li>This ensures a seamless experience and helps us maintain the quality of our marketplace.</li>
+            <li>Items must be unused, unwashed, and with all original tags attached.</li>
+          </ul>
+          <p style="font-size:14px; line-height:1.8; color:var(--primary); font-weight:600;">We appreciate your patience and cooperation!</p>
+        </div>
+      </div>
+
+      <div id="howToReturnPage" class="nav-page hidden">
+        <h2 class="page-heading">How to Return</h2>
+        <div class="premium-about-container" style="text-align:center;">
+          <h3 style="color:var(--fg); font-family:var(--font-display); font-size:20px; margin-bottom:15px;">Initiate a Return</h3>
+          <p style="font-size:14px; line-height:1.6; color:var(--muted2); margin-bottom:25px;">
+            To initiate a return process smoothly, please contact our Elite Support team directly via WhatsApp. Click the button below, provide your Order ID, and state the reason for return.
+          </p>
+          <a href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20would%20like%20to%20initiate%20a%20return." target="_blank" style="text-decoration:none;">
+            <div style="background:#25D366; color:#fff; border-radius:12px; padding:15px; display:flex; align-items:center; justify-content:center; gap:10px; font-weight:700; font-size:16px; box-shadow:0 4px 15px rgba(37,211,102,0.3); transition:transform 0.2s;">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:24px; height:24px; filter:brightness(0) invert(1);" alt="WA" />
+              CONTACT ON WHATSAPP
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <div id="privacyPolicyPage" class="nav-page hidden">
+        <h2 class="page-heading">Privacy Policy</h2>
+        <div class="premium-about-container" style="text-align:left;">
+          <p style="font-size:13px; line-height:1.8; color:var(--muted2); margin-bottom:15px;">
+            Welcome to <strong>K_K Fashion</strong>, a premium multi-vendor marketplace hosting various elite boutiques and stores. Your privacy is of paramount importance to us.
+          </p>
+          <p style="font-size:13px; line-height:1.8; color:var(--muted2); margin-bottom:15px;">
+            <strong style="color:var(--fg);">Data Sharing & Security:</strong> Because we are a multi-vendor platform, the information necessary to fulfill your order (such as your name, delivery address, and contact number) is securely shared only with the specific seller/boutique from which you have purchased.
+          </p>
+          <p style="font-size:13px; line-height:1.8; color:var(--muted2); margin-bottom:15px;">
+            <strong style="color:var(--fg);">Payment Security:</strong> All digital transactions and UPI interactions are heavily encrypted. We do not store your core banking passwords or UPI pins on our servers.
+          </p>
+          <p style="font-size:13px; line-height:1.8; color:var(--muted2);">
+            By continuing to use K_K Fashion, you agree to our secure data-handling practices designed to provide you with the most seamless and stylish shopping experience.
+          </p>
+        </div>
+      </div>
+
     </div>
 
     <nav class="bottom-nav">
@@ -249,17 +304,6 @@
     </nav>
   </div>
 
-  <div id="policyModal" class="overlay hidden" style="z-index: 160;">
-    <div class="drawer">
-      <div class="drawer-head">
-        <h2 id="policyTitle" style="font-size:20px; color:var(--primary);">Title</h2>
-        <button onclick="document.getElementById('policyModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
-      </div>
-      <div class="drawer-body" id="policyBody" style="line-height:1.6; color:var(--fg); font-size:14px; padding:20px;">
-      </div>
-    </div>
-  </div>
-
   <div id="myOrderDetailModal" class="overlay hidden" style="z-index: 150;">
     <div class="drawer">
       <div class="drawer-head">
@@ -273,8 +317,8 @@
 
   <div id="prodDetail" class="prod-detail hidden">
     <div class="pd-header">
-      <button id="pdBackBtn" class="pd-back">
-        <span class="pd-back-icon">&#8592;</span>
+      <button id="pdBackBtn" class="pd-back-enhanced">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         <span>Back</span>
       </button>
       <span class="brand-mark" style="font-size:18px;">K_K</span>
@@ -296,17 +340,10 @@
           <span id="pdStrike" class="pd-strike hidden"></span>
           <span id="pdOff" class="pd-off hidden"></span>
         </div>
-      </div>
-
-      <div id="pdVariants" class="pd-variants hidden" style="padding: 10px 16px 14px; border-bottom: 1px solid var(--border);">
-         <div id="pdColorsWrap" class="hidden" style="margin-bottom:14px;">
-           <div style="font-size:11px; color:var(--muted); margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Select Colour</div>
-           <div id="pdColors" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px;"></div>
-         </div>
-         <div id="pdSizesWrap" class="hidden">
-           <div style="font-size:11px; color:var(--muted); margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Select Size</div>
-           <div id="pdSizes" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px;"></div>
-         </div>
+        
+        <div id="pdColorsWrap" class="hidden" style="margin-top:15px;"></div>
+        <div id="pdSizesWrap" class="hidden" style="margin-top:15px;"></div>
+        
       </div>
 
       <div id="pdHorizSections" class="horiz-sections"></div>
@@ -517,14 +554,22 @@
         <input id="editPImage" class="field" type="text" placeholder="URL 1, URL 2..." />
       </div>
 
-      <div class="row2" style="margin-bottom:12px; width: 100%;">
+      <div class="field-group" style="width: 100%; margin-bottom: 12px;">
+        <label class="field-label">In-Stock Sizes (Comma separated: S, M, L)</label>
+        <input id="editPSizesIn" class="field" type="text" placeholder="e.g. S, M, L" />
+      </div>
+      <div class="field-group" style="width: 100%; margin-bottom: 12px;">
+        <label class="field-label">Out-of-Stock Sizes (Comma separated: XL)</label>
+        <input id="editPSizesOut" class="field" type="text" placeholder="e.g. XL, XXL" />
+      </div>
+      <div class="row2" style="width: 100%; margin-bottom: 12px;">
         <div class="field-group">
-          <label class="field-label">Colours (Comma Sep.)</label>
-          <input id="editPColors" class="field" placeholder="e.g. Red, Black" />
+          <label class="field-label">Color Name</label>
+          <input id="editPColor" class="field" type="text" placeholder="e.g. Red" />
         </div>
         <div class="field-group">
-          <label class="field-label">Sizes (Comma Sep.)</label>
-          <input id="editPSizes" class="field" placeholder="e.g. S, M, L" />
+          <label class="field-label">Variant Group ID</label>
+          <input id="editPGroupId" class="field" type="text" placeholder="Same for all colors" />
         </div>
       </div>
 
@@ -631,14 +676,22 @@
             <input id="pName" class="field" placeholder="Product name" />
             <input id="pImage" class="field" placeholder="Image URLs (Comma Separated for Multiple)" />
             
+            <div class="field-group" style="margin-bottom:12px;">
+              <label class="field-label">In-Stock Sizes (S, M, L)</label>
+              <input id="pSizesIn" class="field" placeholder="Comma separated available sizes" />
+            </div>
+            <div class="field-group" style="margin-bottom:12px;">
+              <label class="field-label">Out-of-Stock Sizes (XL, XXL)</label>
+              <input id="pSizesOut" class="field" placeholder="Comma separated disabled sizes" />
+            </div>
             <div class="row2" style="margin-bottom:12px;">
               <div class="field-group">
-                <label class="field-label">Colours (Comma Sep.)</label>
-                <input id="pColors" class="field" placeholder="e.g. Red, Black" />
+                <label class="field-label">Color Name</label>
+                <input id="pColor" class="field" placeholder="e.g. Black" />
               </div>
               <div class="field-group">
-                <label class="field-label">Sizes (Comma Sep.)</label>
-                <input id="pSizes" class="field" placeholder="e.g. S, M, L" />
+                <label class="field-label">Variant Group ID</label>
+                <input id="pGroupId" class="field" placeholder="Same ID for all colors of this item" />
               </div>
             </div>
 
@@ -666,7 +719,6 @@
                 <select id="pMainCat" class="field"></select>
               </div>
             </div>
-            
             <div class="stock-toggle-row" style="margin-bottom:14px;">
               <span class="field-label">Stock Status</span>
               <label class="toggle-switch">
@@ -796,7 +848,7 @@
           list.push({
             id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0,
             mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false,
-            colors: data.colors || [], sizes: data.sizes || []
+            sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || ""
           });
         });
         if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
@@ -855,23 +907,26 @@
       const pExtra   = document.getElementById("pExtra").value;
       const pCatId   = document.getElementById("pMainCat").value;
       const pShopId  = document.getElementById("pShop").value || "";
-      const pColorsStr = document.getElementById("pColors").value.trim();
-      const pSizesStr  = document.getElementById("pSizes").value.trim();
       const pInStock = document.getElementById("pInStock").checked;
+      
+      const pSizesIn = document.getElementById("pSizesIn").value.trim();
+      const pSizesOut = document.getElementById("pSizesOut").value.trim();
+      const pColor = document.getElementById("pColor").value.trim();
+      const pGroupId = document.getElementById("pGroupId").value.trim();
 
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-      const colorsArr = pColorsStr ? pColorsStr.split(",").map(s => s.trim()).filter(Boolean) : [];
-      const sizesArr = pSizesStr ? pSizesStr.split(",").map(s => s.trim()).filter(Boolean) : [];
 
       if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
       const btn = document.getElementById("addProductBtn"); btn.textContent = "Listing...";
       try {
         await addDoc(collection(db, "products"), {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, colors: colorsArr, sizes: sizesArr, timestamp: new Date()
+          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, 
+          sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
+          timestamp: new Date()
         });
         alert("Product listed successfully in Elite Collection! 🎉");
-        ["pName","pImage","pPrice","pDiscount","pExtra","pColors","pSizes"].forEach(id => document.getElementById(id).value = "");
+        ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
         fetchProducts();
       } catch(e) {}
       finally { btn.textContent = "Add Product to Collection"; }
