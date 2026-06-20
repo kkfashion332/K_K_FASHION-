@@ -927,6 +927,10 @@ function trySuperUnlock() {
         $("tabOrdersBtn").classList.remove("hidden");
         $("tabCatsBtn").classList.remove("hidden");
         $("tabSettingsBtn").classList.remove("hidden");
+        // 🚀 UNLOCK PRODUCT LIST FOR SUPER ADMIN
+        if ($("adminProducts") && $("adminProducts").parentElement) {
+            $("adminProducts").parentElement.classList.remove("hidden");
+        }
     } else {
         $("superPinError").classList.remove("hidden");
     }
@@ -944,6 +948,11 @@ function openAdminAsVendor() {
   $("tabCatsBtn").classList.add("hidden");
   $("tabSettingsBtn").classList.add("hidden");
 
+  // HIDE PRODUCT LIST (SO VENDORS CAN ONLY ADD, NOT DELETE)
+  if ($("adminProducts") && $("adminProducts").parentElement) {
+      $("adminProducts").parentElement.classList.add("hidden");
+  }
+
   // SWITCH TO PRODUCTS TAB AUTOMATICALLY
   document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
@@ -959,6 +968,10 @@ $("adminClose").onclick = () => {
     $("tabOrdersBtn").classList.add("hidden");
     $("tabCatsBtn").classList.add("hidden");
     $("tabSettingsBtn").classList.add("hidden");
+    // SECURELY RE-HIDE PRODUCT LIST ON CLOSE
+    if ($("adminProducts") && $("adminProducts").parentElement) {
+        $("adminProducts").parentElement.classList.add("hidden");
+    }
 };
 
 function saveCategories() { if (window.saveCategoriesToFirebase) { window.saveCategoriesToFirebase(mainCategories); } }
