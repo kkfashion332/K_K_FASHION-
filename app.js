@@ -1,11 +1,10 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - POLICIES, COLORS, SIZES)
+   K_K FASHION — app.js (FINAL - UI PREMIUM FIXES, SIZES, COLORS)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
 const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9ea5cf833ed39f62";
 
-// 🚀 KASHIF BHAI: YAHAN APNA TELEGRAM BOT TOKEN AUR CHAT ID DAALEIN 🚀
 const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN_HERE"; 
 const TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE";
 
@@ -25,17 +24,16 @@ let editingProductId = null;
 let editingShopId = null;
 let searchQuery = "";
 let currentDetailProduct = null;
-let currentDetailProductVariant = { color: null, size: null };
+let currentSelectedSize = null; 
 let isAppInitialized = false;
 let runtimeSkipped = false;
 let activeAdminOrderTab = "Recent";
 let bannerScrollInterval = null;
 
-// THEME SYSTEM
 let currentTheme = load("knk_app_theme", "dark");
 window.setAppTheme = function(t) {
     document.body.className = document.body.className.replace(/theme-\w+/g, '').trim();
-    document.body.classList.remove('light-theme');
+    document.body.classList.remove('light-theme'); 
     if(t !== 'dark') document.body.classList.add('theme-' + t);
     currentTheme = t;
     save("knk_app_theme", t);
@@ -56,7 +54,6 @@ const unlockScroll = () => { document.body.classList.remove("no-scroll"); };
 const allowZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0"); };
 const preventZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"); };
 
-// 🛡️ ADSTERRA ADS LIMITER (MAX 2 TIMES PER SESSION)
 function loadAdNetworkScripts() {
   if (window.adsScriptExecuted) return;
   let adCount = parseInt(sessionStorage.getItem("knk_ad_loads") || "0");
@@ -145,43 +142,6 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-// PREMIUM POLICIES MODAL LOGIC
-window.openPolicy = function(type) {
-    lockScroll();
-    const modal = $("policyModal"); const title = $("policyTitle"); const body = $("policyBody");
-    if(type === 'returnPolicy') {
-        title.textContent = "RETURN POLICY";
-        body.innerHTML = `
-            <p style="margin-bottom:12px;">At K_K Fashion, we strive to ensure you get the absolute best premium quality products.</p>
-            <p style="margin-bottom:12px;"><strong>Processing Time:</strong> Returns may take <strong style="color:var(--primary);">8-9 business days</strong> to completely process from the date of request.</p>
-            <p style="margin-bottom:12px;"><strong>Verification:</strong> Once you initiate a return, the respective seller will contact you directly. They will ask a few necessary questions to verify the condition of the item and ensure a smooth return protocol.</p>
-            <p>We appreciate your patience and cooperation in maintaining the elite standard of our marketplace.</p>
-        `;
-    } else if(type === 'howToReturn') {
-        title.textContent = "HOW TO RETURN";
-        body.innerHTML = `
-            <p style="margin-bottom:16px;">Initiating a return is simple and straightforward. To request a return, please contact our Elite Support team directly on WhatsApp.</p>
-            <div style="background:var(--card2); border:1px dashed var(--border); padding:15px; border-radius:12px; text-align:center; margin-bottom:20px;">
-                <h3 style="color:var(--fg); font-size:15px; margin-bottom:8px;">PLEASE CONTACT ON WHATSAPP</h3>
-                <p style="font-size:12px; color:var(--muted2);">Our support executive will guide you through the next steps instantly.</p>
-            </div>
-            <a href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20want%20to%20initiate%20a%20return%20request%20for%20my%20order." target="_blank" style="display:flex; align-items:center; justify-content:center; gap:10px; background:#25D366; color:#fff; padding:16px; border-radius:12px; font-weight:700; text-decoration:none; width:100%; box-shadow:0 4px 15px rgba(37,211,102,0.3); font-size:16px;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:24px; filter:brightness(0) invert(1);" /> Chat on WhatsApp
-            </a>
-        `;
-    } else if(type === 'privacyPolicy') {
-        title.textContent = "PRIVACY POLICY";
-        body.innerHTML = `
-            <p style="margin-bottom:12px;">Welcome to K_K Fashion Premium Marketplace. Your privacy is critically important to us.</p>
-            <p style="margin-bottom:12px;"><strong>1. Data Collection:</strong> We collect necessary information (Name, Mobile, Address) solely to process and deliver your orders from multiple verified sellers across various cities.</p>
-            <p style="margin-bottom:12px;"><strong>2. Marketplace Sharing:</strong> As a multi-vendor platform, your shipping details are shared securely ONLY with the specific shop/seller you order from to facilitate safe delivery.</p>
-            <p style="margin-bottom:12px;"><strong>3. Payment Security:</strong> We utilize direct UPI payment systems. We do not ask for or store your banking passwords, ATM pins, or UPI PINs.</p>
-            <p>By using K_K Fashion, you consent to this premium privacy protocol designed to protect you while offering a seamless Gen-Z shopping experience.</p>
-        `;
-    }
-    modal.classList.remove("hidden");
-}
-
 function showSplashAndStart() {
   const splash = $("splash"); splash.classList.remove("hidden");
   setTimeout(() => {
@@ -218,15 +178,19 @@ if ($("profileLogoutBtn")) { $("profileLogoutBtn").onclick = () => { if (confirm
 
 window.switchNav = function (tab) {
   document.querySelectorAll('.nav-item').forEach((el) => { el.classList.remove('active'); });
-  if ($("nav" + tab)) $("nav" + tab).classList.add("active"); else if (tab === 'Contact') $("navProfile").classList.add("active"); 
+  if ($("nav" + tab)) $("nav" + tab).classList.add("active"); else if (tab === 'Contact' || tab === 'ReturnPolicy' || tab === 'HowToReturn' || tab === 'PrivacyPolicy') $("navProfile").classList.add("active"); 
   if (tab === 'Order') $("navOrderWrap").classList.add("active"); else $("navOrderWrap").classList.remove("active");
 
-  $("homeContent").classList.add("hidden"); $("shopsPage").classList.add("hidden"); $("contactPage").classList.add("hidden");
-  $("orderPage").classList.add("hidden"); $("cartPage").classList.add("hidden"); $("profilePage").classList.add("hidden");
+  ["homeContent", "shopsPage", "contactPage", "orderPage", "cartPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage"].forEach(id => {
+      if($(id)) $(id).classList.add("hidden");
+  });
 
   if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); }
   if (tab === 'Shops') $("shopsPage").classList.remove("hidden");
   if (tab === 'Contact') $("contactPage").classList.remove("hidden");
+  if (tab === 'ReturnPolicy') $("returnPolicyPage").classList.remove("hidden");
+  if (tab === 'HowToReturn') $("howToReturnPage").classList.remove("hidden");
+  if (tab === 'PrivacyPolicy') $("privacyPolicyPage").classList.remove("hidden");
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
   if (tab === 'Cart') { $("cartPage").classList.remove("hidden"); renderCartPageTab(); }
   if (tab === 'Profile') { $("profilePage").classList.remove("hidden"); renderProfile(); }
@@ -345,14 +309,14 @@ window.openMyOrderModal = function (idStr) {
   let itemsHtml = o.items.map((i) => {
     const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
     const actual = i.product.price * i.qty; const finalP = finalPrice(i.product) * i.qty;
-    let varInfo = "";
-    if(i.color || i.size) { varInfo = `<br><span style="font-size:11px; color:var(--primary);">${i.color ? i.color : ''} ${i.size ? '| '+i.size : ''}</span>`; }
+    const sizeDisplay = i.size && i.size !== "Default" ? `<div style="font-size:11px; color:var(--primary); font-weight:700;">Size: ${i.size}</div>` : '';
     return `
     <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border2); padding-bottom:12px;">
        <img src="${img}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
        <div>
-          <div style="font-weight:600; font-size:13px; color:var(--fg);">${i.product.name}${varInfo}</div>
+          <div style="font-weight:600; font-size:13px; color:var(--fg);">${i.product.name}</div>
           <div style="font-size:12px; color:var(--muted2);">Qty: ${i.qty} Unit(s)</div>
+          ${sizeDisplay}
           <div style="font-size:13px; margin-top:4px;">
             <span style="text-decoration:line-through; color:var(--muted); font-size:11px;">₹${actual}</span>
             <strong style="color:var(--primary); margin-left:6px;">₹${finalP}</strong>
@@ -392,18 +356,16 @@ function renderCartPageTab() {
   const body = $("cartPageItems"); const foot = $("cartPageFooter");
   if (!cart.length) { body.innerHTML = '<p class="empty" style="padding:40px 0;">Your shopping cart is empty.</p>'; foot.classList.add("hidden"); return; }
   body.innerHTML = "";
-  cart.forEach((i, index) => {
+  cart.forEach((i) => {
     const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : "placeholder.jpg";
-    let varInfo = "";
-    if(i.color || i.size) { varInfo = `<div style="font-size:11px; color:var(--muted2); margin-top:2px;">${i.color ? i.color : ''} ${i.size ? '| '+i.size : ''}</div>`; }
-    
     const el = document.createElement("div"); el.className = "cart-item";
+    const sizeDisplay = i.size && i.size !== "Default" ? ` | Size: ${i.size}` : '';
     el.innerHTML = `
       <img src="${mainImg}" alt="${i.product.name}" />
-      <div class="ci-info"><div class="ci-name">${i.product.name}</div>${varInfo}<div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}</div></div>
+      <div class="ci-info"><div class="ci-name">${i.product.name}</div><div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}${sizeDisplay}</div></div>
       <button class="trash">🗑️</button>
     `;
-    el.querySelector(".trash").onclick = () => { removeFromCartByIndex(index); renderCartPageTab(); };
+    el.querySelector(".trash").onclick = () => { removeFromCart(i.product.id, i.size); renderCartPageTab(); };
     body.appendChild(el);
   });
   $("cartPageTotal").textContent = "₹" + cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0); foot.classList.remove("hidden");
@@ -414,23 +376,17 @@ function renderCartCount() {
   if (navBadge) { navBadge.textContent = count; navBadge.classList.toggle("hidden", count === 0); }
 }
 
-function addToCart(p, chosenColor = null, chosenSize = null) {
-  let c = chosenColor || (p.colors && p.colors.length > 0 ? p.colors[0] : null);
-  let s = chosenSize || (p.sizes && p.sizes.length > 0 ? p.sizes[0] : null);
-  
-  const found = cart.find((i) => i.product.id === p.id && i.color === c && i.size === s);
-  if (found) found.qty += 1; 
-  else cart.push({ product: p, qty: 1, color: c, size: s });
-  
-  save("knk_cart", cart); renderCartCount();
+function addToCart(p, size) {
+  if (p.sizesIn && p.sizesIn.trim() !== "" && !size) {
+      alert("Please select a size first!");
+      return false;
+  }
+  const s = size || "Default";
+  const found = cart.find((i) => i.product.id === p.id && i.size === s);
+  if (found) found.qty += 1; else cart.push({ product: p, qty: 1, size: s });
+  save("knk_cart", cart); renderCartCount(); return true;
 }
-
-function removeFromCartByIndex(index) {
-  cart.splice(index, 1);
-  save("knk_cart", cart);
-  renderCartCount();
-}
-
+function removeFromCart(id, size) { cart = cart.filter((i) => !(i.product.id === id && i.size === size)); save("knk_cart", cart); renderCartCount(); }
 function clearCart() { cart = []; save("knk_cart", cart); renderCartCount(); }
 if ($("cartPageClearBtn")) { $("cartPageClearBtn").onclick = () => { clearCart(); renderCartPageTab(); }; }
 if ($("cartPageCheckoutBtn")) { $("cartPageCheckoutBtn").onclick = () => { if (!cart.length) return; requireLogin(() => { openCheckout(); }); }; }
@@ -576,21 +532,21 @@ function renderProducts() {
     `;
     el.querySelector("img").onclick = () => openProductDetail(p); el.querySelector(".name").onclick = () => openProductDetail(p);
     if (inStock) {
-      el.querySelector(".btn-cart-grid").onclick = (e) => { e.stopPropagation(); addToCart(p); alert("Added to cart!"); };
-      el.querySelector(".btn-buy-grid").onclick = (e) => { e.stopPropagation(); directBuyCheckoutGrid(p); };
+      el.querySelector(".btn-cart-grid").onclick = (e) => { e.stopPropagation(); openProductDetail(p); };
+      el.querySelector(".btn-buy-grid").onclick = (e) => { e.stopPropagation(); openProductDetail(p); };
     }
     grid.appendChild(el);
   });
 }
 
-function directBuyCheckoutGrid(p) {
-    currentDetailProductVariant.color = p.colors && p.colors.length > 0 ? p.colors[0] : null;
-    currentDetailProductVariant.size = p.sizes && p.sizes.length > 0 ? p.sizes[0] : null;
-    directBuyCheckout(p);
+window.openProductDetailById = function(id) {
+    const p = products.find(x => x.id === id);
+    if(p) { closeProductDetail(); setTimeout(() => openProductDetail(p), 300); }
 }
 
 function openProductDetail(p) {
-  lockScroll(); currentDetailProduct = p; const price = finalPrice(p); const inStock = p.inStock !== false; const cat = getCat(p.mainCategoryId);
+  lockScroll(); currentDetailProduct = p; currentSelectedSize = null;
+  const price = finalPrice(p); const inStock = p.inStock !== false; const cat = getCat(p.mainCategoryId);
   const slider = $("pdImageSlider"); const dotsWrap = $("pdImageDots");
   slider.innerHTML = ""; dotsWrap.innerHTML = "";
   let images = Array.isArray(p.image) ? p.image : [p.image]; if (images.length === 0) images = ["placeholder.jpg"];
@@ -615,58 +571,60 @@ function openProductDetail(p) {
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
 
-  // RENDER COLORS & SIZES
-  currentDetailProductVariant.color = p.colors && p.colors.length > 0 ? p.colors[0] : null;
-  currentDetailProductVariant.size = p.sizes && p.sizes.length > 0 ? p.sizes[0] : null;
-
-  const varWrap = $("pdVariants"); const cWrap = $("pdColorsWrap"); const sWrap = $("pdSizesWrap");
-  const cBox = $("pdColors"); const sBox = $("pdSizes");
-  cBox.innerHTML = ""; sBox.innerHTML = "";
-  
-  if((p.colors && p.colors.length > 0) || (p.sizes && p.sizes.length > 0)) {
-      varWrap.classList.remove("hidden");
-      if(p.colors && p.colors.length > 0) {
-          cWrap.classList.remove("hidden");
-          p.colors.forEach((col, idx) => {
-              const btn = document.createElement("button");
-              btn.className = "color-box" + (idx === 0 ? " active" : "");
-              btn.textContent = col;
-              btn.onclick = () => {
-                  document.querySelectorAll("#pdColors .color-box").forEach(b => b.classList.remove("active"));
-                  btn.classList.add("active");
-                  currentDetailProductVariant.color = col;
-                  if(idx < slider.children.length) {
-                      const targetImg = slider.children[idx];
-                      slider.scrollTo({ left: targetImg.offsetLeft, behavior: 'smooth' });
-                  }
-              };
-              cBox.appendChild(btn);
+  // RENDER COLORS
+  if(p.groupId) {
+      const variants = products.filter(x => x.groupId === p.groupId);
+      if(variants.length > 1) {
+          let html = '<div class="field-label" style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--fg);">Colours</div><div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px; scrollbar-width:none;">';
+          variants.forEach(v => {
+              const vImg = (Array.isArray(v.image) && v.image.length > 0) ? v.image[0] : "placeholder.jpg";
+              const isActive = v.id === p.id ? 'border: 2px solid var(--primary); transform: scale(1.05);' : 'border: 1px solid var(--border); opacity: 0.7;';
+              html += `<div onclick="openProductDetailById('${v.id}')" style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; flex-shrink:0;">
+                  <img src="${vImg}" style="width:48px;height:48px;border-radius:50%;object-fit:cover; padding:2px; ${isActive} transition:all 0.2s;">
+                  <span style="font-size:10px;font-weight:600;color:var(--fg); text-transform:uppercase;">${v.color || 'VAR'}</span>
+              </div>`;
           });
-      } else { cWrap.classList.add("hidden"); }
+          html += '</div>';
+          $("pdColorsWrap").innerHTML = html; $("pdColorsWrap").classList.remove("hidden");
+      } else { $("pdColorsWrap").classList.add("hidden"); }
+  } else { $("pdColorsWrap").classList.add("hidden"); }
 
-      if(p.sizes && p.sizes.length > 0) {
-          sWrap.classList.remove("hidden");
-          p.sizes.forEach((sz, idx) => {
-              const btn = document.createElement("button");
-              btn.className = "size-box" + (idx === 0 ? " active" : "");
-              btn.textContent = sz;
-              btn.onclick = () => {
-                  document.querySelectorAll("#pdSizes .size-box").forEach(b => b.classList.remove("active"));
-                  btn.classList.add("active");
-                  currentDetailProductVariant.size = sz;
-              };
-              sBox.appendChild(btn);
-          });
-      } else { sWrap.classList.add("hidden"); }
+  // RENDER SIZES
+  const sizesIn = p.sizesIn ? p.sizesIn.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const sizesOut = p.sizesOut ? p.sizesOut.split(',').map(s=>s.trim()).filter(Boolean) : [];
+
+  if(sizesIn.length > 0 || sizesOut.length > 0) {
+      let html = '<div class="field-label" style="margin-bottom:10px; margin-top:10px; font-size:13px; font-weight:600; color:var(--fg);">Sizes</div><div style="display:flex;gap:10px;flex-wrap:wrap;">';
+      sizesIn.forEach(s => { html += `<button class="size-box in" data-size="${s}">${s}</button>`; });
+      sizesOut.forEach(s => { html += `<button class="size-box out" disabled>${s}</button>`; });
+      html += '</div>';
+      $("pdSizesWrap").innerHTML = html; $("pdSizesWrap").classList.remove("hidden");
+
+      const btns = $("pdSizesWrap").querySelectorAll('.size-box.in');
+      btns.forEach(b => {
+          b.onclick = () => {
+              btns.forEach(x => x.classList.remove('active'));
+              b.classList.add('active');
+              currentSelectedSize = b.getAttribute('data-size');
+          }
+      });
   } else {
-      varWrap.classList.add("hidden");
+      $("pdSizesWrap").classList.add("hidden");
+      currentSelectedSize = "Default";
   }
 
   const addBtn = $("pdAddCart"); const buyBtn = $("pdBuyNow");
   if (inStock) {
     addBtn.disabled = false; buyBtn.disabled = false;
-    addBtn.onclick = () => { addToCart(p, currentDetailProductVariant.color, currentDetailProductVariant.size); alert("Added to cart!"); };
-    buyBtn.onclick = () => { directBuyCheckout(p); };
+    addBtn.onclick = () => { 
+        if(addToCart(p, currentSelectedSize)) alert("Added to cart!"); 
+    };
+    buyBtn.onclick = () => { 
+        if(p.sizesIn && p.sizesIn.trim() !== "" && !currentSelectedSize) {
+            alert("Please select a size first!"); return;
+        }
+        directBuyCheckout(p, currentSelectedSize); 
+    };
   } else { addBtn.disabled = true; buyBtn.disabled = true; }
 
   renderHorizSections(p); $("pdScroll").scrollTop = 0; $("prodDetail").classList.remove("hidden", "closing");
@@ -680,10 +638,16 @@ $("pdBackBtn").onclick = closeProductDetail;
 
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
-  const sameMainList = products.filter((p) => p.id !== currentProduct.id && p.mainCategoryId === currentProduct.mainCategoryId && p.shopId === currentProduct.shopId);
+  // Fix for displaying related products even on home page (no activeShopId)
+  const sameMainList = products.filter((p) => {
+      if (p.id === currentProduct.id) return false;
+      if (p.mainCategoryId !== currentProduct.mainCategoryId) return false;
+      if (activeShopId && p.shopId !== activeShopId) return false;
+      return true;
+  });
+  
   if (sameMainList.length > 0) {
-    const cat = getCat(currentProduct.mainCategoryId);
-    container.appendChild(buildHorizSection("More from " + (cat ? cat.name : "This Category"), sameMainList));
+    container.appendChild(buildHorizSection("Similar Products", sameMainList));
   }
 }
 
@@ -713,7 +677,7 @@ if ($("copyUpiBtn")) {
   };
 }
 
-function directBuyCheckout(p) { requireLogin(() => { preventZoom(); cart = [{ product: p, qty: 1, color: currentDetailProductVariant.color, size: currentDetailProductVariant.size }]; save("knk_cart", cart); renderCartCount(); $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null; openCheckout(); }); }
+function directBuyCheckout(p, size) { requireLogin(() => { preventZoom(); const s = size || "Default"; cart = [{ product: p, qty: 1, size: s }]; save("knk_cart", cart); renderCartCount(); $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null; openCheckout(); }); }
 
 function resetCheckoutUI() {
   $("checkoutStep1").classList.remove("hidden"); $("checkoutStep2").classList.add("hidden"); if ($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
@@ -734,31 +698,20 @@ function openCheckout() {
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
   
-  let shopCodEnabled = true;
-  let shopCodAdvance = 0;
-
+  let shopCodEnabled = true; let shopCodAdvance = 0;
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp) { 
-          currentDynamicUpi = sp.upi || "kkfashion@nyes"; 
-          $("chkQrImage").src = sp.qr || "62673.png"; 
-          shopCodEnabled = sp.codEnabled !== false;
-          shopCodAdvance = Number(sp.codAdvance) || 0;
-      } 
+      if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; } 
       else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
   } else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
   
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 
   if(!shopCodEnabled) {
-      $("payCODLabel").classList.add("hidden");
-      $("payPrepaid").checked = true;
-      $("codWarningBox").classList.add("hidden");
-      $("step2PayBtn").textContent = "Pay 100% Now";
+      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now";
   } else {
       $("payCODLabel").classList.remove("hidden");
-      if(shopCodAdvance > 0) $("codTextDesc").innerHTML = `Safety Deposit of ₹${shopCodAdvance} required online.`;
-      else $("codTextDesc").innerHTML = `Safety Deposit online required.`;
+      if(shopCodAdvance > 0) $("codTextDesc").innerHTML = `Safety Deposit of ₹${shopCodAdvance} required online.`; else $("codTextDesc").innerHTML = `Safety Deposit online required.`;
   }
 }
 
@@ -823,12 +776,8 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
     if (e.target.value === "COD") { 
         $("codWarningBox").classList.remove("hidden"); 
         let shopCodAdvance = 0;
-        if (cart.length > 0 && cart[0].product.shopId) {
-            const sp = shops.find(s => s.id === cart[0].product.shopId);
-            if (sp) shopCodAdvance = Number(sp.codAdvance) || 0;
-        }
-        if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`;
-        else $("step2PayBtn").textContent = "Pay Advance";
+        if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) shopCodAdvance = Number(sp.codAdvance) || 0; }
+        if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; else $("step2PayBtn").textContent = "Pay Advance";
     } 
     else { $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now"; }
   });
@@ -841,10 +790,7 @@ $("step2PayBtn").onclick = () => {
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
       let shopCodAdvance = 0;
-      if (cart.length > 0 && cart[0].product.shopId) {
-          const sp = shops.find(s => s.id === cart[0].product.shopId);
-          if (sp) shopCodAdvance = Number(sp.codAdvance) || 0;
-      }
+      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) shopCodAdvance = Number(sp.codAdvance) || 0; }
       amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
       if(amountPaid > finalTotal) amountPaid = finalTotal;
   }
@@ -863,11 +809,10 @@ $("step2PayBtn").onclick = () => {
   }, 1000);
 };
 
-// 🚀 TELEGRAM ALERT FUNCTION 🚀
 async function sendTelegramAlert(orderData) {
     if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === "YOUR_TELEGRAM_BOT_TOKEN_HERE") return;
     let text = `🛍️ *NEW ORDER ALERT!* 🛍️\n\n`;
-    text += `👤 *Name:* ${orderData.name}\n📱 *Mobile:* ${orderData.mobile}\n📍 *City/State:* ${orderData.state}\n`;
+    text += `👤 *Name:* ${orderData.name}\n📱 *Mobile:* ${orderData.mobile}\n📍 *City:* ${orderData.state}\n`;
     text += `🛒 *Store:* ${orderData.shopName}\n💰 *Amount:* ₹${orderData.totalAmount}\n💳 *Payment Mode:* ${orderData.paymentMethod}\n`;
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
@@ -883,10 +828,7 @@ $("confirmOrderBtn").onclick = () => {
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
       let shopCodAdvance = 0;
-      if (cart.length > 0 && cart[0].product.shopId) {
-          const sp = shops.find(s => s.id === cart[0].product.shopId);
-          if (sp) shopCodAdvance = Number(sp.codAdvance) || 0;
-      }
+      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) shopCodAdvance = Number(sp.codAdvance) || 0; }
       amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
       if(amountPaid > finalTotal) amountPaid = finalTotal;
   }
@@ -1022,9 +964,7 @@ function renderCatMgmt() {
     card.innerHTML = `
       <div class="cat-mgmt-head">
         <span>${cat.name} <small style="color:var(--primary); font-size:10px;">(${shopLabel})</small></span>
-        <div>
-           <button class="del-cat-btn" style="color:var(--destructive); background:none; border:1px solid rgba(224,85,85,0.3); border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer;">Delete</button>
-        </div>
+        <div><button class="del-cat-btn" style="color:var(--destructive); background:none; border:1px solid rgba(224,85,85,0.3); border-radius:8px; padding:4px 8px; font-size:12px; cursor:pointer;">Delete</button></div>
       </div>
     `;
     card.querySelector(".del-cat-btn").onclick = () => {
@@ -1053,8 +993,8 @@ window.renderAdminOrders = function (orders) {
     const div = document.createElement("div"); div.className = "admin-order-card";
     let itemsHtml = (o.items || []).map(i => {
        const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
-       let varInfo = ""; if(i.color || i.size) { varInfo = `<div style="font-size:10px; color:var(--muted2);">${i.color ? i.color : ''} ${i.size ? '| '+i.size : ''}</div>`; }
-       return `<div class="order-item-row" style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><img src="${img}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; border:1px solid var(--border);"><div style="font-size:12px; color:var(--fg);">${i.product.name} ${varInfo} <strong style="color:var(--primary);">(x${i.qty})</strong></div></div>`;
+       const sizeHtml = i.size && i.size !== "Default" ? `<span style="color:var(--primary); font-weight:700;">[${i.size}]</span>` : '';
+       return `<div class="order-item-row" style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><img src="${img}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; border:1px solid var(--border);"><div style="font-size:12px; color:var(--fg);">${i.product.name} ${sizeHtml} <strong style="color:var(--primary);">(x${i.qty})</strong></div></div>`;
     }).join("");
     div.innerHTML = `
       <div class="order-head"><span>Name: ${o.name} (${o.mobile})</span><strong>₹${o.totalAmount}</strong></div>
@@ -1066,9 +1006,7 @@ window.renderAdminOrders = function (orders) {
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;"><strong>Address:</strong> ${o.address}<br>${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}<strong>State & Pincode:</strong> ${o.state} - ${o.pincode}</div>
       <div class="order-items" style="background:var(--card); padding:10px; border-radius:8px; margin-bottom:10px;">${itemsHtml}</div>
       <div class="order-actions" style="display:flex; justify-content: space-between; align-items: center; margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
-        <select class="field small-field status-select" data-id="${o.id}" style="padding:6px; margin-bottom:0;">
-          <option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option><option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option><option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option>
-        </select>
+        <select class="field small-field status-select" data-id="${o.id}" style="padding:6px; margin-bottom:0;"><option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option><option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option><option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option></select>
         <button class="del-order-btn" data-id="${o.id}">🗑️ Delete Order</button>
       </div>`;
     div.querySelector(".status-select").onchange = async (e) => { const newStatus = e.target.value; if (window.updateOrderStatusInFirebase) { await window.updateOrderStatusInFirebase(o.id, newStatus); o.status = newStatus; window.renderAdminOrders(window.allFirebaseOrders); } };
@@ -1110,10 +1048,7 @@ window.renderAdmin = function () {
 function openEditModal(p) {
   editingProductId = p.id; $("editPName").textContent = p.name;
   let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", ");
-  
-  $("editPColors").value = (p.colors && p.colors.length > 0) ? p.colors.join(", ") : "";
-  $("editPSizes").value = (p.sizes && p.sizes.length > 0) ? p.sizes.join(", ") : "";
-
+  $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
   const inStock = p.inStock !== false; $("editInStock").checked = inStock;
   const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out");
@@ -1123,22 +1058,4 @@ function openEditModal(p) {
 if ($("editInStock")) { $("editInStock").addEventListener("change", function () { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); }); }
 if ($("editClose")) { $("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; }; }
 
-if ($("saveEditBtn")) {
-  $("saveEditBtn").onclick = () => {
-    if (!editingProductId) return;
-    const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-    const cStr = $("editPColors").value.trim(); const sStr = $("editPSizes").value.trim();
-    const newCols = cStr ? cStr.split(",").map(s=>s.trim()).filter(Boolean) : [];
-    const newSzs = sStr ? sStr.split(",").map(s=>s.trim()).filter(Boolean) : [];
-
-    if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
-    const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, colors: newCols, sizes: newSzs }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, colors: newCols, sizes: newSzs }); }
-    $("editModal").classList.add("hidden"); editingProductId = null;
-  };
-}
-
-$("closeViewerBtn").onclick = () => { $("imageViewer").classList.add("hidden"); preventZoom(); };
-$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { $("imageViewer").classList.add("hidden"); preventZoom(); } };
-preventZoom(); renderCartCount();
+if ($("save
