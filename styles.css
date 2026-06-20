@@ -152,7 +152,7 @@ body.no-scroll { overflow: hidden !important; }
   transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
 }
 .pd-back-enhanced:hover { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
-body.theme-light .pd-back-enhanced { background: #fff; color: #111; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+body.theme-light .pd-back-enhanced { background: #fff; color: #111; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-color: #e0e0e0; }
 
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: flex-end; animation: overlayFade 0.25s ease; backdrop-filter: blur(2px); }
 .overlay.center { align-items: center; justify-content: center; }
