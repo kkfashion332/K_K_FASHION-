@@ -20,6 +20,10 @@
 </head>
 <body>
 
+  <div id="initLoader" style="position:fixed; inset:0; background:#0a0a0a; z-index:99999; display:flex; align-items:center; justify-content:center; color:#C9A84C; font-family:'Inter', sans-serif; font-weight:600; font-size:14px;">
+    Loading K_K Fashion...
+  </div>
+
   <div id="authScreen" class="auth-screen hidden">
     <div class="auth-card">
       <h1 class="auth-brand">K_K Fashion</h1>
@@ -511,11 +515,23 @@
     <div class="pin-box">
       <button id="pinClose" class="icon-btn close-abs">✕</button>
       <div class="lock">🔒</div>
-      <h2>Admin Login</h2>
+      <h2>Vendor Login</h2>
       <p>Enter PIN to continue</p>
       <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" class="pin-input" />
       <div id="pinError" class="error hidden">Wrong PIN</div>
       <button id="pinUnlock" class="btn-primary full auth-submit">Unlock</button>
+    </div>
+  </div>
+
+  <div id="superAdminPinModal" class="overlay center hidden" style="z-index: 115;">
+    <div class="pin-box">
+      <button id="superPinClose" class="icon-btn close-abs">✕</button>
+      <div class="lock">👑</div>
+      <h2>Super Admin</h2>
+      <p>Enter 5-digit Master PIN</p>
+      <input id="superPinInput" type="password" inputmode="numeric" placeholder="•••••" class="pin-input" maxlength="5" />
+      <div id="superPinError" class="error hidden">Wrong PIN</div>
+      <button id="superPinUnlock" class="btn-primary full auth-submit">Unlock All Access</button>
     </div>
   </div>
 
@@ -607,14 +623,14 @@
       </div>
       
       <div class="admin-main-tabs">
-          <button class="am-tab active" onclick="switchAdminTab(event, 'amShops')">Shops</button>
-          <button class="am-tab" onclick="switchAdminTab(event, 'amOrders')">Orders</button>
-          <button class="am-tab" onclick="switchAdminTab(event, 'amCats')">Categories</button>
-          <button class="am-tab" onclick="switchAdminTab(event, 'amProds')">Products</button>
-          <button class="am-tab" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
+          <button id="tabShopsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amShops')">Shops</button>
+          <button id="tabOrdersBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amOrders')">Orders</button>
+          <button id="tabCatsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCats')">Categories</button>
+          <button id="tabProdsBtn" class="am-tab active" onclick="switchAdminTab(event, 'amProds')">Products</button>
+          <button id="tabSettingsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
       </div>
 
-      <div id="amShops" class="admin-section">
+      <div id="amShops" class="admin-section hidden">
           <section class="card">
             <h3>Shop Management</h3>
             <p class="section-hint">Multiple shops add/edit karein jinki dynamic UPI use hogi.</p>
@@ -670,7 +686,7 @@
           </section>
       </div>
 
-      <div id="amProds" class="admin-section hidden">
+      <div id="amProds" class="admin-section">
           <section class="card">
             <h3>Add Product</h3>
             <input id="pName" class="field" placeholder="Product name" />
@@ -781,6 +797,8 @@
     <img id="fullImage" src="" alt="Full View" style="max-width: 100vw; max-height: 100vh; transition: transform 0.3s ease;" />
   </div>
 
+  <script defer src="app.js"></script>
+
   <script type="module">
     import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
@@ -810,6 +828,10 @@
     window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.updateProfile = updateProfile;
+
+    if(document.getElementById('initLoader')) {
+        document.getElementById('initLoader').style.display = 'none';
+    }
 
     async function fetchShops() {
       try {
@@ -933,11 +955,5 @@
     });
   </script>
 
-  <a id="waBtn" href="https://wa.me/919950701758?text=Hello%20KK%20Fashion,%20I%20need%20premium%20assistance." target="_blank" rel="noopener noreferrer" class="whatsapp-float hidden">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="whatsapp-icon" />
-    <span class="help-text">HELP</span>
-  </a>
-
-  <script src="app.js"></script>
 </body>
 </html>
