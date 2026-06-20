@@ -97,10 +97,6 @@
           <div id="mainCats" class="main-cats"></div>
         </div>
 
-        <div id="subCatsWrap" class="sub-cats-wrap hidden-bar">
-          <div id="subCats" class="cats"></div>
-        </div>
-
         <main class="main">
           <div id="activeShopBanner" class="hidden" style="background: var(--primary); color: #000; padding: 10px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 13px;">
             <span id="activeShopText">Store: </span>
@@ -518,127 +514,147 @@
 
   <div id="adminPanel" class="admin hidden" style="z-index: 105;">
     <div class="admin-inner">
-      <div class="drawer-head">
+      <div class="drawer-head" style="border-bottom:none; padding-bottom:5px;">
         <h2>Admin Panel</h2>
         <button id="adminClose" class="icon-btn">✕</button>
       </div>
+      
+      <div class="admin-main-tabs">
+          <button class="am-tab active" onclick="switchAdminTab(event, 'amShops')">Shops</button>
+          <button class="am-tab" onclick="switchAdminTab(event, 'amOrders')">Orders</button>
+          <button class="am-tab" onclick="switchAdminTab(event, 'amCats')">Categories</button>
+          <button class="am-tab" onclick="switchAdminTab(event, 'amProds')">Products</button>
+          <button class="am-tab" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
+      </div>
 
-      <section class="card">
-        <h3>Shop Management (Marketplace)</h3>
-        <p class="section-hint">Multiple shops add karein jinki dynamic UPI use hogi.</p>
-        <div id="adminShopsList" style="margin-bottom: 10px;"></div>
-        <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-          <input id="newShopName" class="field" placeholder="Shop Name (e.g. Trendy Boutique)" />
-          <input id="newShopCity" class="field" placeholder="City Name (e.g. Baran)" />
-          <input id="newShopType" class="field" placeholder="Product Type (e.g. Shoes, Clothes)" />
-          <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
-          <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
-          <input id="newShopQR" class="field" placeholder="Shop QR Code Image URL" />
-          <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
-        </div>
-      </section>
+      <div id="amShops" class="admin-section">
+          <section class="card">
+            <h3>Shop Management</h3>
+            <p class="section-hint">Multiple shops add/edit karein jinki dynamic UPI use hogi.</p>
+            <div id="adminShopsList" style="margin-bottom: 10px;"></div>
+            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
+              <input id="newShopName" class="field" placeholder="Shop Name (e.g. Trendy Boutique)" />
+              <input id="newShopCity" class="field" placeholder="City Name (e.g. Baran)" />
+              <input id="newShopType" class="field" placeholder="Product Type (e.g. Shoes, Clothes)" />
+              <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
+              <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
+              <input id="newShopQR" class="field" placeholder="Shop QR Code Image URL" />
+              <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
+            </div>
+          </section>
+      </div>
 
-      <section class="card">
-        <h3>Home Page Banners</h3>
-        <p class="section-hint">Auto-sliding banners add/remove karein.</p>
-        <div id="adminBannersList" style="margin-bottom: 10px;"></div>
-        <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-          <input id="newBannerImg" class="field" placeholder="Banner Image URL" />
-          <input id="newBannerLink" class="field" placeholder="Target Link (Optional)" />
-          <button id="addBannerBtn" class="btn-primary sm-btn auth-submit">+ Add Banner</button>
-        </div>
-      </section>
+      <div id="amOrders" class="admin-section hidden">
+          <section class="card">
+            <h3>Order Management</h3>
+            <p class="section-hint">Customer ke orders check aur manage karein.</p>
+            <div class="admin-tabs" id="adminOrderTabs">
+              <button class="admin-tab active" data-tab="Recent">Recent</button>
+              <button class="admin-tab" data-tab="Pending">Pending</button>
+              <button class="admin-tab" data-tab="Completed">Completed</button>
+            </div>
+            <div id="adminOrdersList">Loading orders...</div>
+          </section>
+      </div>
 
-      <section class="card">
-        <h3>Order Management</h3>
-        <p class="section-hint">Customer ke orders check aur manage karein.</p>
-        <div class="admin-tabs" id="adminOrderTabs">
-          <button class="admin-tab active" data-tab="Recent">Recent</button>
-          <button class="admin-tab" data-tab="Pending">Pending</button>
-          <button class="admin-tab" data-tab="Completed">Completed</button>
-        </div>
-        <div id="adminOrdersList">Loading orders...</div>
-      </section>
+      <div id="amCats" class="admin-section hidden">
+          <section class="card">
+            <h3>Category Management</h3>
+            <p class="section-hint">Har shop ki alag main categories banayein aur delete karein.</p>
+            <div id="catMgmtList"></div>
+            <div class="field-group" style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
+              <label class="field-label">Assign Category to Shop</label>
+              <select id="newCatShop" class="field small-field">
+                <option value="GLOBAL">Global (All Shops)</option>
+              </select>
+              <div class="inline-row" style="margin-top:8px;">
+                <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
+                <button id="addCatBtn" class="btn-primary sm-btn auth-submit">+ Add</button>
+              </div>
+            </div>
+          </section>
+      </div>
 
-      <section class="card">
-        <h3>Categories</h3>
-        <p class="section-hint">Main categories add/delete karein. Har category ke andar sub-categories bhi manage karein.</p>
-        <div id="catMgmtList"></div>
-        <div class="field-group" style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
-          <label class="field-label">Assign Category to Shop</label>
-          <select id="newCatShop" class="field small-field">
-            <option value="GLOBAL">Global (All Shops)</option>
-          </select>
-          <div class="inline-row" style="margin-top:8px;">
-            <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
-            <button id="addCatBtn" class="btn-primary sm-btn auth-submit">+ Add</button>
-          </div>
-        </div>
-      </section>
+      <div id="amProds" class="admin-section hidden">
+          <section class="card">
+            <h3>Add Product</h3>
+            <input id="pName" class="field" placeholder="Product name" />
+            <input id="pImage" class="field" placeholder="Image URLs (Comma Separated for Multiple)" />
+            <div class="row3" style="margin-bottom:12px;">
+              <div class="field-group">
+                <label class="field-label">Price (₹)</label>
+                <input id="pPrice" class="field" type="number" placeholder="Price" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Discount %</label>
+                <input id="pDiscount" class="field" type="number" placeholder="0" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Extra (₹)</label>
+                <input id="pExtra" class="field" type="number" placeholder="0" />
+              </div>
+            </div>
+            <div class="row2" style="margin-bottom:12px;">
+              <div class="field-group">
+                <label class="field-label">Assign to Shop</label>
+                <select id="pShop" class="field"></select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Main Category</label>
+                <select id="pMainCat" class="field"></select>
+              </div>
+            </div>
+            <div class="stock-toggle-row" style="margin-bottom:14px;">
+              <span class="field-label">Stock Status</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pInStock" checked />
+                <span class="toggle-slider"></span>
+              </label>
+              <span id="pStockLabel" class="stock-label in">In Stock</span>
+            </div>
+            <button id="addProductBtn" class="btn-primary full auth-submit">Add Product to Collection</button>
+          </section>
 
-      <section class="card">
-        <h3>Add Product</h3>
-        <input id="pName" class="field" placeholder="Product name" />
-        <input id="pImage" class="field" placeholder="Image URLs (Comma Separated for Multiple)" />
-        
-        <div class="row3" style="margin-bottom:12px;">
-          <div class="field-group">
-            <label class="field-label">Price (₹)</label>
-            <input id="pPrice" class="field" type="number" placeholder="Price" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Discount %</label>
-            <input id="pDiscount" class="field" type="number" placeholder="0" />
-          </div>
-          <div class="field-group">
-            <label class="field-label">Extra (₹)</label>
-            <input id="pExtra" class="field" type="number" placeholder="0" />
-          </div>
-        </div>
-        <div class="row2" style="margin-bottom:12px;">
-          <div class="field-group">
-            <label class="field-label">Assign to Shop</label>
-            <select id="pShop" class="field"></select>
-          </div>
-          <div class="field-group">
-            <label class="field-label">Main Category</label>
-            <select id="pMainCat" class="field" onchange="onMainCatChange()"></select>
-          </div>
-        </div>
-        <div class="field-group" id="subCatGroup" style="display:none; margin-bottom:12px;">
-            <label class="field-label">Sub-Category</label>
-            <select id="pSubCat" class="field"></select>
-        </div>
-        
-        <div class="stock-toggle-row" style="margin-bottom:14px;">
-          <span class="field-label">Stock Status</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="pInStock" checked />
-            <span class="toggle-slider"></span>
-          </label>
-          <span id="pStockLabel" class="stock-label in">In Stock</span>
-        </div>
-        <button id="addProductBtn" class="btn-primary full auth-submit">Add Product to Collection</button>
-      </section>
+          <section class="card">
+            <h3 id="adminProdTitle">Products List</h3>
+            <div class="admin-filter-row">
+              <select id="adminFilterCat" class="field small-field" onchange="renderAdmin()">
+                <option value="ALL">All Categories</option>
+              </select>
+            </div>
+            <div id="adminProducts"></div>
+          </section>
+      </div>
 
-      <section class="card">
-        <h3 id="adminProdTitle">Products</h3>
-        <div class="admin-filter-row">
-          <select id="adminFilterCat" class="field small-field" onchange="renderAdmin()">
-            <option value="ALL">All Categories</option>
-          </select>
-        </div>
-        <div id="adminProducts"></div>
-      </section>
+      <div id="amSettings" class="admin-section hidden">
+          <section class="card">
+            <h3>Theme Settings 🪄</h3>
+            <p class="section-hint">Website ka pura look change karein (Light/Dark Mode).</p>
+            <div class="inline-row" style="margin-top:8px; justify-content:space-between;">
+              <span id="themeStatus" style="font-weight:600; font-size:14px;">Dark Mode Active</span>
+              <button id="themeToggleBtn" class="btn-outline sm-btn auth-submit" style="margin:0;">Toggle Theme</button>
+            </div>
+          </section>
+          
+          <section class="card">
+            <h3>Home Page Banners</h3>
+            <p class="section-hint">Auto-sliding banners add/remove karein.</p>
+            <div id="adminBannersList" style="margin-bottom: 10px;"></div>
+            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
+              <input id="newBannerImg" class="field" placeholder="Banner Image URL" />
+              <input id="newBannerLink" class="field" placeholder="Target Link (Optional)" />
+              <button id="addBannerBtn" class="btn-primary sm-btn auth-submit">+ Add Banner</button>
+            </div>
+          </section>
 
-      <section class="card">
-        <h3>Change Admin PIN</h3>
-        <p class="section-hint">Apna naya PIN set karein (Kam se kam 4 digit).</p>
-        <div class="inline-row" style="margin-top:8px;">
-          <input id="newAdminPin" type="number" class="field" placeholder="Naya PIN daalein" />
-          <button id="updatePinBtn" class="btn-primary sm-btn auth-submit">Save PIN</button>
-        </div>
-      </section>
+          <section class="card">
+            <h3>Change Admin PIN</h3>
+            <div class="inline-row" style="margin-top:8px;">
+              <input id="newAdminPin" type="number" class="field" placeholder="Naya PIN daalein" />
+              <button id="updatePinBtn" class="btn-primary sm-btn auth-submit">Save</button>
+            </div>
+          </section>
+      </div>
 
     </div>
   </div>
@@ -698,7 +714,7 @@
           bannersData = snap.data().banners || [];
         } else {
           cats = [
-            { id: "cat_genz",  name: "GEN-Z PREMIUM", subCategories: ["PUMA COMBO","PREMIUM COMBO"], shopId: "GLOBAL" }
+            { id: "cat_genz",  name: "GEN-Z PREMIUM", shopId: "GLOBAL" }
           ];
           bannersData = [];
           await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData }, { merge: true });
@@ -726,7 +742,6 @@
             discount: data.discount || 0,
             extra: data.extra || 0,
             mainCategoryId: data.mainCategoryId || "",
-            subCategory: data.subCategory || data.category || "",
             shopId: data.shopId || "",
             inStock: data.inStock !== false
           });
@@ -794,7 +809,6 @@
       const pDisc    = document.getElementById("pDiscount").value;
       const pExtra   = document.getElementById("pExtra").value;
       const pCatId   = document.getElementById("pMainCat").value;
-      const pSubCat  = document.getElementById("pSubCat").value || "";
       const pShopId  = document.getElementById("pShop").value || "";
       const pInStock = document.getElementById("pInStock").checked;
 
@@ -806,7 +820,7 @@
       try {
         await addDoc(collection(db, "products"), {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, subCategory: pSubCat, category: pSubCat, shopId: pShopId, inStock: pInStock, timestamp: new Date()
+          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, timestamp: new Date()
         });
         alert("Product listed successfully in Elite Collection! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
