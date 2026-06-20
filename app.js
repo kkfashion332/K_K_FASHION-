@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - POLICIES, COLORS, SIZES)
+   K_K FASHION — app.js (FINAL - UI PREMIUM FIXES, SIZES, COLORS)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -24,7 +24,7 @@ let editingProductId = null;
 let editingShopId = null;
 let searchQuery = "";
 let currentDetailProduct = null;
-let currentSelectedSize = null; // SIZES TRACKER
+let currentSelectedSize = null; 
 let isAppInitialized = false;
 let runtimeSkipped = false;
 let activeAdminOrderTab = "Recent";
@@ -575,13 +575,13 @@ function openProductDetail(p) {
   if(p.groupId) {
       const variants = products.filter(x => x.groupId === p.groupId);
       if(variants.length > 1) {
-          let html = '<div class="field-label" style="margin-bottom:8px;">Available Colours</div><div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:5px;">';
+          let html = '<div class="field-label" style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--fg);">Colours</div><div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px; scrollbar-width:none;">';
           variants.forEach(v => {
               const vImg = (Array.isArray(v.image) && v.image.length > 0) ? v.image[0] : "placeholder.jpg";
-              const isActive = v.id === p.id ? 'border-color:var(--primary);' : 'border-color:var(--border);';
-              html += `<div onclick="openProductDetailById('${v.id}')" style="display:flex;align-items:center;gap:6px;padding:4px 8px;border:1.5px solid transparent; ${isActive} border-radius:8px;background:var(--card2);cursor:pointer;flex-shrink:0;">
-                  <img src="${vImg}" style="width:24px;height:24px;border-radius:4px;object-fit:cover;">
-                  <span style="font-size:12px;font-weight:600;color:var(--fg);">${v.color || 'Variant'}</span>
+              const isActive = v.id === p.id ? 'border: 2px solid var(--primary); transform: scale(1.05);' : 'border: 1px solid var(--border); opacity: 0.7;';
+              html += `<div onclick="openProductDetailById('${v.id}')" style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; flex-shrink:0;">
+                  <img src="${vImg}" style="width:48px;height:48px;border-radius:50%;object-fit:cover; padding:2px; ${isActive} transition:all 0.2s;">
+                  <span style="font-size:10px;font-weight:600;color:var(--fg); text-transform:uppercase;">${v.color || 'VAR'}</span>
               </div>`;
           });
           html += '</div>';
@@ -594,13 +594,13 @@ function openProductDetail(p) {
   const sizesOut = p.sizesOut ? p.sizesOut.split(',').map(s=>s.trim()).filter(Boolean) : [];
 
   if(sizesIn.length > 0 || sizesOut.length > 0) {
-      let html = '<div class="field-label" style="margin-bottom:8px; margin-top:5px;">Select Size</div><div style="display:flex;gap:10px;flex-wrap:wrap;">';
-      sizesIn.forEach(s => { html += `<button class="size-btn in" data-size="${s}">${s}</button>`; });
-      sizesOut.forEach(s => { html += `<button class="size-btn out" disabled>${s}</button>`; });
+      let html = '<div class="field-label" style="margin-bottom:10px; margin-top:10px; font-size:13px; font-weight:600; color:var(--fg);">Sizes</div><div style="display:flex;gap:10px;flex-wrap:wrap;">';
+      sizesIn.forEach(s => { html += `<button class="size-box in" data-size="${s}">${s}</button>`; });
+      sizesOut.forEach(s => { html += `<button class="size-box out" disabled>${s}</button>`; });
       html += '</div>';
       $("pdSizesWrap").innerHTML = html; $("pdSizesWrap").classList.remove("hidden");
 
-      const btns = $("pdSizesWrap").querySelectorAll('.size-btn.in');
+      const btns = $("pdSizesWrap").querySelectorAll('.size-box.in');
       btns.forEach(b => {
           b.onclick = () => {
               btns.forEach(x => x.classList.remove('active'));
@@ -638,10 +638,16 @@ $("pdBackBtn").onclick = closeProductDetail;
 
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
-  const sameMainList = products.filter((p) => p.id !== currentProduct.id && p.mainCategoryId === currentProduct.mainCategoryId && p.shopId === currentProduct.shopId);
+  // Fix for displaying related products even on home page (no activeShopId)
+  const sameMainList = products.filter((p) => {
+      if (p.id === currentProduct.id) return false;
+      if (p.mainCategoryId !== currentProduct.mainCategoryId) return false;
+      if (activeShopId && p.shopId !== activeShopId) return false;
+      return true;
+  });
+  
   if (sameMainList.length > 0) {
-    const cat = getCat(currentProduct.mainCategoryId);
-    container.appendChild(buildHorizSection("More from " + (cat ? cat.name : "This Category"), sameMainList));
+    container.appendChild(buildHorizSection("Similar Products", sameMainList));
   }
 }
 
@@ -698,6 +704,7 @@ function openCheckout() {
       if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; } 
       else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
   } else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
+  
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 
   if(!shopCodEnabled) {
