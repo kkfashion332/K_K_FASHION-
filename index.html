@@ -194,7 +194,7 @@
             Edit Name
           </button>
 
-          <div class="premium-about-container" style="margin-top:30px;">
+          <div class="premium-about-container" style="margin-top:30px; margin-bottom:15px;">
             <div class="about-logo-mark" style="font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--primary);">K_K</div>
             <h3 style="color:var(--fg); font-size:16px; margin: 8px 0; font-family: var(--font-display);">The K_K Legacy</h3>
             <p style="font-size:13px; line-height:1.6; color:var(--muted2);">
@@ -203,9 +203,10 @@
           </div>
           
           <div class="profile-links" style="margin-top:25px; border-top:1px solid var(--border2); padding-top:20px; text-align:left;">
-            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link">
-              📞 Premium Support <span>→</span>
-            </button>
+            <button onclick="openPolicy('returnPolicy')" class="p-link-btn premium-p-link">📜 Return Policy <span>→</span></button>
+            <button onclick="openPolicy('howToReturn')" class="p-link-btn premium-p-link">📦 How to Return <span>→</span></button>
+            <button onclick="openPolicy('privacyPolicy')" class="p-link-btn premium-p-link">🔒 Privacy Policy <span>→</span></button>
+            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link" style="margin-top:10px;">📞 Premium Support <span>→</span></button>
           </div>
 
           <button id="profileLogoutBtn" class="btn-outline full premium-logout" style="margin-top: 25px;">
@@ -248,6 +249,17 @@
     </nav>
   </div>
 
+  <div id="policyModal" class="overlay hidden" style="z-index: 160;">
+    <div class="drawer">
+      <div class="drawer-head">
+        <h2 id="policyTitle" style="font-size:20px; color:var(--primary);">Title</h2>
+        <button onclick="document.getElementById('policyModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
+      </div>
+      <div class="drawer-body" id="policyBody" style="line-height:1.6; color:var(--fg); font-size:14px; padding:20px;">
+      </div>
+    </div>
+  </div>
+
   <div id="myOrderDetailModal" class="overlay hidden" style="z-index: 150;">
     <div class="drawer">
       <div class="drawer-head">
@@ -284,6 +296,17 @@
           <span id="pdStrike" class="pd-strike hidden"></span>
           <span id="pdOff" class="pd-off hidden"></span>
         </div>
+      </div>
+
+      <div id="pdVariants" class="pd-variants hidden" style="padding: 10px 16px 14px; border-bottom: 1px solid var(--border);">
+         <div id="pdColorsWrap" class="hidden" style="margin-bottom:14px;">
+           <div style="font-size:11px; color:var(--muted); margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Select Colour</div>
+           <div id="pdColors" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px;"></div>
+         </div>
+         <div id="pdSizesWrap" class="hidden">
+           <div style="font-size:11px; color:var(--muted); margin-bottom:8px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Select Size</div>
+           <div id="pdSizes" style="display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px;"></div>
+         </div>
       </div>
 
       <div id="pdHorizSections" class="horiz-sections"></div>
@@ -494,6 +517,17 @@
         <input id="editPImage" class="field" type="text" placeholder="URL 1, URL 2..." />
       </div>
 
+      <div class="row2" style="margin-bottom:12px; width: 100%;">
+        <div class="field-group">
+          <label class="field-label">Colours (Comma Sep.)</label>
+          <input id="editPColors" class="field" placeholder="e.g. Red, Black" />
+        </div>
+        <div class="field-group">
+          <label class="field-label">Sizes (Comma Sep.)</label>
+          <input id="editPSizes" class="field" placeholder="e.g. S, M, L" />
+        </div>
+      </div>
+
       <div class="row3" style="margin-bottom:12px; width: 100%;">
         <div class="field-group">
           <label class="field-label">Actual Price (₹)</label>
@@ -596,6 +630,18 @@
             <h3>Add Product</h3>
             <input id="pName" class="field" placeholder="Product name" />
             <input id="pImage" class="field" placeholder="Image URLs (Comma Separated for Multiple)" />
+            
+            <div class="row2" style="margin-bottom:12px;">
+              <div class="field-group">
+                <label class="field-label">Colours (Comma Sep.)</label>
+                <input id="pColors" class="field" placeholder="e.g. Red, Black" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Sizes (Comma Sep.)</label>
+                <input id="pSizes" class="field" placeholder="e.g. S, M, L" />
+              </div>
+            </div>
+
             <div class="row3" style="margin-bottom:12px;">
               <div class="field-group">
                 <label class="field-label">Price (₹)</label>
@@ -620,6 +666,7 @@
                 <select id="pMainCat" class="field"></select>
               </div>
             </div>
+            
             <div class="stock-toggle-row" style="margin-bottom:14px;">
               <span class="field-label">Stock Status</span>
               <label class="toggle-switch">
@@ -748,7 +795,8 @@
           if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } else if(data.imageUrl) { imgData = [data.imageUrl]; }
           list.push({
             id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0,
-            mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false
+            mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false,
+            colors: data.colors || [], sizes: data.sizes || []
           });
         });
         if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
@@ -807,19 +855,23 @@
       const pExtra   = document.getElementById("pExtra").value;
       const pCatId   = document.getElementById("pMainCat").value;
       const pShopId  = document.getElementById("pShop").value || "";
+      const pColorsStr = document.getElementById("pColors").value.trim();
+      const pSizesStr  = document.getElementById("pSizes").value.trim();
       const pInStock = document.getElementById("pInStock").checked;
 
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+      const colorsArr = pColorsStr ? pColorsStr.split(",").map(s => s.trim()).filter(Boolean) : [];
+      const sizesArr = pSizesStr ? pSizesStr.split(",").map(s => s.trim()).filter(Boolean) : [];
 
       if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
       const btn = document.getElementById("addProductBtn"); btn.textContent = "Listing...";
       try {
         await addDoc(collection(db, "products"), {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, timestamp: new Date()
+          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, colors: colorsArr, sizes: sizesArr, timestamp: new Date()
         });
         alert("Product listed successfully in Elite Collection! 🎉");
-        ["pName","pImage","pPrice","pDiscount","pExtra"].forEach(id => document.getElementById(id).value = "");
+        ["pName","pImage","pPrice","pDiscount","pExtra","pColors","pSizes"].forEach(id => document.getElementById(id).value = "");
         fetchProducts();
       } catch(e) {}
       finally { btn.textContent = "Add Product to Collection"; }
