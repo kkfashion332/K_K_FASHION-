@@ -58,18 +58,6 @@ const unlockScroll = () => { document.body.classList.remove("no-scroll"); };
 const allowZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0"); };
 const preventZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"); };
 
-function loadAdNetworkScripts() {
-  if (window.adsScriptExecuted) return;
-  let adCount = parseInt(sessionStorage.getItem("knk_ad_loads") || "0");
-  if (adCount >= 2) return; 
-  window.adsScriptExecuted = true;
-  sessionStorage.setItem("knk_ad_loads", adCount + 1);
-  let adScript = document.createElement("script");
-  adScript.src = "https://pl29734662.effectivecpmnetwork.com/33/e1/b0/33e1b009f252fa0084b83f7fa7cc7315.js";
-  adScript.async = true;
-  document.head.appendChild(adScript);
-}
-
 function requireLogin(callback) {
   if (window.fbAuth && window.fbAuth.currentUser) { callback(); } 
   else {
@@ -109,8 +97,7 @@ window.addEventListener("DOMContentLoaded", () => {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
         $("authScreen").classList.add("hidden");
-        loadAdNetworkScripts();
-        if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
+                if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
         else { $("app").classList.remove("hidden"); $("waBtn").classList.remove("hidden"); renderProfile(); }
       } else {
         if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
@@ -171,7 +158,7 @@ function showSplashAndStart() {
   }, 2500);
 }
 
-if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); loadAdNetworkScripts(); showSplashAndStart(); }; }
+if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
 
 if ($("authSubmitBtn")) {
   $("authSubmitBtn").onclick = async () => {
