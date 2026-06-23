@@ -5,8 +5,8 @@
 const QIKINK_CLIENT_ID = "838713226730904";
 const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9ea5cf833ed39f62";
 
-const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN_HERE"; 
-const TELEGRAM_CHAT_ID = "YOUR_CHAT_ID_HERE";
+const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
+const TELEGRAM_CHAT_ID = "7503426190";
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
