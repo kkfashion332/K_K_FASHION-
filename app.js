@@ -12,8 +12,8 @@ const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JS
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
 
-const ADMIN_PIN = "0000";
-const SUPER_ADMIN_PIN = "89497"; // 👑 SUPER ADMIN PIN 👑
+const ADMIN_PIN = "9721";
+const SUPER_ADMIN_PIN = "90793"; // 👑 SUPER ADMIN PIN 👑
 let superAdminTapCount = 0;
 let superAdminTapTimer = null;
 
