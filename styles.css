@@ -51,24 +51,17 @@ body.no-scroll { overflow: hidden !important; }
 #imageViewer { touch-action: auto; overflow: auto; }
 #fullImage { touch-action: auto; }
 
-/* OLD SPLASH KEEP INTACT AS REQUESTED */
-.splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg); gap: 0; animation: splashFadeIn 0.6s ease; }
-.splash-glow { position: absolute; width: 320px; height: 240px; border-radius: 50%; background: radial-gradient(ellipse, rgba(201,168,76,0.14) 0%, transparent 70%); animation: splashGlowPulse 2.5s ease-in-out infinite; pointer-events: none; }
-.splash-oval { position: relative; width: 230px; height: 148px; border: 1.5px solid rgba(201,168,76,0.55); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 0 35px rgba(201,168,76,0.13), inset 0 0 20px rgba(201,168,76,0.04); animation: splashLogoReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.3s both; }
-.splash-brand { font-family: var(--font-display); font-size: 60px; font-weight: 700; letter-spacing: 0.1em; background: linear-gradient(160deg, #f0d97a 0%, #C9A84C 45%, #9a7120 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; }
-.splash-sub { font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.55em; color: var(--primary); opacity: 0.88; animation: splashSubReveal 0.8s ease 0.9s both; }
-.splash-line { width: 55px; height: 1px; background: linear-gradient(to right, transparent, rgba(201,168,76,0.6), transparent); margin-top: 18px; animation: splashLineExpand 0.8s ease 1.0s both; }
-.splash-tagline { font-family: var(--font-display); font-size: 14px; font-style: italic; letter-spacing: 0.18em; color: var(--muted2); margin-top: 12px; animation: splashSubReveal 0.8s ease 1.2s both; }
-
-/* =========================================
-   NEW GEN-Z 3D SPINNING SPLASH ANIMATION
-========================================= */
+/* ----------------------------------------------------
+   NEW GEN-Z 3D SPINNING COIN SPLASH ANIMATION
+---------------------------------------------------- */
+.splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; animation: splashFadeIn 0.6s ease; }
 #stage { position: absolute; inset: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; perspective: 1200px; }
 #bg-glow { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(180,83,9,0.3) 0%, #000 68%); animation: glowPulse 3s ease-in-out infinite; z-index: 0; }
 @keyframes glowPulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 #particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .particle { position: absolute; border-radius: 50%; background: #facc15; opacity: 0; animation: floatUp linear infinite; }
 @keyframes floatUp { 0% { transform: translateY(0) scale(0); opacity: 0; } 15% { opacity: 0.9; transform: translateY(-12vh) scale(1.3); } 100% { transform: translateY(-115vh) scale(0); opacity: 0; } }
+
 #coin-scene { position: absolute; z-index: 10; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; transform: scale(0); opacity: 0; transition: transform 0.5s cubic-bezier(.17,.67,.35,1.3), opacity 0.4s ease; }
 #coin-scene.appear { transform: scale(1); opacity: 1; }
 #coin-scene.spinning { animation: coinSpin 0.55s linear infinite; }
@@ -76,37 +69,47 @@ body.no-scroll { overflow: hidden !important; }
 #coin-scene.move-up { transform: scale(0.78) translateY(-115px) !important; transition: transform 0.7s cubic-bezier(.17,.67,.35,1.2); }
 @keyframes coinSpin { from { transform: scale(1) rotateY(0deg); } to { transform: scale(1) rotateY(360deg); } }
 @keyframes coinSlowStop { 0% { transform: scale(1) rotateY(0deg); } 40% { transform: scale(1) rotateY(200deg); } 70% { transform: scale(1) rotateY(320deg); } 88% { transform: scale(1) rotateY(355deg); } 100% { transform: scale(1) rotateY(360deg); } }
+
 #logo { width: 300px; height: 300px; object-fit: contain; filter: drop-shadow(0 0 28px rgba(251,191,36,0.75)); backface-visibility: visible; user-select: none; -webkit-user-drag: none; }
 #coin-rim { position: absolute; inset: -6px; border-radius: 50%; border: 4px solid rgba(251,191,36,0.85); box-shadow: 0 0 18px 4px rgba(251,191,36,0.4), inset 0 0 12px 2px rgba(251,191,36,0.2); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
 #coin-scene.spinning #coin-rim, #coin-scene.stopping #coin-rim { opacity: 1; }
+
 .wave { position: absolute; width: 300px; height: 300px; border-radius: 50%; border: 3px solid rgba(251,191,36,0.85); z-index: 9; pointer-events: none; opacity: 0; }
 .wave.blast { animation: waveBlast 0.9s ease-out forwards; }
 @keyframes waveBlast { 0% { transform: scale(0.4); opacity: 1; } 100% { transform: scale(3.8); opacity: 0; } }
 #wave2 { border-width: 2px; border-color: rgba(251,191,36,0.45); }
 #wave2.blast { animation: waveBlast 1.2s 0.18s ease-out forwards; }
+
 #flash { position: absolute; inset: 0; background: #fff; z-index: 100; opacity: 0; pointer-events: none; }
 #flash.pop { animation: flashPop 0.35s ease-out forwards; }
 @keyframes flashPop { 0% { opacity: 0.8; } 100% { opacity: 0; } }
+
 .streak { position: absolute; height: 2px; background: linear-gradient(to right, transparent, rgba(251,191,36,0.95), transparent); z-index: 8; opacity: 0; pointer-events: none; }
 .streak.fire { animation: streakFly 0.45s ease-out forwards; }
 @keyframes streakFly { 0% { transform: scaleX(0.05); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+
 #logo-glow { position: absolute; inset: -20px; border-radius: 50%; background: rgba(251,191,36,0.22); filter: blur(20px); z-index: 9; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
 #logo-glow.on { opacity: 1; animation: glowBreath 2s ease-in-out infinite; }
 @keyframes glowBreath { 0%,100% { opacity: 0.7; transform: scale(1); } 50% { opacity: 1; transform: scale(1.12); } }
+
 #welcome { position: absolute; z-index: 20; bottom: 20%; left: 0; right: 0; text-align: center; color: #fff; font-size: clamp(20px, 3.8vw, 50px); letter-spacing: 0.2em; text-shadow: 0 0 28px rgba(255,255,255,0.5); opacity: 0; transform: translateY(35px); transition: opacity 0.5s ease, transform 0.5s ease; pointer-events: none; font-family: 'Anton', 'Impact', sans-serif; }
 #welcome.show { opacity: 1; transform: translateY(0); }
 #welcome.hide { opacity: 0; transform: scale(1.07); filter: blur(7px); transition: opacity 0.5s, transform 0.5s, filter 0.5s; }
+
 #welcome-line { position: absolute; bottom: calc(20% - 14px); left: 50%; transform: translateX(-50%); height: 3px; width: 0; background: linear-gradient(to right, transparent, rgba(251,191,36,0.85), transparent); z-index: 20; transition: width 0.7s 0.25s ease; }
 #welcome-line.show { width: 52%; }
+
 #trusted { position: absolute; z-index: 20; bottom: 20%; left: 0; right: 0; text-align: center; color: #fff; font-size: clamp(16px, 3vw, 42px); letter-spacing: 0.22em; text-shadow: 0 0 22px rgba(255,255,255,0.65), 0 0 55px rgba(251,191,36,0.25); opacity: 0; transform: scale(0.65); transition: opacity 0.5s ease, transform 0.55s cubic-bezier(.17,.67,.35,1.35); pointer-events: none; font-family: 'Anton', 'Impact', sans-serif; }
 #trusted.show { opacity: 1; transform: scale(1); }
 #trusted.hide { opacity: 0; transform: scale(1.1); transition: opacity 0.55s, transform 0.55s; }
+
 #shield-glow { position: absolute; bottom: 14%; left: 50%; transform: translateX(-50%); width: 220px; height: 70px; background: rgba(251,191,36,0.16); border-radius: 50%; filter: blur(20px); z-index: 19; opacity: 0; transition: opacity 0.5s ease; }
 #shield-glow.show { opacity: 1; }
+
 #outro-overlay { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(251,191,36,0.22), transparent 65%); z-index: 30; opacity: 0; pointer-events: none; transition: opacity 0.8s ease; }
 #outro-overlay.show { opacity: 1; }
 #outro-overlay.fadeout { opacity: 0; transition: opacity 1s ease; }
-/* ========================================= */
+/* ---------------------------------------------------- */
 
 .header { position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; background: rgba(10,10,10,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); animation: slideDown 0.5s ease 0.1s both; }
 .logo-btn { display: flex; align-items: center; gap: 10px; background: none; border: none; cursor: pointer; }
