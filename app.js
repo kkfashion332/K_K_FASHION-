@@ -152,15 +152,15 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-// GEN-Z 3D SPLASH SEQUENCE
+// GEN-Z 3D SPINNING COIN SPLASH SEQUENCE
 async function showSplashAndStart() {
   const splash = $("splash"); 
   splash.classList.remove("hidden");
   splash.style.opacity = "1";
 
   // Spawn Particles
-  const container = $("particles");
-  if (container && container.children.length === 0) {
+  const box = $("particles");
+  if (box && box.children.length === 0) {
     for (let i = 0; i < 28; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
@@ -173,7 +173,7 @@ async function showSplashAndStart() {
         'animation-duration:' + (2 + Math.random() * 3).toFixed(2) + 's',
         'animation-delay:'    + (Math.random() * 3).toFixed(2)     + 's',
       ].join(';');
-      container.appendChild(p);
+      box.appendChild(p);
     }
   }
 
