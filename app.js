@@ -152,7 +152,7 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-// GEN-Z SPLASH SEQUENCE
+// GEN-Z 3D SPLASH SEQUENCE
 async function showSplashAndStart() {
   const splash = $("splash"); 
   splash.classList.remove("hidden");
@@ -161,16 +161,18 @@ async function showSplashAndStart() {
   // Spawn Particles
   const container = $("particles");
   if (container && container.children.length === 0) {
-    for (let i = 0; i < 24; i++) {
+    for (let i = 0; i < 28; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
-      p.style.left   = (Math.random() * 100) + '%';
-      p.style.bottom = (Math.random() * 10)  + '%';
-      p.style.animationDuration  = (2 + Math.random() * 3) + 's';
-      p.style.animationDelay     = (Math.random() * 3)     + 's';
-      p.style.width  = (2 + Math.random() * 3) + 'px';
-      p.style.height = p.style.width;
-      p.style.opacity = '0';
+      const sz = (2 + Math.random() * 3).toFixed(1) + 'px';
+      p.style.cssText = [
+        'left:'   + (Math.random() * 100).toFixed(1) + '%',
+        'bottom:' + (Math.random() * 8).toFixed(1)   + '%',
+        'width:'  + sz,
+        'height:' + sz,
+        'animation-duration:' + (2 + Math.random() * 3).toFixed(2) + 's',
+        'animation-delay:'    + (Math.random() * 3).toFixed(2)     + 's',
+      ].join(';');
       container.appendChild(p);
     }
   }
@@ -178,41 +180,57 @@ async function showSplashAndStart() {
   const audio = $("bg-audio");
   if (audio) audio.play().catch(() => {});
 
-  await delay(200);
+  await delay(250);
+  addClass('coin-scene', 'appear');
+  await delay(350);
+
+  addClass('coin-scene', 'spinning');
+  await delay(2000);
+
+  removeClass('coin-scene', 'spinning');
+  addClass('coin-scene', 'stopping');
+
+  await delay(500);
   addClass('flash', 'pop');
-  await delay(80);
-  addClass('streak1', 'fire'); addClass('streak2', 'fire'); addClass('streak3', 'fire');
+  addClass('s1', 'fire'); addClass('s2', 'fire'); addClass('s3', 'fire');
   
-  await delay(100);
-  addClass('logo-wrap', 'reveal');
+  await delay(60);
+  addClass('wave1', 'blast');
+  addClass('wave2', 'blast');
+  addClass('logo-glow', 'on');
+
+  await delay(500);
+  removeClass('coin-scene', 'stopping');
+
+  await delay(900);
+  addClass('coin-scene', 'move-up');
   
-  await delay(50);
-  addClass('shockwave',  'blast'); addClass('shockwave2', 'blast');
-  
-  await delay(3100);
-  addClass('logo-wrap', 'move-up');
-  
-  await delay(200);
-  addClass('welcome', 'show'); addClass('welcome-line', 'show');
+  await delay(280);
+  addClass('welcome', 'show'); 
+  addClass('welcome-line', 'show');
   
   await delay(2000);
-  addClass('welcome', 'hide'); removeClass('welcome-line', 'show');
+  addClass('welcome', 'hide'); 
+  removeClass('welcome-line', 'show');
   
-  await delay(700);
+  await delay(650);
   removeClass('welcome', 'show');
   if($('welcome')) $('welcome').style.display = 'none';
   if($('welcome-line')) $('welcome-line').style.display = 'none';
   
   await delay(300);
-  addClass('shield-glow', 'show'); addClass('trusted', 'show');
+  addClass('shield-glow', 'show'); 
+  addClass('trusted', 'show');
   
   await delay(1500);
-  addClass('outro-overlay', 'show'); addClass('trusted', 'hide'); addClass('shield-glow', 'hide');
+  addClass('outro-overlay', 'show'); 
+  addClass('trusted', 'hide'); 
+  removeClass('shield-glow', 'show');
   
   await delay(1000);
   addClass('outro-overlay', 'fadeout');
   
-  await delay(800);
+  await delay(900);
 
   // Transition to Main App
   splash.style.transition = "opacity 0.5s ease"; 
