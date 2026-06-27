@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" id="viewportMeta" />
-  <title>K_K Fashion — Premium Gen-Z Apparel</title>  <meta name="description" content="Shop exclusive, premium quality combo apparel for Gen-Z at K_K Fashion." />
+  <title>K_K Fashion — Premium Gen-Z Apparel</title>  
+  <meta name="description" content="Shop exclusive, premium quality combo apparel for Gen-Z at K_K Fashion." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -37,20 +38,34 @@
   </div>
 
   <div id="splash" class="splash hidden">
-    <div class="splash-glow"></div>
-    <div class="splash-oval">
-      <div class="splash-brand">K_K</div>
-      <div class="splash-sub">FASHION</div>
+    <div id="stage">
+      <div id="bg-glow"></div>
+      <div id="particles"></div>
+      <div class="streak" id="streak1" style="width:60%;top:38%;left:20%;"></div>
+      <div class="streak" id="streak2" style="width:45%;top:55%;left:30%;transform:rotate(-8deg);"></div>
+      <div class="streak" id="streak3" style="width:35%;top:45%;right:15%;transform:rotate(5deg);"></div>
+      <div id="shockwave"></div>
+      <div id="shockwave2"></div>
+      <div id="flash"></div>
+      
+      <div id="logo-wrap">
+        <img id="logo" src="logo.png" alt="Gen-Z Store"/>
+      </div>
+      
+      <div id="welcome">WELCOME TO GEN-Z STORE</div>
+      <div id="welcome-line"></div>
+      
+      <div id="trusted">TRUSTED AND SECURE STORE</div>
+      <div id="shield-glow"></div>
+      
+      <div id="outro-overlay"></div>
     </div>
-    <div class="splash-line"></div>
-    <p class="splash-tagline">Premium Aesthetic Only</p>
+    <audio id="bg-audio" src="bg_music.mp3" loop style="display:none"></audio>
   </div>
-
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
-        <span class="brand-mark">K_K</span>
-        <span class="brand-name">Fashion</span>
+        <img src="logo.png" alt="Gen-Z Store" style="height: 38px; width: auto; object-fit: contain;">
       </button>
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="width: 20px;"></div>
@@ -149,8 +164,9 @@
       <div id="cartPage" class="nav-page hidden" style="display:flex; flex-direction:column; min-height:80vh;">
         <h2 class="page-heading">Your Premium Cart</h2>
         <p class="page-sub">Review your selected aesthetic combos before checkout.</p>
-        <div id="cartPageItems" class="drawer-body-page"></div>
-        <div id="cartPageFooter" class="drawer-foot-page hidden">
+        <div id="cartPageItems" class="drawer-body-page" style="padding-bottom: 150px;"></div>
+        
+        <div id="cartPageFooter" class="drawer-foot-page hidden" style="position: fixed; bottom: 65px; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); padding: 15px 20px; z-index: 35; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.3);">
           <div class="total"><span>Grand Total:</span><span id="cartPageTotal">₹0</span></div>
           <button id="cartPageCheckoutBtn" class="btn-primary full auth-submit" style="padding:14px; border-radius:12px;">Proceed to Checkout</button>
           <button id="cartPageClearBtn" class="link" style="margin-top:12px; font-weight:600;">Clear Premium Cart</button>
