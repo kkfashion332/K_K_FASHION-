@@ -702,10 +702,10 @@ function openCheckout() {
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
   
-  let shopCodEnabled = true; let shopCodAdvance = 0;
+  let shopCodEnabled = true; let shopCodAdvance = 0; let shopFullCodEnabled = false;
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; } 
+      if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
       else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
   } else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
   
@@ -715,7 +715,13 @@ function openCheckout() {
       $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now";
   } else {
       $("payCODLabel").classList.remove("hidden");
-      if(shopCodAdvance > 0) $("codTextDesc").innerHTML = `Safety Deposit of ₹${shopCodAdvance} required online.`; else $("codTextDesc").innerHTML = `Safety Deposit online required.`;
+      if (shopFullCodEnabled) {
+          $("codTextDesc").innerHTML = `100% Cash on Delivery available. No advance required. 🚚`;
+      } else if(shopCodAdvance > 0) {
+          $("codTextDesc").innerHTML = `Safety Deposit of ₹${shopCodAdvance} required online.`; 
+      } else { 
+          $("codTextDesc").innerHTML = `Safety Deposit online required.`; 
+      }
   }
 }
 
@@ -759,14 +765,17 @@ function updateStep2Summary() {
   $("billActual").textContent = "₹" + actualTotal; $("billFinal").textContent = "₹" + finalTotal;
   if (actualTotal > 0) { const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100); $("billDiscount").textContent = discPercent + "% off"; }
   
-  let shopCodAdvance = 0;
+  let shopCodAdvance = 0; let shopFullCodEnabled = false;
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp) shopCodAdvance = Number(sp.codAdvance) || 0;
+      if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; }
   }
   
-  let advance = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
-  if(advance > finalTotal) advance = finalTotal;
+  let advance = 0;
+  if (!shopFullCodEnabled) {
+      advance = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
+      if(advance > finalTotal) advance = finalTotal;
+  }
   const balance = finalTotal - advance;
   
   $("codAdvanceAmt").textContent = "₹" + advance; $("codBalanceAmt").textContent = "₹" + balance;
@@ -778,10 +787,16 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
     $("confirmOrderBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden");
     if (window.paymentInterval) clearInterval(window.paymentInterval);
     if (e.target.value === "COD") { 
-        $("codWarningBox").classList.remove("hidden"); 
-        let shopCodAdvance = 0;
-        if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) shopCodAdvance = Number(sp.codAdvance) || 0; }
-        if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; else $("step2PayBtn").textContent = "Pay Advance";
+        let shopCodAdvance = 0; let shopFullCodEnabled = false;
+        if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
+        
+        if (shopFullCodEnabled) {
+            $("codWarningBox").classList.add("hidden");
+            $("step2PayBtn").textContent = "Place Order (100% COD)";
+        } else {
+            $("codWarningBox").classList.remove("hidden"); 
+            if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; else $("step2PayBtn").textContent = "Pay Advance";
+        }
     } 
     else { $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now"; }
   });
@@ -793,10 +808,20 @@ $("step2PayBtn").onclick = () => {
   
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
-      let shopCodAdvance = 0;
-      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) shopCodAdvance = Number(sp.codAdvance) || 0; }
-      amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
-      if(amountPaid > finalTotal) amountPaid = finalTotal;
+      let shopCodAdvance = 0; let shopFullCodEnabled = false;
+      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
+      
+      if (shopFullCodEnabled) {
+          amountPaid = 0;
+      } else {
+          amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
+          if(amountPaid > finalTotal) amountPaid = finalTotal;
+      }
+  }
+
+  if (amountPaid === 0 && payMethod === "COD") {
+      $("confirmOrderBtn").click();
+      return;
   }
   
   $("qrAmountDisplay").textContent = "₹" + amountPaid;
@@ -842,7 +867,7 @@ async function sendTelegramAlert(orderData) {
         text += `🛑 *Balance Due (COD):* ₹${orderData.balanceDue}\n`;
     }
     
-    if(orderData.utrNumber) text += `🧾 *UTR No:* ${orderData.utrNumber}\n`;
+    if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *UTR No:* ${orderData.utrNumber}\n`;
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
@@ -850,18 +875,29 @@ async function sendTelegramAlert(orderData) {
 
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
-  if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) return alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
   
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
   
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
-      let shopCodAdvance = 0;
-      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) shopCodAdvance = Number(sp.codAdvance) || 0; }
-      amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
-      if(amountPaid > finalTotal) amountPaid = finalTotal;
+      let shopCodAdvance = 0; let shopFullCodEnabled = false;
+      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
+      
+      if (shopFullCodEnabled) {
+          amountPaid = 0;
+      } else {
+          amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25);
+          if(amountPaid > finalTotal) amountPaid = finalTotal;
+      }
   }
+
+  if (amountPaid > 0) {
+      if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) return alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein.");
+  } else {
+      utrValue = "FULL_COD";
+  }
+
   let balanceDue = finalTotal - amountPaid;
 
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
@@ -897,7 +933,8 @@ function showStep3Success(payMethod, paid, due) {
   $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed"); $("step2Circle").innerHTML = "✔";
   $("line2").classList.add("completed"); $("step3Indicator").classList.add("active");
   let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
-  if (payMethod === "COD") { sumHtml += `<strong>Safety Deposit Paid:</strong> ₹${paid}<br><strong style="color:var(--destructive)">Balance Cash on Delivery:</strong> ₹${due}`; } 
+  if (payMethod === "COD" && paid > 0) { sumHtml += `<strong>Safety Deposit Paid:</strong> ₹${paid}<br><strong style="color:var(--destructive)">Balance Cash on Delivery:</strong> ₹${due}`; } 
+  else if (payMethod === "COD" && paid === 0) { sumHtml += `<strong>Total Amount to Pay on Delivery:</strong> ₹${due}`; }
   else { sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br><strong style="color:#4cc968">No pending dues!</strong>`; }
   $("successOrderSummary").innerHTML = sumHtml;
   clearCart();
@@ -1005,21 +1042,22 @@ if ($("addShopBtn")) {
     $("addShopBtn").onclick = async () => {
         const n = $("newShopName").value.trim(); const c = $("newShopCity").value.trim(); const t = $("newShopType").value.trim(); const l = $("newShopImage").value.trim(); const u = $("newShopUPI").value.trim(); const q = $("newShopQR").value.trim();
         const codAmt = Number($("newShopCodAmt").value) || 0; const codStat = $("newShopCodStatus").checked;
+        const fCodStat = $("newShopFullCodStatus") ? $("newShopFullCodStatus").checked : false;
 
         if(!n || !c || !l || !u) return alert("Shop Name, City, Logo URL, aur UPI ID sab zaroori hain!");
         $("addShopBtn").textContent = "Adding/Updating...";
         try {
             if(editingShopId && window.fbUpdateDoc && window.fbDoc && window.fbDb) {
-                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat });
+                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
                 const idx = shops.findIndex(s => s.id === editingShopId);
-                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat };
+                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 alert("Dukaan Update Ho Gayi!");
             } else if(window.fbAddDoc && window.fbCollection && window.fbDb) {
-                const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, timestamp: new Date() });
-                shops.push({ id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat });
+                const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat, timestamp: new Date() });
+                shops.push({ id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
                 alert("Nai Dukaan Add Ho Gayi!");
             }
-            $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true;
+            $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true; if($("newShopFullCodStatus")) $("newShopFullCodStatus").checked = false;
             editingShopId = null; $("addShopBtn").textContent = "+ Add Shop"; renderAdmin(); renderShopsPage();
         } catch(e) { console.error(e); alert("Error in shop operation!"); $("addShopBtn").textContent = "+ Add Shop"; }
     };
@@ -1030,14 +1068,15 @@ if ($("saveEditShopBtn")) {
         if(!editingShopId) return;
         const n = $("editSName").value.trim(); const c = $("editSCity").value.trim(); const t = $("editSType").value.trim(); const l = $("editSImage").value.trim(); const u = $("editSUPI").value.trim(); const q = $("editSQR").value.trim();
         const codAmt = Number($("editSCodAmt").value) || 0; const codStat = $("editSCodStatus").checked;
+        const fCodStat = $("editSFullCodStatus") ? $("editSFullCodStatus").checked : false;
 
         if(!n || !c || !l || !u) return alert("Name, City, Logo, UPI required!");
         $("saveEditShopBtn").textContent = "Saving...";
         try {
             if(window.fbUpdateDoc && window.fbDoc && window.fbDb) {
-                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat });
+                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
                 const idx = shops.findIndex(s => s.id === editingShopId);
-                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat };
+                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 renderAdmin(); renderShopsPage();
             }
         } catch(e) {}
@@ -1051,6 +1090,7 @@ function openEditShopModal(shop) {
     $("editSName").value = shop.name || ""; $("editSCity").value = shop.city || ""; $("editSType").value = shop.type || ""; 
     $("editSImage").value = shop.logo || ""; $("editSUPI").value = shop.upi || ""; $("editSQR").value = shop.qr || ""; 
     $("editSCodAmt").value = shop.codAdvance || ""; $("editSCodStatus").checked = shop.codEnabled !== false;
+    if($("editSFullCodStatus")) $("editSFullCodStatus").checked = shop.fullCodEnabled === true;
     $("editShopModal").classList.remove("hidden"); 
 }
 
