@@ -12,6 +12,11 @@ const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JS
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
 
+// SPLASH ANIMATION HELPERS
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
+const addClass = (id, cls) => { const el = $(id); if(el) el.classList.add(cls); };
+const removeClass = (id, cls) => { const el = $(id); if(el) el.classList.remove(cls); };
+
 const ADMIN_PIN = "9721";
 const SUPER_ADMIN_PIN = "90793"; // 👑 SUPER ADMIN PIN 👑
 let superAdminTapCount = 0;
@@ -98,7 +103,7 @@ window.addEventListener("DOMContentLoaded", () => {
       if (user) {
         $("authScreen").classList.add("hidden");
                 if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
-        else { $("app").classList.remove("hidden"); $("waBtn").classList.remove("hidden"); renderProfile(); }
+        else { $("app").classList.remove("hidden"); if($("waBtn")) $("waBtn").classList.remove("hidden"); renderProfile(); }
       } else {
         if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
       }
@@ -147,15 +152,78 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-function showSplashAndStart() {
-  const splash = $("splash"); splash.classList.remove("hidden");
+// GEN-Z SPLASH SEQUENCE
+async function showSplashAndStart() {
+  const splash = $("splash"); 
+  splash.classList.remove("hidden");
+  splash.style.opacity = "1";
+
+  // Spawn Particles
+  const container = $("particles");
+  if (container && container.children.length === 0) {
+    for (let i = 0; i < 24; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.left   = (Math.random() * 100) + '%';
+      p.style.bottom = (Math.random() * 10)  + '%';
+      p.style.animationDuration  = (2 + Math.random() * 3) + 's';
+      p.style.animationDelay     = (Math.random() * 3)     + 's';
+      p.style.width  = (2 + Math.random() * 3) + 'px';
+      p.style.height = p.style.width;
+      p.style.opacity = '0';
+      container.appendChild(p);
+    }
+  }
+
+  const audio = $("bg-audio");
+  if (audio) audio.play().catch(() => {});
+
+  await delay(200);
+  addClass('flash', 'pop');
+  await delay(80);
+  addClass('streak1', 'fire'); addClass('streak2', 'fire'); addClass('streak3', 'fire');
+  
+  await delay(100);
+  addClass('logo-wrap', 'reveal');
+  
+  await delay(50);
+  addClass('shockwave',  'blast'); addClass('shockwave2', 'blast');
+  
+  await delay(3100);
+  addClass('logo-wrap', 'move-up');
+  
+  await delay(200);
+  addClass('welcome', 'show'); addClass('welcome-line', 'show');
+  
+  await delay(2000);
+  addClass('welcome', 'hide'); removeClass('welcome-line', 'show');
+  
+  await delay(700);
+  removeClass('welcome', 'show');
+  if($('welcome')) $('welcome').style.display = 'none';
+  if($('welcome-line')) $('welcome-line').style.display = 'none';
+  
+  await delay(300);
+  addClass('shield-glow', 'show'); addClass('trusted', 'show');
+  
+  await delay(1500);
+  addClass('outro-overlay', 'show'); addClass('trusted', 'hide'); addClass('shield-glow', 'hide');
+  
+  await delay(1000);
+  addClass('outro-overlay', 'fadeout');
+  
+  await delay(800);
+
+  // Transition to Main App
+  splash.style.transition = "opacity 0.5s ease"; 
+  splash.style.opacity = "0";
   setTimeout(() => {
-    splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
-    setTimeout(() => {
-      splash.classList.add("hidden"); $("app").classList.remove("hidden"); $("waBtn").classList.remove("hidden");
-      renderCartCount(); initBannerAutoScroll();
-    }, 500);
-  }, 2500);
+    splash.classList.add("hidden"); 
+    $("app").classList.remove("hidden"); 
+    if($("waBtn")) $("waBtn").classList.remove("hidden");
+    renderCartCount(); 
+    initBannerAutoScroll();
+  }, 500);
 }
 
 if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
