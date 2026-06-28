@@ -62,7 +62,7 @@ body.no-scroll { overflow: hidden !important; }
 .particle { position: absolute; border-radius: 50%; background: #facc15; opacity: 0; animation: floatUp linear infinite; }
 @keyframes floatUp { 0% { transform: translateY(0) scale(0); opacity: 0; } 15% { opacity: 0.9; transform: translateY(-12vh) scale(1.3); } 100% { transform: translateY(-115vh) scale(0); opacity: 0; } }
 
-#coin-scene { position: absolute; z-index: 10; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; transform: scale(0); opacity: 0; transition: transform 0.5s cubic-bezier(.17,.67,.35,1.3), opacity 0.4s ease; }
+#coin-scene { position: absolute; z-index: 10; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; transform-style: preserve-3d; transform: scale(0); opacity: 0; border-radius: 50%; transition: transform 0.5s cubic-bezier(.17,.67,.35,1.3), opacity 0.4s ease; }
 #coin-scene.appear { transform: scale(1); opacity: 1; }
 #coin-scene.spinning { animation: coinSpin 0.55s linear infinite; }
 #coin-scene.stopping { animation: coinSlowStop 0.9s ease-out forwards; }
@@ -70,7 +70,7 @@ body.no-scroll { overflow: hidden !important; }
 @keyframes coinSpin { from { transform: scale(1) rotateY(0deg); } to { transform: scale(1) rotateY(360deg); } }
 @keyframes coinSlowStop { 0% { transform: scale(1) rotateY(0deg); } 40% { transform: scale(1) rotateY(200deg); } 70% { transform: scale(1) rotateY(320deg); } 88% { transform: scale(1) rotateY(355deg); } 100% { transform: scale(1) rotateY(360deg); } }
 
-#logo { width: 300px; height: 300px; object-fit: contain; filter: drop-shadow(0 0 28px rgba(251,191,36,0.75)); backface-visibility: visible; user-select: none; -webkit-user-drag: none; }
+#logo { width: 300px; height: 300px; object-fit: cover; border-radius: 50%; filter: drop-shadow(0 0 28px rgba(251,191,36,0.75)); backface-visibility: visible; user-select: none; -webkit-user-drag: none; }
 #coin-rim { position: absolute; inset: -6px; border-radius: 50%; border: 4px solid rgba(251,191,36,0.85); box-shadow: 0 0 18px 4px rgba(251,191,36,0.4), inset 0 0 12px 2px rgba(251,191,36,0.2); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
 #coin-scene.spinning #coin-rim, #coin-scene.stopping #coin-rim { opacity: 1; }
 
