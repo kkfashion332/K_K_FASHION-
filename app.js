@@ -8,14 +8,12 @@ const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9e
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
 const TELEGRAM_CHAT_ID = "7503426190";
 
+// NEW: FIREBASE CLOUD MESSAGING VAPID KEY
+const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
+
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
-
-// SPLASH ANIMATION HELPERS
-const delay = (ms) => new Promise(r => setTimeout(r, ms));
-const addClass = (id, cls) => { const el = $(id); if(el) el.classList.add(cls); };
-const removeClass = (id, cls) => { const el = $(id); if(el) el.classList.remove(cls); };
 
 const ADMIN_PIN = "9721";
 const SUPER_ADMIN_PIN = "90793"; // 👑 SUPER ADMIN PIN 👑
@@ -103,7 +101,15 @@ window.addEventListener("DOMContentLoaded", () => {
       if (user) {
         $("authScreen").classList.add("hidden");
                 if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
-        else { $("app").classList.remove("hidden"); if($("waBtn")) $("waBtn").classList.remove("hidden"); renderProfile(); }
+        else { 
+            $("app").classList.remove("hidden"); 
+            if($("waBtn")) $("waBtn").classList.remove("hidden"); 
+            renderProfile(); 
+            // FIREBASE NOTIFICATION TRIGGER AFTER LOGIN
+            if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) {
+                window.requestFCMToken(window.fbMessaging, window.fbGetToken);
+            }
+        }
       } else {
         if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
       }
@@ -152,95 +158,27 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-// GEN-Z 3D SPINNING COIN SPLASH SEQUENCE (TIMING HALVED FOR FAST LOADING)
-async function showSplashAndStart() {
-  const splash = $("splash"); 
-  splash.classList.remove("hidden");
-  splash.style.opacity = "1";
-
-  const box = $("particles");
-  if (box && box.children.length === 0) {
-    for (let i = 0; i < 28; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
-      const sz = (2 + Math.random() * 3).toFixed(1) + 'px';
-      p.style.cssText = [
-        'left:'   + (Math.random() * 100).toFixed(1) + '%',
-        'bottom:' + (Math.random() * 8).toFixed(1)   + '%',
-        'width:'  + sz,
-        'height:' + sz,
-        'animation-duration:' + (2 + Math.random() * 3).toFixed(2) + 's',
-        'animation-delay:'    + (Math.random() * 3).toFixed(2)     + 's',
-      ].join(';');
-      box.appendChild(p);
-    }
-  }
-
-  const audio = $("bg-audio");
-  if (audio) audio.play().catch(() => {});
-
-  await delay(100);
-  addClass('coin-scene', 'appear');
-  await delay(200);
-
-  addClass('coin-scene', 'spinning');
-  await delay(800); // REduced from 2000 to 800ms for faster load
-
-  removeClass('coin-scene', 'spinning');
-  addClass('coin-scene', 'stopping');
-
-  await delay(300);
-  addClass('flash', 'pop');
-  addClass('s1', 'fire'); addClass('s2', 'fire'); addClass('s3', 'fire');
-  
-  await delay(60);
-  addClass('wave1', 'blast');
-  addClass('wave2', 'blast');
-  addClass('logo-glow', 'on');
-
-  await delay(200);
-  removeClass('coin-scene', 'stopping');
-
-  await delay(300);
-  addClass('coin-scene', 'move-up');
-  
-  await delay(150);
-  addClass('welcome', 'show'); 
-  addClass('welcome-line', 'show');
-  
-  await delay(1000);
-  addClass('welcome', 'hide'); 
-  removeClass('welcome-line', 'show');
-  
-  await delay(400);
-  removeClass('welcome', 'show');
-  if($('welcome')) $('welcome').style.display = 'none';
-  if($('welcome-line')) $('welcome-line').style.display = 'none';
-  
-  await delay(100);
-  addClass('shield-glow', 'show'); 
-  addClass('trusted', 'show');
-  
-  await delay(1000);
-  addClass('outro-overlay', 'show'); 
-  addClass('trusted', 'hide'); 
-  removeClass('shield-glow', 'show');
-  
-  await delay(600);
-  addClass('outro-overlay', 'fadeout');
-  
-  await delay(400);
-
-  // Transition to Main App
-  splash.style.transition = "opacity 0.4s ease"; 
-  splash.style.opacity = "0";
+function showSplashAndStart() {
+  const splash = $("splash"); splash.classList.remove("hidden");
   setTimeout(() => {
-    splash.classList.add("hidden"); 
-    $("app").classList.remove("hidden"); 
-    if($("waBtn")) $("waBtn").classList.remove("hidden");
-    renderCartCount(); 
-    initBannerAutoScroll();
-  }, 400);
+    splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
+    setTimeout(() => {
+      splash.classList.add("hidden"); $("app").classList.remove("hidden"); $("waBtn").classList.remove("hidden");
+      renderCartCount(); initBannerAutoScroll();
+      
+      // Auto-request notification after app load if not asked
+      setTimeout(() => {
+          if ("Notification" in window && Notification.permission === "default") {
+              if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) {
+                  window.requestFCMToken(window.fbMessaging, window.fbGetToken);
+              } else {
+                  Notification.requestPermission();
+              }
+          }
+      }, 5000);
+      
+    }, 500);
+  }, 2500);
 }
 
 if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
@@ -250,7 +188,7 @@ if ($("authSubmitBtn")) {
     const mob = $("authMobile").value.trim(); const pwd = $("authPassword").value.trim();
     if (!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) return alert("Kripya sahi 10-digit mobile number dalein!");
     if (!pwd || pwd.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
-    const fakeEmail = mob + "@genzstore.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
+    const fakeEmail = mob + "@kkfashion.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
     btn.textContent = "Please wait..."; btn.disabled = true;
     try { await window.signInWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
     catch (err) {
@@ -358,7 +296,7 @@ function renderShopsPage() {
 
 window.renderMyOrders = function() {
   const list = $("myOrdersList"); const user = window.fbAuth ? window.fbAuth.currentUser : null;
-  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@genzstore.com", "");
+  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@kkfashion.com", "");
   let displayOrders = [];
   if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) { displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile); } 
   else { displayOrders = load("knk_my_orders_" + userEmail, []); }
@@ -487,7 +425,7 @@ function renderProfile() {
   const savedPic = localStorage.getItem(getProfileKey());
 
   if (user) {
-    let email = user.email || ""; displayObj.textContent = email.includes("@genzstore.com") ? "+91 " + email.replace("@genzstore.com", "") : email;
+    let email = user.email || ""; displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com", "") : email;
     nameObj.textContent = user.displayName || "Elite Member"; imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
   } else {
     displayObj.textContent = "Guest Access"; nameObj.textContent = "Welcome Guest"; imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
@@ -531,7 +469,7 @@ if ($("profilePicInput")) {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
         try { localStorage.setItem(getProfileKey(), dataUrl); $("profileImg").src = dataUrl; $("profileImg").style.opacity = "1";
           const user = window.fbAuth ? window.fbAuth.currentUser : null;
-          if (user && !user.email.includes("@genzstore.com")) window.updateProfile(user, { photoURL: dataUrl });
+          if (user && !user.email.includes("@kkfashion.com")) window.updateProfile(user, { photoURL: dataUrl });
         } catch (err) { alert("Quota full!"); $("profileImg").style.opacity = "1"; }
       }; img.src = event.target.result;
     }; reader.readAsDataURL(file);
@@ -754,7 +692,7 @@ function buildHorizSection(title, list) {
   section.appendChild(row); return section;
 }
 
-let currentDynamicUpi = "genzstore@nyes";
+let currentDynamicUpi = "kkfashion@nyes";
 
 if ($("chkUtr")) { $("chkUtr").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12); }; }
 if ($("copyUpiBtn")) {
@@ -790,15 +728,14 @@ function openCheckout() {
   let shopCodEnabled = true; let shopCodAdvance = 0; let shopFullCodEnabled = false;
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp) { currentDynamicUpi = sp.upi || "genzstore@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
-      else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
-  } else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
+      if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
+      else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
+  } else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
   
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 
   if(!shopCodEnabled) {
-      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); 
-      $("step2PayBtn").textContent = "Pay Online (Prepaid)";
+      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now";
   } else {
       $("payCODLabel").classList.remove("hidden");
       if (shopFullCodEnabled) {
@@ -808,7 +745,6 @@ function openCheckout() {
       } else { 
           $("codTextDesc").innerHTML = `Safety Deposit online required.`; 
       }
-      $("step2PayBtn").textContent = "Pay Online (Prepaid)";
   }
 }
 
@@ -843,16 +779,7 @@ function renderStep2() {
   const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
   $("chkStep2Img").src = mainImg; $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty;
   updateStep2Summary();
-  
-  $("chkStep2Qty").onchange = (e) => { 
-      item.qty = parseInt(e.target.value); save("knk_cart", cart); renderCartCount(); updateStep2Summary(); 
-      const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
-      if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
-  };
-  
-  // TRIGGER RADIO CHANGE ON LOAD TO AVOID "Pay 100% Now" CONFUSION
-  const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
-  if(selectedRadio) { selectedRadio.dispatchEvent(new Event('change')); }
+  $("chkStep2Qty").onchange = (e) => { item.qty = parseInt(e.target.value); save("knk_cart", cart); renderCartCount(); updateStep2Summary(); };
 }
 
 function updateStep2Summary() {
@@ -891,20 +818,10 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
             $("step2PayBtn").textContent = "Place Order (100% COD)";
         } else {
             $("codWarningBox").classList.remove("hidden"); 
-            if(shopCodAdvance > 0) {
-                $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; 
-            } else { 
-                let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
-                let defaultAdv = Math.round(finalTotal * 0.25);
-                if(defaultAdv > finalTotal) defaultAdv = finalTotal;
-                $("step2PayBtn").textContent = `Pay ₹${defaultAdv} Advance`;
-            }
+            if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; else $("step2PayBtn").textContent = "Pay Advance";
         }
     } 
-    else { 
-        $("codWarningBox").classList.add("hidden"); 
-        $("step2PayBtn").textContent = "Pay Online (Prepaid)"; 
-    }
+    else { $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now"; }
   });
 });
 
@@ -1007,7 +924,7 @@ $("confirmOrderBtn").onclick = () => {
   let balanceDue = finalTotal - amountPaid;
 
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
-  let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
+  let orderShopName = "K_K Fashion"; let orderShopLogo = "placeholder.jpg";
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
       if (sp) { orderShopName = sp.name; orderShopLogo = sp.logo || "placeholder.jpg"; }
@@ -1225,7 +1142,7 @@ function syncAddProductDropdowns() {
   const pMainCat = $("pMainCat"); pMainCat.innerHTML = "";
   mainCategories.forEach((cat) => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); });
   const pShop = $("pShop"); const newCatShop = $("newCatShop");
-  if(pShop) { pShop.innerHTML = '<option value="">Gen-Z Store (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
+  if(pShop) { pShop.innerHTML = '<option value="">K_K Fashion (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
   if(newCatShop) { newCatShop.innerHTML = '<option value="GLOBAL">Global (All Shops)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; newCatShop.appendChild(o); }); }
 }
 
@@ -1245,7 +1162,7 @@ window.renderAdminOrders = function (orders) {
       <div class="order-head"><span>Name: ${o.name} (${o.mobile})</span><strong>₹${o.totalAmount}</strong></div>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);">
          <img src="${o.shopLogo || 'placeholder.jpg'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--primary);">
-         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'Gen-Z Store'}</strong>
+         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'K_K Fashion'}</strong>
          <span style="margin-left:auto; font-size:11px; font-weight:700; background:var(--card2); padding:4px 8px; border-radius:4px; color:${o.paymentMethod==='COD'?'var(--destructive)':'#4cc968'}">${o.paymentMethod}</span>
       </div>
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;"><strong>Address:</strong> ${o.address}<br>${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}<strong>State & Pincode:</strong> ${o.state} - ${o.pincode}</div>
@@ -1318,4 +1235,3 @@ if ($("saveEditBtn")) {
 
 $("closeViewerBtn").onclick = () => { $("imageViewer").classList.add("hidden"); preventZoom(); };
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { $("imageViewer").classList.add("hidden"); preventZoom(); } };
-preventZoom(); renderCartCount();
