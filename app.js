@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   K_K FASHION — app.js (FINAL - SUPER ADMIN SECURE ACCESS)
+   GEN-Z STORE — app.js (FINAL - SUPER ADMIN SECURE ACCESS)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -152,13 +152,12 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-// GEN-Z 3D SPINNING COIN SPLASH SEQUENCE
+// GEN-Z 3D SPINNING COIN SPLASH SEQUENCE (TIMING HALVED FOR FAST LOADING)
 async function showSplashAndStart() {
   const splash = $("splash"); 
   splash.classList.remove("hidden");
   splash.style.opacity = "1";
 
-  // Spawn Particles
   const box = $("particles");
   if (box && box.children.length === 0) {
     for (let i = 0; i < 28; i++) {
@@ -180,17 +179,17 @@ async function showSplashAndStart() {
   const audio = $("bg-audio");
   if (audio) audio.play().catch(() => {});
 
-  await delay(250);
+  await delay(100);
   addClass('coin-scene', 'appear');
-  await delay(350);
+  await delay(200);
 
   addClass('coin-scene', 'spinning');
-  await delay(2000);
+  await delay(800); // REduced from 2000 to 800ms for faster load
 
   removeClass('coin-scene', 'spinning');
   addClass('coin-scene', 'stopping');
 
-  await delay(500);
+  await delay(300);
   addClass('flash', 'pop');
   addClass('s1', 'fire'); addClass('s2', 'fire'); addClass('s3', 'fire');
   
@@ -199,41 +198,41 @@ async function showSplashAndStart() {
   addClass('wave2', 'blast');
   addClass('logo-glow', 'on');
 
-  await delay(500);
+  await delay(200);
   removeClass('coin-scene', 'stopping');
 
-  await delay(900);
+  await delay(300);
   addClass('coin-scene', 'move-up');
   
-  await delay(280);
+  await delay(150);
   addClass('welcome', 'show'); 
   addClass('welcome-line', 'show');
   
-  await delay(2000);
+  await delay(1000);
   addClass('welcome', 'hide'); 
   removeClass('welcome-line', 'show');
   
-  await delay(650);
+  await delay(400);
   removeClass('welcome', 'show');
   if($('welcome')) $('welcome').style.display = 'none';
   if($('welcome-line')) $('welcome-line').style.display = 'none';
   
-  await delay(300);
+  await delay(100);
   addClass('shield-glow', 'show'); 
   addClass('trusted', 'show');
   
-  await delay(1500);
+  await delay(1000);
   addClass('outro-overlay', 'show'); 
   addClass('trusted', 'hide'); 
   removeClass('shield-glow', 'show');
   
-  await delay(1000);
+  await delay(600);
   addClass('outro-overlay', 'fadeout');
   
-  await delay(900);
+  await delay(400);
 
   // Transition to Main App
-  splash.style.transition = "opacity 0.5s ease"; 
+  splash.style.transition = "opacity 0.4s ease"; 
   splash.style.opacity = "0";
   setTimeout(() => {
     splash.classList.add("hidden"); 
@@ -241,7 +240,7 @@ async function showSplashAndStart() {
     if($("waBtn")) $("waBtn").classList.remove("hidden");
     renderCartCount(); 
     initBannerAutoScroll();
-  }, 500);
+  }, 400);
 }
 
 if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
@@ -251,7 +250,7 @@ if ($("authSubmitBtn")) {
     const mob = $("authMobile").value.trim(); const pwd = $("authPassword").value.trim();
     if (!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) return alert("Kripya sahi 10-digit mobile number dalein!");
     if (!pwd || pwd.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
-    const fakeEmail = mob + "@kkfashion.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
+    const fakeEmail = mob + "@genzstore.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
     btn.textContent = "Please wait..."; btn.disabled = true;
     try { await window.signInWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
     catch (err) {
@@ -359,7 +358,7 @@ function renderShopsPage() {
 
 window.renderMyOrders = function() {
   const list = $("myOrdersList"); const user = window.fbAuth ? window.fbAuth.currentUser : null;
-  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@kkfashion.com", "");
+  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@genzstore.com", "");
   let displayOrders = [];
   if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) { displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile); } 
   else { displayOrders = load("knk_my_orders_" + userEmail, []); }
@@ -488,7 +487,7 @@ function renderProfile() {
   const savedPic = localStorage.getItem(getProfileKey());
 
   if (user) {
-    let email = user.email || ""; displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com", "") : email;
+    let email = user.email || ""; displayObj.textContent = email.includes("@genzstore.com") ? "+91 " + email.replace("@genzstore.com", "") : email;
     nameObj.textContent = user.displayName || "Elite Member"; imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
   } else {
     displayObj.textContent = "Guest Access"; nameObj.textContent = "Welcome Guest"; imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
@@ -532,7 +531,7 @@ if ($("profilePicInput")) {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
         try { localStorage.setItem(getProfileKey(), dataUrl); $("profileImg").src = dataUrl; $("profileImg").style.opacity = "1";
           const user = window.fbAuth ? window.fbAuth.currentUser : null;
-          if (user && !user.email.includes("@kkfashion.com")) window.updateProfile(user, { photoURL: dataUrl });
+          if (user && !user.email.includes("@genzstore.com")) window.updateProfile(user, { photoURL: dataUrl });
         } catch (err) { alert("Quota full!"); $("profileImg").style.opacity = "1"; }
       }; img.src = event.target.result;
     }; reader.readAsDataURL(file);
@@ -755,7 +754,7 @@ function buildHorizSection(title, list) {
   section.appendChild(row); return section;
 }
 
-let currentDynamicUpi = "kkfashion@nyes";
+let currentDynamicUpi = "genzstore@nyes";
 
 if ($("chkUtr")) { $("chkUtr").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12); }; }
 if ($("copyUpiBtn")) {
@@ -791,9 +790,9 @@ function openCheckout() {
   let shopCodEnabled = true; let shopCodAdvance = 0; let shopFullCodEnabled = false;
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
-      else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
-  } else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
+      if (sp) { currentDynamicUpi = sp.upi || "genzstore@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
+      else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
+  } else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
   
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 
@@ -987,7 +986,7 @@ $("confirmOrderBtn").onclick = () => {
   let balanceDue = finalTotal - amountPaid;
 
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
-  let orderShopName = "K_K Fashion"; let orderShopLogo = "placeholder.jpg";
+  let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
   if (cart.length > 0 && cart[0].product.shopId) {
       const sp = shops.find(s => s.id === cart[0].product.shopId);
       if (sp) { orderShopName = sp.name; orderShopLogo = sp.logo || "placeholder.jpg"; }
@@ -1205,7 +1204,7 @@ function syncAddProductDropdowns() {
   const pMainCat = $("pMainCat"); pMainCat.innerHTML = "";
   mainCategories.forEach((cat) => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); });
   const pShop = $("pShop"); const newCatShop = $("newCatShop");
-  if(pShop) { pShop.innerHTML = '<option value="">K_K Fashion (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
+  if(pShop) { pShop.innerHTML = '<option value="">Gen-Z Store (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
   if(newCatShop) { newCatShop.innerHTML = '<option value="GLOBAL">Global (All Shops)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; newCatShop.appendChild(o); }); }
 }
 
@@ -1225,7 +1224,7 @@ window.renderAdminOrders = function (orders) {
       <div class="order-head"><span>Name: ${o.name} (${o.mobile})</span><strong>₹${o.totalAmount}</strong></div>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);">
          <img src="${o.shopLogo || 'placeholder.jpg'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--primary);">
-         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'K_K Fashion'}</strong>
+         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'Gen-Z Store'}</strong>
          <span style="margin-left:auto; font-size:11px; font-weight:700; background:var(--card2); padding:4px 8px; border-radius:4px; color:${o.paymentMethod==='COD'?'var(--destructive)':'#4cc968'}">${o.paymentMethod}</span>
       </div>
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;"><strong>Address:</strong> ${o.address}<br>${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}<strong>State & Pincode:</strong> ${o.state} - ${o.pincode}</div>
