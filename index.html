@@ -18,12 +18,6 @@
 </head>
 <body>
 
-  <div id="videoSplash" style="position: fixed; inset: 0; z-index: 999999; background: #0a0a0a; display: flex; align-items: center; justify-content: center; transition: opacity 0.6s ease, visibility 0.6s ease;">
-    <video id="introVid" autoplay muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
-      <source src="73557.mp4" type="video/mp4">
-    </video>
-  </div>
-
   <div id="initLoader" style="position:fixed; inset:0; background:#0a0a0a; z-index:99999; display:flex; align-items:center; justify-content:center; color:#C9A84C; font-family:'Inter', sans-serif; font-weight:600; font-size:14px;">
     Loading Gen-Z Store...
   </div>
@@ -43,6 +37,7 @@
     </div>
   </div>
 
+  <!-- NEW GEN-Z 3D SPINNING SPLASH ANIMATION START -->
   <div id="splash" class="splash hidden">
     <div id="stage">
       <div id="bg-glow"></div>
@@ -72,11 +67,16 @@
     </div>
     <audio id="bg-audio" src="bg_music.mp3" loop style="display:none"></audio>
   </div>
+  <!-- NEW GEN-Z 3D SPINNING SPLASH ANIMATION END -->
+
   <div id="app" class="app hidden">
     <header class="header">
+      <!-- CIRCULAR HEADER LOGO START -->
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
         <img src="logo.png" alt="Gen-Z Store" style="height: 48px; width: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.3);">
       </button>
+      <!-- CIRCULAR HEADER LOGO END -->
+      
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="width: 20px;"></div>
       </div>
@@ -969,45 +969,6 @@
       } catch(e) {}
       finally { btn.textContent = "Add Product to Collection"; }
     });
-  </script>
-
-  <script>
-    // -- Video Splash Logic --
-    const videoSplash = document.getElementById('videoSplash');
-    const introVid = document.getElementById('introVid');
-
-    function removeSplash() {
-      if (videoSplash) {
-        videoSplash.style.opacity = '0';
-        videoSplash.style.visibility = 'hidden';
-        videoSplash.style.pointerEvents = 'none';
-        
-        // Ensure video stops playing in background
-        setTimeout(() => {
-          if (introVid) {
-            introVid.pause();
-            introVid.src = ""; 
-          }
-        }, 600);
-      }
-    }
-
-    if (introVid) {
-      // 1. When video ends naturally
-      introVid.addEventListener('ended', () => {
-        removeSplash();
-      });
-
-      // 2. Error fallback: if video fails to load, hide it immediately
-      introVid.addEventListener('error', () => {
-        removeSplash();
-      });
-    }
-
-    // 3. Fallback timer: Just in case video hangs, force close after 7 seconds
-    setTimeout(() => {
-      removeSplash();
-    }, 7000);
   </script>
 
 </body>
