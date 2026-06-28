@@ -797,7 +797,8 @@ function openCheckout() {
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 
   if(!shopCodEnabled) {
-      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now";
+      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); 
+      $("step2PayBtn").textContent = "Pay Online (Prepaid)";
   } else {
       $("payCODLabel").classList.remove("hidden");
       if (shopFullCodEnabled) {
@@ -807,6 +808,7 @@ function openCheckout() {
       } else { 
           $("codTextDesc").innerHTML = `Safety Deposit online required.`; 
       }
+      $("step2PayBtn").textContent = "Pay Online (Prepaid)";
   }
 }
 
@@ -841,7 +843,16 @@ function renderStep2() {
   const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
   $("chkStep2Img").src = mainImg; $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty;
   updateStep2Summary();
-  $("chkStep2Qty").onchange = (e) => { item.qty = parseInt(e.target.value); save("knk_cart", cart); renderCartCount(); updateStep2Summary(); };
+  
+  $("chkStep2Qty").onchange = (e) => { 
+      item.qty = parseInt(e.target.value); save("knk_cart", cart); renderCartCount(); updateStep2Summary(); 
+      const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
+      if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
+  };
+  
+  // TRIGGER RADIO CHANGE ON LOAD TO AVOID "Pay 100% Now" CONFUSION
+  const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
+  if(selectedRadio) { selectedRadio.dispatchEvent(new Event('change')); }
 }
 
 function updateStep2Summary() {
@@ -880,10 +891,20 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
             $("step2PayBtn").textContent = "Place Order (100% COD)";
         } else {
             $("codWarningBox").classList.remove("hidden"); 
-            if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; else $("step2PayBtn").textContent = "Pay Advance";
+            if(shopCodAdvance > 0) {
+                $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; 
+            } else { 
+                let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+                let defaultAdv = Math.round(finalTotal * 0.25);
+                if(defaultAdv > finalTotal) defaultAdv = finalTotal;
+                $("step2PayBtn").textContent = `Pay ₹${defaultAdv} Advance`;
+            }
         }
     } 
-    else { $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now"; }
+    else { 
+        $("codWarningBox").classList.add("hidden"); 
+        $("step2PayBtn").textContent = "Pay Online (Prepaid)"; 
+    }
   });
 });
 
