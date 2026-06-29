@@ -37,7 +37,6 @@
     </div>
   </div>
 
-  <!-- NEW GEN-Z 3D SPINNING SPLASH ANIMATION START -->
   <div id="splash" class="splash hidden">
     <div id="stage">
       <div id="bg-glow"></div>
@@ -67,16 +66,12 @@
     </div>
     <audio id="bg-audio" src="bg_music.mp3" loop style="display:none"></audio>
   </div>
-  <!-- NEW GEN-Z 3D SPINNING SPLASH ANIMATION END -->
 
   <div id="app" class="app hidden">
     <header class="header">
-      <!-- CIRCULAR HEADER LOGO START -->
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
         <img src="logo.png" alt="Gen-Z Store" style="height: 48px; width: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.3);">
       </button>
-      <!-- CIRCULAR HEADER LOGO END -->
-      
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="width: 20px;"></div>
       </div>
@@ -117,35 +112,25 @@
       </div>
 
       <div id="shopsPage" class="nav-page hidden">
-        <h2 class="page-heading">OTHER STYLISH STORY</h2>
-        <p class="page-sub">Explore exclusive premium collections directly from top shops.</p>
-        
-        <div class="row2" style="margin-bottom:20px;">
-          <select id="shopCityFilter" class="field" style="margin-bottom:0; background:var(--card2); border-color:var(--border);">
-             <option value="ALL">All Cities</option>
-          </select>
-          <select id="shopTypeFilter" class="field" style="margin-bottom:0; background:var(--card2); border-color:var(--border);">
-             <option value="ALL">All Types</option>
-          </select>
-        </div>
-        
-        <div id="shopsGrid" class="shops-grid"></div>
+        <h2 class="page-heading">NEW DROPS</h2>
+        <p class="page-sub">The latest and most trending premium collections.</p>
+        <div id="shopsGrid" class="grid-1col"></div>
       </div>
 
       <div id="contactPage" class="nav-page hidden">
         <div class="premium-page-header">
-          <h2 class="page-heading Premium">Premium Support</h2>
+          <h2 class="page-heading Premium">Contact Us</h2>
           <p class="page-sub Premium">Reach out to Gen-Z Store for bespoke service, bulk orders, or styling queries.</p>
         </div>
         
         <div class="premium-contact-grid">
           <a href="https://wa.me/919950701758?text=Hello%20Gen-Z%20Store,%20I%20need%20premium%20assistance." target="_blank" class="p-contact-card wa-glass">
             <div class="p-contact-icon-wrap">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="p-contact-icon"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="p-contact-icon svg"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
             </div>
             <div class="p-contact-info">
-              <span class="p-contact-label">WhatsApp Luxury Chat</span>
-              <strong class="p-contact-value">Gen-Z Store Support</strong>
+              <span class="p-contact-label">Customer Support</span>
+              <strong class="p-contact-value">Gen-Z Store Team</strong>
               <p class="p-contact-desc">Instant bespoke support for styles & orders.</p>
             </div>
             <div class="p-contact-action">Connect Now →</div>
@@ -172,15 +157,9 @@
       </div>
 
       <div id="cartPage" class="nav-page hidden" style="display:flex; flex-direction:column; min-height:80vh;">
-        <h2 class="page-heading">Your Premium Cart</h2>
-        <p class="page-sub">Review your selected aesthetic combos before checkout.</p>
-        <div id="cartPageItems" class="drawer-body-page" style="padding-bottom: 150px;"></div>
-        
-        <div id="cartPageFooter" class="drawer-foot-page hidden" style="position: fixed; bottom: 65px; left: 0; right: 0; background: rgba(10,10,10,0.95); backdrop-filter: blur(10px); padding: 15px 20px; z-index: 35; border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; box-shadow: 0 -4px 15px rgba(0,0,0,0.3);">
-          <div class="total"><span>Grand Total:</span><span id="cartPageTotal">₹0</span></div>
-          <button id="cartPageCheckoutBtn" class="btn-primary full auth-submit" style="padding:14px; border-radius:12px;">Proceed to Checkout</button>
-          <button id="cartPageClearBtn" class="link" style="margin-top:12px; font-weight:600;">Clear Premium Cart</button>
-        </div>
+        <h2 class="page-heading">Your Likes ❤️</h2>
+        <p class="page-sub">All your saved premium aesthetic combos.</p>
+        <div id="cartPageItems" class="grid" style="padding-bottom: 150px; margin-top: 15px;"></div>
       </div>
 
       <div id="profilePage" class="nav-page hidden">
@@ -216,7 +195,7 @@
             <button onclick="switchNav('ReturnPolicy')" class="p-link-btn premium-p-link">📜 Return Policy <span>→</span></button>
             <button onclick="switchNav('HowToReturn')" class="p-link-btn premium-p-link">↩️ How to Return <span>→</span></button>
             <button onclick="switchNav('PrivacyPolicy')" class="p-link-btn premium-p-link">🛡️ Privacy Policy <span>→</span></button>
-            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link">📞 Premium Support <span>→</span></button>
+            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link">📞 Contact Us <span>→</span></button>
           </div>
 
           <button id="profileLogoutBtn" class="btn-outline full premium-logout" style="margin-top: 25px;">
@@ -284,8 +263,8 @@
       </button>
       
       <button class="nav-item" id="navShops" onclick="switchNav('Shops')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-        <span class="nav-text">Shops</span>
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span class="nav-text">New Drops</span>
       </button>
       
       <div class="nav-fab-wrap" id="navOrderWrap" onclick="switchNav('Order')">
@@ -297,10 +276,10 @@
       
       <button class="nav-item" id="navCart" onclick="switchNav('Cart')">
         <div style="position:relative; display:inline-block;">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
           <span id="navCartCount" class="badge hidden" style="top:-8px; right:-10px;">0</span>
         </div>
-        <span class="nav-text">Cart</span>
+        <span class="nav-text">Likes</span>
       </button>
       
       <button class="nav-item" id="navProfile" onclick="switchNav('Profile')">
@@ -346,6 +325,7 @@
           <span id="pdStrike" class="pd-strike hidden"></span>
           <span id="pdOff" class="pd-off hidden"></span>
         </div>
+        <div id="pdFreeDelivery" class="hidden" style="font-size: 13px; font-weight: 700; color: #4cc968; margin-top: 8px; display: flex; align-items: center; gap: 6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Free Delivery</div>
         
         <div id="pdColorsWrap" class="hidden" style="margin-top:15px;"></div>
         <div id="pdSizesWrap" class="hidden" style="margin-top:15px;"></div>
@@ -356,7 +336,7 @@
     </div>
 
     <div class="pd-action-bar">
-      <button id="pdAddCart" class="btn-outline">🛒 Add to Cart</button>
+      <button id="pdAddCart" class="btn-outline">❤️ Add to Likes</button>
       <button id="pdBuyNow" class="btn-primary">💳 Buy Now</button>
     </div>
   </div>
@@ -612,13 +592,20 @@
           <input id="editPExtra" class="field" type="number" placeholder="0" />
         </div>
       </div>
-      <div class="stock-toggle-row">
+      <div class="stock-toggle-row" style="margin-bottom:8px;">
         <span class="field-label">Stock Status</span>
         <label class="toggle-switch">
           <input type="checkbox" id="editInStock" checked />
           <span class="toggle-slider"></span>
         </label>
         <span id="editStockLabel" class="stock-label in">In Stock</span>
+      </div>
+      <div class="stock-toggle-row">
+        <span class="field-label">Free Delivery Tag</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="editPFreeDelivery" />
+          <span class="toggle-slider"></span>
+        </label>
       </div>
       <button id="saveEditBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Changes</button>
     </div>
@@ -751,13 +738,20 @@
                 <select id="pMainCat" class="field"></select>
               </div>
             </div>
-            <div class="stock-toggle-row" style="margin-bottom:14px;">
+            <div class="stock-toggle-row" style="margin-bottom:8px;">
               <span class="field-label">Stock Status</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="pInStock" checked />
                 <span class="toggle-slider"></span>
               </label>
               <span id="pStockLabel" class="stock-label in">In Stock</span>
+            </div>
+            <div class="stock-toggle-row" style="margin-bottom:14px;">
+              <span class="field-label">Free Delivery Tag</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pFreeDelivery" />
+                <span class="toggle-slider"></span>
+              </label>
             </div>
             <button id="addProductBtn" class="btn-primary full auth-submit">Add Product to Collection</button>
           </section>
@@ -774,6 +768,17 @@
       </div>
 
       <div id="amSettings" class="admin-section hidden">
+          <section class="card">
+            <h3>Push Notifications 🔔</h3>
+            <p class="section-hint">Sabhi registered devices par alert bhejein.</p>
+            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
+              <input id="notifTitle" class="field" placeholder="Notification Title (e.g. MEGA SALE!)" />
+              <textarea id="notifBody" class="field" rows="2" placeholder="Message Body..."></textarea>
+              <input id="notifImage" class="field" placeholder="Image URL (Optional)" />
+              <input id="fcmServerKey" type="password" class="field" placeholder="Firebase Legacy Server Key (Paste here)" />
+              <button id="sendNotifBtn" class="btn-primary sm-btn auth-submit">Send Notification</button>
+            </div>
+          </section>
           <section class="card">
             <h3>App Themes 🪄</h3>
             <p class="section-hint">Website ka pura look change karein.</p>
@@ -886,6 +891,7 @@
           list.push({
             id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0,
             mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false,
+            freeDelivery: data.freeDelivery === true,
             sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || ""
           });
         });
@@ -931,7 +937,7 @@
       try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
     };
 
-    window.fbAddDoc = addDoc; window.fbCollection = collection; window.fbDb = db; window.fbDeleteDoc = deleteDoc; window.fbDoc = doc; window.fbUpdateDoc = updateDoc;
+    window.fbAddDoc = addDoc; window.fbCollection = collection; window.fbDb = db; window.fbDeleteDoc = deleteDoc; window.fbDoc = doc; window.fbUpdateDoc = updateDoc; window.fbGetDocs = getDocs;
 
     window.updateProductInFirebase = async function(id, data) {
       try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
@@ -946,6 +952,7 @@
       const pCatId   = document.getElementById("pMainCat").value;
       const pShopId  = document.getElementById("pShop").value || "";
       const pInStock = document.getElementById("pInStock").checked;
+      const pFreeDelivery = document.getElementById("pFreeDelivery").checked;
       
       const pSizesIn = document.getElementById("pSizesIn").value.trim();
       const pSizesOut = document.getElementById("pSizesOut").value.trim();
@@ -959,12 +966,13 @@
       try {
         await addDoc(collection(db, "products"), {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, 
+          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
           sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
           timestamp: new Date()
         });
         alert("Product listed successfully in Elite Collection! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
+        document.getElementById("pFreeDelivery").checked = false;
         fetchProducts();
       } catch(e) {}
       finally { btn.textContent = "Add Product to Collection"; }
