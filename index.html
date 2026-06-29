@@ -72,6 +72,7 @@
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
         <img src="logo.png" alt="Gen-Z Store" style="height: 48px; width: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.3);">
       </button>
+      
       <div style="display: flex; align-items: center; gap: 12px;">
         <div style="width: 20px;"></div>
       </div>
@@ -93,6 +94,7 @@
         <div id="homeBannersWrap" class="home-banners-wrap hidden">
            <div class="home-banners-slider" id="homeBannersSlider"></div>
         </div>
+        
         <div id="mainCatsWrap" class="main-cats-wrap hidden">
           <div id="mainCats" class="main-cats"></div>
         </div>
@@ -111,10 +113,11 @@
         </main>
       </div>
 
-      <div id="shopsPage" class="nav-page hidden">
-        <h2 class="page-heading">NEW DROPS</h2>
-        <p class="page-sub">The latest and most trending premium collections.</p>
-        <div id="shopsGrid" class="grid-1col"></div>
+      <div id="newPage" class="nav-page hidden">
+        <h2 class="page-heading">NEW COLLECTION</h2>
+        <p class="page-sub">Latest exclusive premium drops & combos.</p>
+        
+        <div id="newCollectionList" style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;"></div>
       </div>
 
       <div id="contactPage" class="nav-page hidden">
@@ -126,11 +129,11 @@
         <div class="premium-contact-grid">
           <a href="https://wa.me/919950701758?text=Hello%20Gen-Z%20Store,%20I%20need%20premium%20assistance." target="_blank" class="p-contact-card wa-glass">
             <div class="p-contact-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="p-contact-icon svg"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg>
+              <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="p-contact-icon"/>
             </div>
             <div class="p-contact-info">
-              <span class="p-contact-label">Customer Support</span>
-              <strong class="p-contact-value">Gen-Z Store Team</strong>
+              <span class="p-contact-label">WhatsApp Chat</span>
+              <strong class="p-contact-value">Gen-Z Store Support</strong>
               <p class="p-contact-desc">Instant bespoke support for styles & orders.</p>
             </div>
             <div class="p-contact-action">Connect Now →</div>
@@ -147,6 +150,20 @@
             </div>
             <div class="p-contact-action">View Portfolio →</div>
           </a>
+
+          <div class="p-contact-card" style="border: 1px solid var(--border); background: var(--card2);">
+            <div class="p-contact-icon-wrap" style="background: rgba(201,168,76,0.1);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="p-contact-icon svg">
+                <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+                <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+              </svg>
+            </div>
+            <div class="p-contact-info">
+              <span class="p-contact-label">Help Center</span>
+              <strong class="p-contact-value">24x7 Customer Care</strong>
+              <p class="p-contact-desc">Get quick resolutions for your issues.</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -156,10 +173,10 @@
         <div id="myOrdersList" class="orders-list"></div>
       </div>
 
-      <div id="cartPage" class="nav-page hidden" style="display:flex; flex-direction:column; min-height:80vh;">
-        <h2 class="page-heading">Your Likes ❤️</h2>
-        <p class="page-sub">All your saved premium aesthetic combos.</p>
-        <div id="cartPageItems" class="grid" style="padding-bottom: 150px; margin-top: 15px;"></div>
+      <div id="likesPage" class="nav-page hidden" style="display:flex; flex-direction:column; min-height:80vh;">
+        <h2 class="page-heading">Your Likes</h2>
+        <p class="page-sub">Products you have loved.</p>
+        <div id="likesPageItems" class="drawer-body-page" style="padding-bottom: 100px;"></div>
       </div>
 
       <div id="profilePage" class="nav-page hidden">
@@ -262,9 +279,11 @@
         <span class="nav-text">Home</span>
       </button>
       
-      <button class="nav-item" id="navShops" onclick="switchNav('Shops')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-        <span class="nav-text">New Drops</span>
+      <button class="nav-item" id="navNew" onclick="switchNav('New')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+        </svg>
+        <span class="nav-text">New</span>
       </button>
       
       <div class="nav-fab-wrap" id="navOrderWrap" onclick="switchNav('Order')">
@@ -274,10 +293,12 @@
         <span class="nav-text fab-text">Orders</span>
       </div>
       
-      <button class="nav-item" id="navCart" onclick="switchNav('Cart')">
+      <button class="nav-item" id="navLikes" onclick="switchNav('Likes')">
         <div style="position:relative; display:inline-block;">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-          <span id="navCartCount" class="badge hidden" style="top:-8px; right:-10px;">0</span>
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+          </svg>
+          <span id="navLikesCount" class="badge hidden" style="top:-8px; right:-10px;">0</span>
         </div>
         <span class="nav-text">Likes</span>
       </button>
@@ -325,19 +346,21 @@
           <span id="pdStrike" class="pd-strike hidden"></span>
           <span id="pdOff" class="pd-off hidden"></span>
         </div>
-        <div id="pdFreeDelivery" class="hidden" style="font-size: 13px; font-weight: 700; color: #4cc968; margin-top: 8px; display: flex; align-items: center; gap: 6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg> Free Delivery</div>
         
         <div id="pdColorsWrap" class="hidden" style="margin-top:15px;"></div>
         <div id="pdSizesWrap" class="hidden" style="margin-top:15px;"></div>
-        
       </div>
 
       <div id="pdHorizSections" class="horiz-sections"></div>
+      
+      <div style="padding: 10px 16px 20px;">
+          <h3 style="font-family: var(--font-display); font-size: 16px; font-weight: 600; color: var(--fg); letter-spacing: 0.04em; margin-bottom: 12px;">More Products</h3>
+          <div id="pdVerticalSections" class="grid"></div>
+      </div>
     </div>
 
     <div class="pd-action-bar">
-      <button id="pdAddCart" class="btn-outline">❤️ Add to Likes</button>
-      <button id="pdBuyNow" class="btn-primary">💳 Buy Now</button>
+      <button id="pdBuyNow" class="btn-primary full" style="grid-column: 1 / -1;">💳 Buy Now</button>
     </div>
   </div>
 
@@ -592,7 +615,7 @@
           <input id="editPExtra" class="field" type="number" placeholder="0" />
         </div>
       </div>
-      <div class="stock-toggle-row" style="margin-bottom:8px;">
+      <div class="stock-toggle-row">
         <span class="field-label">Stock Status</span>
         <label class="toggle-switch">
           <input type="checkbox" id="editInStock" checked />
@@ -600,13 +623,15 @@
         </label>
         <span id="editStockLabel" class="stock-label in">In Stock</span>
       </div>
-      <div class="stock-toggle-row">
+      
+      <div class="stock-toggle-row" style="margin-top:8px;">
         <span class="field-label">Free Delivery Tag</span>
         <label class="toggle-switch">
-          <input type="checkbox" id="editPFreeDelivery" />
+          <input type="checkbox" id="editPFreeDelivery" checked />
           <span class="toggle-slider"></span>
         </label>
       </div>
+
       <button id="saveEditBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Changes</button>
     </div>
   </div>
@@ -738,7 +763,8 @@
                 <select id="pMainCat" class="field"></select>
               </div>
             </div>
-            <div class="stock-toggle-row" style="margin-bottom:8px;">
+            
+            <div class="stock-toggle-row" style="margin-bottom:10px;">
               <span class="field-label">Stock Status</span>
               <label class="toggle-switch">
                 <input type="checkbox" id="pInStock" checked />
@@ -746,13 +772,15 @@
               </label>
               <span id="pStockLabel" class="stock-label in">In Stock</span>
             </div>
+
             <div class="stock-toggle-row" style="margin-bottom:14px;">
               <span class="field-label">Free Delivery Tag</span>
               <label class="toggle-switch">
-                <input type="checkbox" id="pFreeDelivery" />
+                <input type="checkbox" id="pFreeDelivery" checked />
                 <span class="toggle-slider"></span>
               </label>
             </div>
+
             <button id="addProductBtn" class="btn-primary full auth-submit">Add Product to Collection</button>
           </section>
 
@@ -779,6 +807,7 @@
               <button id="sendNotifBtn" class="btn-primary sm-btn auth-submit">Send Notification</button>
             </div>
           </section>
+
           <section class="card">
             <h3>App Themes 🪄</h3>
             <p class="section-hint">Website ka pura look change karein.</p>
@@ -891,8 +920,8 @@
           list.push({
             id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0,
             mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false,
-            freeDelivery: data.freeDelivery === true,
-            sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || ""
+            sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || "",
+            freeDelivery: data.freeDelivery !== false // NEW FREE DELIVERY FLAG
           });
         });
         if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
@@ -972,7 +1001,6 @@
         });
         alert("Product listed successfully in Elite Collection! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
-        document.getElementById("pFreeDelivery").checked = false;
         fetchProducts();
       } catch(e) {}
       finally { btn.textContent = "Add Product to Collection"; }
