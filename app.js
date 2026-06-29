@@ -27,8 +27,8 @@ let mainCategories = [];
 let products = [];
 let shops = [];
 let homeBanners = [];
-let likes = load("knk_likes", []); // Cart is replaced by Likes
-let currentCheckoutItem = null;    // Direct Buy item holder
+let likes = load("knk_likes", []); 
+let currentCheckoutItem = null;    
 let activeMainCatId = null;
 let activeShopId = null;
 let editingProductId = null;
@@ -65,7 +65,6 @@ const unlockScroll = () => { document.body.classList.remove("no-scroll"); };
 const allowZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0"); };
 const preventZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"); };
 
-// ANDROID BACK BUTTON FIX (Hardware Back System)
 function pushModalState() { history.pushState({ modal: true }, "", window.location.href); }
 window.addEventListener('popstate', (e) => {
   if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
@@ -428,7 +427,6 @@ window.openMyOrderModal = function (idStr) {
   $("myOrderDetailModal").classList.remove("hidden"); lockScroll();
 };
 
-// --- NEW LIKES SYSTEM (REPLACES CART) ---
 window.toggleLike = function(pid) {
     const p = products.find(x => x.id === pid);
     if(!p) return;
@@ -447,6 +445,7 @@ function renderLikesCount() {
   if (b) { b.textContent = likes.length; b.classList.toggle("hidden", likes.length === 0); }
 }
 
+// BUG FIXED: Likes clicking issue
 function renderLikesPageTab() {
   const body = $("likesPageItems");
   if(!body) return;
@@ -462,7 +461,7 @@ function renderLikesPageTab() {
       <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
       <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
     `;
-    el.onclick = () => { openProductDetailById(p.id); };
+    el.onclick = () => { openProductDetail(p); }; // FIXED HERE
     body.appendChild(el);
   });
 }
@@ -531,7 +530,6 @@ function renderMainCats() {
   if(!wrapDiv || !wrap) return;
   wrap.innerHTML = "";
   
-  // FIXED: ALL Categories visible globally on home page.
   let visibleCats = mainCategories;
   if(visibleCats.length === 0) { wrapDiv.classList.add("hidden"); return; }
   
@@ -548,7 +546,6 @@ function renderMainCats() {
 
 window.selectMainCat = function (id) {
   if (searchQuery) { searchQuery = ""; $("searchInput").value = ""; $("searchClear").classList.add("hidden"); }
-  // Toggle selection
   if (activeMainCatId === id) activeMainCatId = null; else activeMainCatId = id; 
   renderMainCats(); renderProducts();
 };
@@ -624,14 +621,13 @@ function renderProducts() {
   });
 }
 
-// NEW COLLECTION LOGIC (VERTICAL FEED)
 function renderNewCollection() {
     const list = $("newCollectionList");
     if(!list) return;
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    const sorted = [...products].reverse(); // Newest first
+    const sorted = [...products].reverse(); 
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
@@ -665,9 +661,17 @@ function renderNewCollection() {
     });
 }
 
+// FIX: Now works perfectly from both internal tabs and detail pages without freezing
 window.openProductDetailById = function(id) {
     const p = products.find(x => x.id === id);
-    if(p) { closeProductDetail(); setTimeout(() => openProductDetail(p), 300); }
+    if(p) { 
+        if (!$("prodDetail").classList.contains("hidden")) {
+            closeProductDetail(); 
+            setTimeout(() => openProductDetail(p), 300); 
+        } else {
+            openProductDetail(p);
+        }
+    }
 }
 
 function openProductDetail(p) {
@@ -700,7 +704,6 @@ function openProductDetail(p) {
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
   
-  // Attach free delivery text securely near price row
   const existFreeDel = document.getElementById("pdFreeDelText");
   if(existFreeDel) existFreeDel.remove();
   if(p.freeDelivery !== false) {
@@ -708,7 +711,6 @@ function openProductDetail(p) {
       $("pdName").parentNode.insertBefore(d, $("pdColorsWrap"));
   }
 
-  // RENDER COLORS
   if(p.groupId) {
       const variants = products.filter(x => x.groupId === p.groupId);
       if(variants.length > 1) {
@@ -726,7 +728,6 @@ function openProductDetail(p) {
       } else { $("pdColorsWrap").classList.add("hidden"); }
   } else { $("pdColorsWrap").classList.add("hidden"); }
 
-  // RENDER SIZES
   const sizesIn = p.sizesIn ? p.sizesIn.split(',').map(s=>s.trim()).filter(Boolean) : [];
   const sizesOut = p.sizesOut ? p.sizesOut.split(',').map(s=>s.trim()).filter(Boolean) : [];
 
@@ -768,7 +769,7 @@ function closeProductDetail() {
   preventZoom(); const detail = $("prodDetail"); detail.classList.add("closing");
   detail.addEventListener("animationend", () => { detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null; unlockScroll(); }, { once: true });
 }
-$("pdBackBtn").onclick = () => { history.back(); }; // Relies on popstate
+$("pdBackBtn").onclick = () => { history.back(); }; 
 
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
@@ -782,10 +783,8 @@ function renderHorizSections(currentProduct) {
   });
   
   if (sameMainList.length > 0) {
-    // Horizontal
     container.appendChild(buildHorizSection("Similar Products", sameMainList));
     
-    // Vertical Grid
     if(vContainer) {
        const vList = sameMainList.slice(0, 10);
        vList.forEach((p, i) => {
@@ -838,7 +837,7 @@ function directBuyCheckout(p, size) {
     requireLogin(() => { 
         preventZoom(); 
         const s = size || "Default"; 
-        currentCheckoutItem = { product: p, qty: 1, size: s }; // Direct buy overrides
+        currentCheckoutItem = { product: p, qty: 1, size: s }; 
         $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); 
         currentDetailProduct = null; 
         pushModalState(); openCheckout(); 
@@ -890,7 +889,7 @@ function openCheckout() {
   }
 }
 
-$("closeCheckout").onclick = () => { history.back(); }; // Relies on popstate
+$("closeCheckout").onclick = () => { history.back(); }; 
 
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(); const mobile = $("chkMobile").value.trim(); const address = $("chkAddress").value.trim(); const state = $("chkState").value.trim(); const pincode = $("chkPincode").value.trim();
