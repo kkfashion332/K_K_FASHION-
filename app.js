@@ -107,7 +107,8 @@ window.updateCategoriesFromFirebase = function (cats) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 window.updateProductsFromFirebase = function (fbProducts) {
-  products = fbProducts;
+  // Sort ALL products so the newest (highest timestamp) comes first globally
+  products = fbProducts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
   renderProducts();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
@@ -445,7 +446,6 @@ function renderLikesCount() {
   if (b) { b.textContent = likes.length; b.classList.toggle("hidden", likes.length === 0); }
 }
 
-// BUG FIXED: Likes clicking issue
 function renderLikesPageTab() {
   const body = $("likesPageItems");
   if(!body) return;
@@ -461,7 +461,7 @@ function renderLikesPageTab() {
       <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
       <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
     `;
-    el.onclick = () => { openProductDetail(p); }; // FIXED HERE
+    el.onclick = () => { openProductDetailById(p.id); }; 
     body.appendChild(el);
   });
 }
@@ -590,8 +590,6 @@ function renderProducts() {
   if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
   grid.innerHTML = "";
 
-  if(!activeShopId && !searchQuery) { list = [...list].sort(() => Math.random() - 0.5); }
-
   list.forEach((p, i) => {
     const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
     const isLiked = likes.some(l => l.id === p.id);
@@ -627,7 +625,7 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    const sorted = [...products].reverse(); 
+    const sorted = [...products]; 
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
@@ -659,19 +657,6 @@ function renderNewCollection() {
         if(inStock) el.querySelector(".btn-primary").onclick = (e) => { e.stopPropagation(); openProductDetail(p); };
         list.appendChild(el);
     });
-}
-
-// FIX: Now works perfectly from both internal tabs and detail pages without freezing
-window.openProductDetailById = function(id) {
-    const p = products.find(x => x.id === id);
-    if(p) { 
-        if (!$("prodDetail").classList.contains("hidden")) {
-            closeProductDetail(); 
-            setTimeout(() => openProductDetail(p), 300); 
-        } else {
-            openProductDetail(p);
-        }
-    }
 }
 
 function openProductDetail(p) {
@@ -1341,91 +1326,4 @@ window.renderAdmin = function () {
   const blist = $("adminBannersList");
   if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
   const slist = $("adminShopsList");
-  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
-  renderAdminProducts();
-  if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { alert("PIN change option is securely hardcoded to 0000 for elite security."); }; }
-  if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
-};
-
-function openEditModal(p) {
-  editingProductId = p.id; $("editPName").textContent = p.name;
-  let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", ");
-  $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
-  $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
-  
-  const inStock = p.inStock !== false; $("editInStock").checked = inStock;
-  const freeDel = p.freeDelivery !== false; if($("editPFreeDelivery")) $("editPFreeDelivery").checked = freeDel;
-
-  const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out");
-  $("editModal").classList.remove("hidden");
-}
-
-if ($("editInStock")) { $("editInStock").addEventListener("change", function () { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); }); }
-if ($("editClose")) { $("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; }; }
-
-if ($("saveEditBtn")) {
-  $("saveEditBtn").onclick = () => {
-    if (!editingProductId) return;
-    const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-    const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
-    const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
-    
-    if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
-    const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
-    $("editModal").classList.add("hidden"); editingProductId = null;
-  };
-}
-
-$("closeViewerBtn").onclick = () => { history.back(); };
-$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
-preventZoom(); renderLikesCount();
-
-// --- PUSH NOTIFICATION SYSTEM ---
-window.requestFCMToken = async function(messaging, getToken) {
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY });
-            if (token) {
-                save("knk_fcm_token", token);
-                const user = window.fbAuth ? window.fbAuth.currentUser : null;
-                if(user && window.fbAddDoc && window.fbCollection && window.fbDb) {
-                    await window.fbAddDoc(window.fbCollection(window.fbDb, "push_tokens"), { 
-                        token: token, email: user.email || "guest", savedAt: Date.now() 
-                    });
-                }
-            }
-        }
-    } catch(e) { console.log("FCM Error:", e); }
-};
-
-if ($("sendNotifBtn")) {
-    if ($("fcmServerKey")) $("fcmServerKey").value = load("knk_fcm_server_key", "");
-
-    $("sendNotifBtn").onclick = async () => {
-        const t = $("notifTitle").value.trim(); const b = $("notifBody").value.trim(); const i = $("notifImage").value.trim();
-        const key = $("fcmServerKey") ? $("fcmServerKey").value.trim() : "";
-        if (!t || !b) return alert("Title aur Message zaroori hai!");
-        if (!key) return alert("Kripya Firebase Legacy Server Key daalein!");
-        save("knk_fcm_server_key", key); $("sendNotifBtn").textContent = "Sending...";
-
-        try {
-            if (!window.fbGetDocs) { alert("Technical setup issue. Please reload page."); $("sendNotifBtn").textContent = "Send Notification"; return; }
-            const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "push_tokens"));
-            const tokenMap = {};
-            snap.forEach(doc => { if (doc.data().token) tokenMap[doc.data().token] = true; });
-            const uniqueTokens = Object.keys(tokenMap);
-
-            if (uniqueTokens.length === 0) { alert("Koi device notification ke liye registered nahi hai!"); $("sendNotifBtn").textContent = "Send Notification"; return; }
-
-            const payload = { registration_ids: uniqueTokens, notification: { title: t, body: b, icon: "logo.png", image: i || "" } };
-            const res = await fetch("https://fcm.googleapis.com/fcm/send", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "key=" + key }, body: JSON.stringify(payload) });
-
-            if (res.ok) { alert("Notification Sent Successfully! (" + uniqueTokens.length + " devices)"); $("notifTitle").value = ""; $("notifBody").value = ""; $("notifImage").value = ""; } 
-            else { const errText = await res.text(); alert("Failed to send. Firebase Error: " + errText); }
-        } catch(e) { console.error(e); alert("Error: " + e.message); }
-        $("sendNotifBtn").textContent = "Send Notification";
-    };
-}
+  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.
