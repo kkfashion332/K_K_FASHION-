@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL - SUPER ADMIN SECURE ACCESS)
+   GEN-Z STORE — app.js (FINAL - ALL PREMIUM FEATURES ADDED)
 ═══════════════════════════════════════════════════════ */
 
 const QIKINK_CLIENT_ID = "838713226730904";
@@ -8,15 +8,18 @@ const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9e
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
 const TELEGRAM_CHAT_ID = "7503426190";
 
-// NEW: FIREBASE CLOUD MESSAGING VAPID KEY
 const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
 
+const delay = (ms) => new Promise(r => setTimeout(r, ms));
+const addClass = (id, cls) => { const el = $(id); if(el) el.classList.add(cls); };
+const removeClass = (id, cls) => { const el = $(id); if(el) el.classList.remove(cls); };
+
 const ADMIN_PIN = "9721";
-const SUPER_ADMIN_PIN = "90793"; // 👑 SUPER ADMIN PIN 👑
+const SUPER_ADMIN_PIN = "90793"; 
 let superAdminTapCount = 0;
 let superAdminTapTimer = null;
 
@@ -24,7 +27,8 @@ let mainCategories = [];
 let products = [];
 let shops = [];
 let homeBanners = [];
-let cart = load("knk_cart", []);
+let likes = load("knk_likes", []); // Cart is replaced by Likes
+let currentCheckoutItem = null;    // Direct Buy item holder
 let activeMainCatId = null;
 let activeShopId = null;
 let editingProductId = null;
@@ -61,6 +65,24 @@ const unlockScroll = () => { document.body.classList.remove("no-scroll"); };
 const allowZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=5.0"); };
 const preventZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"); };
 
+// ANDROID BACK BUTTON FIX (Hardware Back System)
+function pushModalState() { history.pushState({ modal: true }, "", window.location.href); }
+window.addEventListener('popstate', (e) => {
+  if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
+    $("imageViewer").classList.add("hidden"); preventZoom();
+  } else if ($("checkoutOverlay") && !$("checkoutOverlay").classList.contains("hidden")) {
+    if($("closeCheckout")) $("closeCheckout").click();
+  } else if ($("prodDetail") && !$("prodDetail").classList.contains("hidden")) {
+    closeProductDetail();
+  } else if ($("myOrderDetailModal") && !$("myOrderDetailModal").classList.contains("hidden")) {
+    $("myOrderDetailModal").classList.add("hidden"); unlockScroll();
+  } else if ($("adminPin") && !$("adminPin").classList.contains("hidden")) {
+    $("adminPin").classList.add("hidden");
+  } else if ($("superAdminPinModal") && !$("superAdminPinModal").classList.contains("hidden")) {
+    $("superAdminPinModal").classList.add("hidden");
+  }
+});
+
 function requireLogin(callback) {
   if (window.fbAuth && window.fbAuth.currentUser) { callback(); } 
   else {
@@ -75,20 +97,16 @@ window.updateBannersFromFirebase = function (fetchedBanners) {
     renderHomeBanners();
     if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 }
-
 window.updateShopsFromFirebase = function (fetchedShops) {
   shops = fetchedShops || [];
   renderShopsPage();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
-
 window.updateCategoriesFromFirebase = function (cats) {
   mainCategories = cats || [];
-  if (!activeMainCatId && mainCategories.length > 0) activeMainCatId = mainCategories[0].id;
   renderMainCats(); renderProducts();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
-
 window.updateProductsFromFirebase = function (fbProducts) {
   products = fbProducts;
   renderProducts();
@@ -100,20 +118,16 @@ window.addEventListener("DOMContentLoaded", () => {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
         $("authScreen").classList.add("hidden");
-                if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
+        if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
         else { 
             $("app").classList.remove("hidden"); 
-            if($("waBtn")) $("waBtn").classList.remove("hidden"); 
             renderProfile(); 
-            // FIREBASE NOTIFICATION TRIGGER AFTER LOGIN
-            if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) {
-                window.requestFCMToken(window.fbMessaging, window.fbGetToken);
-            }
+            if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) { window.requestFCMToken(window.fbMessaging, window.fbGetToken); }
         }
       } else {
         if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
       }
-      if (!$("orderPage").classList.contains("hidden")) window.renderMyOrders();
+      if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
     });
   }
 
@@ -136,16 +150,11 @@ window.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  // 👑 SUPER ADMIN UNLOCK LOGIC 👑
   if ($("tabProdsBtn")) {
       $("tabProdsBtn").addEventListener("click", (e) => {
           superAdminTapCount++;
           if (superAdminTapTimer) clearTimeout(superAdminTapTimer);
-          if (superAdminTapCount >= 10) { 
-              superAdminTapCount = 0; 
-              openSuperAdminPin(); 
-              return; 
-          }
+          if (superAdminTapCount >= 10) { superAdminTapCount = 0; pushModalState(); openSuperAdminPin(); return; }
           superAdminTapTimer = setTimeout(() => { superAdminTapCount = 0; }, 3000);
       });
   }
@@ -158,27 +167,65 @@ window.switchAdminTab = function(event, tabId) {
     $(tabId).classList.remove('hidden');
 }
 
-function showSplashAndStart() {
-  const splash = $("splash"); splash.classList.remove("hidden");
+async function showSplashAndStart() {
+  const splash = $("splash"); 
+  if(!splash) return;
+  splash.classList.remove("hidden");
+  splash.style.opacity = "1";
+
+  const box = $("particles");
+  if (box && box.children.length === 0) {
+    for (let i = 0; i < 28; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const sz = (2 + Math.random() * 3).toFixed(1) + 'px';
+      p.style.cssText = [
+        'left:'   + (Math.random() * 100).toFixed(1) + '%',
+        'bottom:' + (Math.random() * 8).toFixed(1)   + '%',
+        'width:'  + sz,
+        'height:' + sz,
+        'animation-duration:' + (2 + Math.random() * 3).toFixed(2) + 's',
+        'animation-delay:'    + (Math.random() * 3).toFixed(2)     + 's',
+      ].join(';');
+      box.appendChild(p);
+    }
+  }
+
+  const audio = $("bg-audio");
+  if (audio) audio.play().catch(() => {});
+
+  await delay(100); addClass('coin-scene', 'appear');
+  await delay(200); addClass('coin-scene', 'spinning');
+  await delay(800); removeClass('coin-scene', 'spinning'); addClass('coin-scene', 'stopping');
+  await delay(300); addClass('flash', 'pop'); addClass('s1', 'fire'); addClass('s2', 'fire'); addClass('s3', 'fire');
+  await delay(60); addClass('wave1', 'blast'); addClass('wave2', 'blast'); addClass('logo-glow', 'on');
+  await delay(200); removeClass('coin-scene', 'stopping');
+  await delay(300); addClass('coin-scene', 'move-up');
+  await delay(150); addClass('welcome', 'show'); addClass('welcome-line', 'show');
+  await delay(1000); addClass('welcome', 'hide'); removeClass('welcome-line', 'show');
+  await delay(400); removeClass('welcome', 'show');
+  if($('welcome')) $('welcome').style.display = 'none';
+  if($('welcome-line')) $('welcome-line').style.display = 'none';
+  await delay(100); addClass('shield-glow', 'show'); addClass('trusted', 'show');
+  await delay(1000); addClass('outro-overlay', 'show'); addClass('trusted', 'hide'); removeClass('shield-glow', 'show');
+  await delay(600); addClass('outro-overlay', 'fadeout');
+  await delay(400);
+
+  splash.style.transition = "opacity 0.4s ease"; 
+  splash.style.opacity = "0";
   setTimeout(() => {
-    splash.style.transition = "opacity 0.5s ease"; splash.style.opacity = "0";
+    splash.classList.add("hidden"); 
+    $("app").classList.remove("hidden"); 
+    renderLikesCount(); 
+    initBannerAutoScroll();
+    
     setTimeout(() => {
-      splash.classList.add("hidden"); $("app").classList.remove("hidden"); $("waBtn").classList.remove("hidden");
-      renderCartCount(); initBannerAutoScroll();
-      
-      // Auto-request notification after app load if not asked
-      setTimeout(() => {
-          if ("Notification" in window && Notification.permission === "default") {
-              if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) {
-                  window.requestFCMToken(window.fbMessaging, window.fbGetToken);
-              } else {
-                  Notification.requestPermission();
-              }
-          }
-      }, 5000);
-      
-    }, 500);
-  }, 2500);
+        if ("Notification" in window && Notification.permission === "default") {
+            if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) window.requestFCMToken(window.fbMessaging, window.fbGetToken);
+            else Notification.requestPermission();
+        }
+    }, 5000);
+  }, 400);
 }
 
 if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
@@ -188,7 +235,7 @@ if ($("authSubmitBtn")) {
     const mob = $("authMobile").value.trim(); const pwd = $("authPassword").value.trim();
     if (!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) return alert("Kripya sahi 10-digit mobile number dalein!");
     if (!pwd || pwd.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
-    const fakeEmail = mob + "@kkfashion.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
+    const fakeEmail = mob + "@genzstore.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
     btn.textContent = "Please wait..."; btn.disabled = true;
     try { await window.signInWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
     catch (err) {
@@ -209,18 +256,19 @@ window.switchNav = function (tab) {
   if ($("nav" + tab)) $("nav" + tab).classList.add("active"); else if (tab === 'Contact' || tab === 'ReturnPolicy' || tab === 'HowToReturn' || tab === 'PrivacyPolicy') $("navProfile").classList.add("active"); 
   if (tab === 'Order') $("navOrderWrap").classList.add("active"); else $("navOrderWrap").classList.remove("active");
 
-  ["homeContent", "shopsPage", "contactPage", "orderPage", "cartPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage"].forEach(id => {
+  ["homeContent", "newPage", "shopsPage", "contactPage", "orderPage", "likesPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
-  if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); }
-  if (tab === 'Shops') $("shopsPage").classList.remove("hidden");
-  if (tab === 'Contact') $("contactPage").classList.remove("hidden");
-  if (tab === 'ReturnPolicy') $("returnPolicyPage").classList.remove("hidden");
-  if (tab === 'HowToReturn') $("howToReturnPage").classList.remove("hidden");
-  if (tab === 'PrivacyPolicy') $("privacyPolicyPage").classList.remove("hidden");
+  if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
+  if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
+  if (tab === 'Shops') { if($("shopsPage")) $("shopsPage").classList.remove("hidden"); }
+  if (tab === 'Contact') { $("contactPage").classList.remove("hidden"); }
+  if (tab === 'ReturnPolicy') { $("returnPolicyPage").classList.remove("hidden"); }
+  if (tab === 'HowToReturn') { $("howToReturnPage").classList.remove("hidden"); }
+  if (tab === 'PrivacyPolicy') { $("privacyPolicyPage").classList.remove("hidden"); }
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
-  if (tab === 'Cart') { $("cartPage").classList.remove("hidden"); renderCartPageTab(); }
+  if (tab === 'Likes') { $("likesPage").classList.remove("hidden"); renderLikesPageTab(); }
   if (tab === 'Profile') { $("profilePage").classList.remove("hidden"); renderProfile(); }
   window.scrollTo(0, 0);
 };
@@ -228,7 +276,7 @@ window.switchNav = function (tab) {
 window.clearShopFilterAndGoHome = function() {
     activeShopId = null; activeMainCatId = null; searchQuery = "";
     if($("searchInput")) $("searchInput").value = "";
-    switchNav('Home'); renderMainCats(); renderProducts();
+    switchNav('Home'); 
 }
 
 function renderHomeBanners() {
@@ -296,7 +344,7 @@ function renderShopsPage() {
 
 window.renderMyOrders = function() {
   const list = $("myOrdersList"); const user = window.fbAuth ? window.fbAuth.currentUser : null;
-  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@kkfashion.com", "");
+  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@genzstore.com", "");
   let displayOrders = [];
   if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) { displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile); } 
   else { displayOrders = load("knk_my_orders_" + userEmail, []); }
@@ -311,7 +359,7 @@ window.renderMyOrders = function() {
     let statusDisplay = o.status || 'Recent';
 
     html += `
-    <div class="mo-card" onclick="openMyOrderModal('${o.id || o.savedAt}')">
+    <div class="mo-card" onclick="pushModalState(); openMyOrderModal('${o.id || o.savedAt}')">
       <div class="mo-head">
         <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
         <span class="mo-status">${statusDisplay}</span>
@@ -380,44 +428,44 @@ window.openMyOrderModal = function (idStr) {
   $("myOrderDetailModal").classList.remove("hidden"); lockScroll();
 };
 
-function renderCartPageTab() {
-  const body = $("cartPageItems"); const foot = $("cartPageFooter");
-  if (!cart.length) { body.innerHTML = '<p class="empty" style="padding:40px 0;">Your shopping cart is empty.</p>'; foot.classList.add("hidden"); return; }
+// --- NEW LIKES SYSTEM (REPLACES CART) ---
+window.toggleLike = function(pid) {
+    const p = products.find(x => x.id === pid);
+    if(!p) return;
+    const idx = likes.findIndex(l => l.id === pid);
+    if(idx > -1) { likes.splice(idx, 1); } 
+    else { likes.push(p); }
+    save("knk_likes", likes);
+    renderLikesCount();
+    renderProducts(); 
+    if($("newPage") && !$("newPage").classList.contains("hidden")) renderNewCollection();
+    if($("likesPage") && !$("likesPage").classList.contains("hidden")) renderLikesPageTab();
+}
+
+function renderLikesCount() {
+  const b = $("navLikesCount");
+  if (b) { b.textContent = likes.length; b.classList.toggle("hidden", likes.length === 0); }
+}
+
+function renderLikesPageTab() {
+  const body = $("likesPageItems");
+  if(!body) return;
+  if (!likes.length) { body.innerHTML = '<p class="empty" style="padding:40px 0;">Aapne abhi tak koi product Like nahi kiya hai.</p>'; return; }
   body.innerHTML = "";
-  cart.forEach((i) => {
-    const mainImg = (Array.isArray(i.product.image) && i.product.image.length > 0) ? i.product.image[0] : "placeholder.jpg";
-    const el = document.createElement("div"); el.className = "cart-item";
-    const sizeDisplay = i.size && i.size !== "Default" ? ` | Size: ${i.size}` : '';
+  likes.forEach((p) => {
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const el = document.createElement("div"); 
+    el.className = "cart-item"; 
+    el.style.cursor = "pointer";
     el.innerHTML = `
-      <img src="${mainImg}" alt="${i.product.name}" />
-      <div class="ci-info"><div class="ci-name">${i.product.name}</div><div class="ci-sub">₹${finalPrice(i.product)} × ${i.qty}${sizeDisplay}</div></div>
-      <button class="trash">🗑️</button>
+      <img src="${mainImg}" alt="${p.name}" />
+      <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
+      <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
     `;
-    el.querySelector(".trash").onclick = () => { removeFromCart(i.product.id, i.size); renderCartPageTab(); };
+    el.onclick = () => { openProductDetailById(p.id); };
     body.appendChild(el);
   });
-  $("cartPageTotal").textContent = "₹" + cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0); foot.classList.remove("hidden");
 }
-
-function renderCartCount() {
-  const count = cart.reduce((s, i) => s + i.qty, 0); const navBadge = $("navCartCount");
-  if (navBadge) { navBadge.textContent = count; navBadge.classList.toggle("hidden", count === 0); }
-}
-
-function addToCart(p, size) {
-  if (p.sizesIn && p.sizesIn.trim() !== "" && !size) {
-      alert("Please select a size first!");
-      return false;
-  }
-  const s = size || "Default";
-  const found = cart.find((i) => i.product.id === p.id && i.size === s);
-  if (found) found.qty += 1; else cart.push({ product: p, qty: 1, size: s });
-  save("knk_cart", cart); renderCartCount(); return true;
-}
-function removeFromCart(id, size) { cart = cart.filter((i) => !(i.product.id === id && i.size === size)); save("knk_cart", cart); renderCartCount(); }
-function clearCart() { cart = []; save("knk_cart", cart); renderCartCount(); }
-if ($("cartPageClearBtn")) { $("cartPageClearBtn").onclick = () => { clearCart(); renderCartPageTab(); }; }
-if ($("cartPageCheckoutBtn")) { $("cartPageCheckoutBtn").onclick = () => { if (!cart.length) return; requireLogin(() => { openCheckout(); }); }; }
 
 function renderProfile() {
   const user = window.fbAuth ? window.fbAuth.currentUser : null;
@@ -425,7 +473,7 @@ function renderProfile() {
   const savedPic = localStorage.getItem(getProfileKey());
 
   if (user) {
-    let email = user.email || ""; displayObj.textContent = email.includes("@kkfashion.com") ? "+91 " + email.replace("@kkfashion.com", "") : email;
+    let email = user.email || ""; displayObj.textContent = email.includes("@genzstore.com") ? "+91 " + email.replace("@genzstore.com", "") : email;
     nameObj.textContent = user.displayName || "Elite Member"; imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
   } else {
     displayObj.textContent = "Guest Access"; nameObj.textContent = "Welcome Guest"; imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
@@ -436,7 +484,7 @@ function renderProfile() {
     imgObj.addEventListener("click", (e) => {
       e.stopPropagation(); profileTapCount++;
       if (profileTapTimer) clearTimeout(profileTapTimer);
-      if (profileTapCount >= 10) { profileTapCount = 0; openPin(); return; }
+      if (profileTapCount >= 10) { profileTapCount = 0; pushModalState(); openPin(); return; }
       profileTapTimer = setTimeout(() => { profileTapCount = 0; }, 3000);
     });
   }
@@ -469,7 +517,7 @@ if ($("profilePicInput")) {
         const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
         try { localStorage.setItem(getProfileKey(), dataUrl); $("profileImg").src = dataUrl; $("profileImg").style.opacity = "1";
           const user = window.fbAuth ? window.fbAuth.currentUser : null;
-          if (user && !user.email.includes("@kkfashion.com")) window.updateProfile(user, { photoURL: dataUrl });
+          if (user && !user.email.includes("@genzstore.com")) window.updateProfile(user, { photoURL: dataUrl });
         } catch (err) { alert("Quota full!"); $("profileImg").style.opacity = "1"; }
       }; img.src = event.target.result;
     }; reader.readAsDataURL(file);
@@ -479,10 +527,12 @@ if ($("profilePicInput")) {
 $("logoBtn").onclick = () => { clearShopFilterAndGoHome(); };
 
 function renderMainCats() {
-  const wrapDiv = $("mainCatsWrap"); const wrap = $("mainCats"); wrap.innerHTML = "";
-  if (!activeShopId) { wrapDiv.classList.add("hidden"); return; }
+  const wrapDiv = $("mainCatsWrap"); const wrap = $("mainCats"); 
+  if(!wrapDiv || !wrap) return;
+  wrap.innerHTML = "";
   
-  let visibleCats = mainCategories.filter(c => c.shopId === activeShopId);
+  // FIXED: ALL Categories visible globally on home page.
+  let visibleCats = mainCategories;
   if(visibleCats.length === 0) { wrapDiv.classList.add("hidden"); return; }
   
   wrapDiv.classList.remove("hidden");
@@ -498,7 +548,9 @@ function renderMainCats() {
 
 window.selectMainCat = function (id) {
   if (searchQuery) { searchQuery = ""; $("searchInput").value = ""; $("searchClear").classList.add("hidden"); }
-  activeMainCatId = id; renderMainCats(); renderProducts();
+  // Toggle selection
+  if (activeMainCatId === id) activeMainCatId = null; else activeMainCatId = id; 
+  renderMainCats(); renderProducts();
 };
 
 function searchMatches(p, q) {
@@ -525,14 +577,14 @@ function renderProducts() {
     list = list.filter((p) => searchMatches(p, searchQuery));
     title.innerHTML = `Search: "<span style="color:var(--primary)">${searchQuery}</span>" <span class="search-count">${list.length} results</span>`;
   } else {
-      if (!activeShopId) {
-          title.textContent = "ALL PREMIUM COLLECTIONS";
-      } else {
+      if (activeMainCatId) {
           const cat = getCat(activeMainCatId);
-          title.textContent = cat ? cat.name : "STORE PRODUCTS";
-          list = list.filter(p => p.shopId === activeShopId);
-          if (activeMainCatId) list = list.filter(p => p.mainCategoryId === activeMainCatId);
+          title.textContent = cat ? cat.name : "PREMIUM COLLECTIONS";
+          list = list.filter(p => p.mainCategoryId === activeMainCatId);
+      } else {
+          title.textContent = "ALL PREMIUM COLLECTIONS";
       }
+      if (activeShopId) list = list.filter(p => p.shopId === activeShopId);
   }
 
   if (activeShopId) $("activeShopBanner").classList.add("hidden"); else $("activeShopBanner").classList.add("hidden");
@@ -545,26 +597,72 @@ function renderProducts() {
 
   list.forEach((p, i) => {
     const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const isLiked = likes.some(l => l.id === p.id);
+    const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:10px; font-weight:800; letter-spacing:0.05em; margin-top:3px; text-transform:uppercase;">FREE Delivery</div>' : '';
+
     const el = document.createElement("div"); el.className = "product"; el.style.animationDelay = (i * 0.05) + "s";
     el.innerHTML = `
-      <div><img src="${mainImg}" alt="${p.name}" loading="lazy" /></div>
+      <div style="position:relative;">
+          <img src="${mainImg}" alt="${p.name}" loading="lazy" />
+          <button class="like-btn-grid" onclick="event.stopPropagation(); toggleLike('${p.id}')" style="position:absolute; top:8px; right:8px; background:rgba(255,255,255,0.85); border:none; border-radius:50%; width:30px; height:30px; font-size:14px; box-shadow:0 2px 6px rgba(0,0,0,0.3); z-index:5; cursor:pointer;">
+              ${isLiked ? '❤️' : '🤍'}
+          </button>
+      </div>
       <div class="info">
         <div class="name">${p.name}</div>
         <div class="price-row"><span class="price">₹${price}</span>${p.discount > 0 ? `<span class="strike">₹${p.price}</span>` : ""}</div>
+        ${freeDel}
         <span class="stock-badge ${inStock ? 'in' : 'out'}">${inStock ? '● In Stock' : '● Out of Stock'}</span>
         <div class="btn-row">
-          <button class="btn-outline btn-cart-grid" ${!inStock ? 'disabled' : ''}>🛒 Cart</button>
-          <button class="btn-primary btn-buy-grid"  ${!inStock ? 'disabled' : ''}>💳 Buy</button>
+          <button class="btn-primary btn-buy-grid full" ${!inStock ? 'disabled' : ''} style="grid-column: 1 / -1;">💳 Buy Now</button>
         </div>
       </div>
     `;
     el.querySelector("img").onclick = () => openProductDetail(p); el.querySelector(".name").onclick = () => openProductDetail(p);
-    if (inStock) {
-      el.querySelector(".btn-cart-grid").onclick = (e) => { e.stopPropagation(); openProductDetail(p); };
-      el.querySelector(".btn-buy-grid").onclick = (e) => { e.stopPropagation(); openProductDetail(p); };
-    }
+    if (inStock) { el.querySelector(".btn-buy-grid").onclick = (e) => { e.stopPropagation(); openProductDetail(p); }; }
     grid.appendChild(el);
   });
+}
+
+// NEW COLLECTION LOGIC (VERTICAL FEED)
+function renderNewCollection() {
+    const list = $("newCollectionList");
+    if(!list) return;
+    list.innerHTML = "";
+    if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
+
+    const sorted = [...products].reverse(); // Newest first
+    sorted.forEach(p => {
+        const price = finalPrice(p);
+        const inStock = p.inStock !== false;
+        const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+        const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:12px; font-weight:800; letter-spacing:0.05em; margin-top:5px; text-transform:uppercase;">FREE Delivery</div>' : '';
+        const isLiked = likes.some(l => l.id === p.id);
+
+        const el = document.createElement("div");
+        el.style.cssText = "background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; position: relative; animation: fadeUp 0.4s ease both;";
+        el.innerHTML = `
+          <div style="position:relative;">
+            <img src="${mainImg}" style="width: 100%; height: 380px; object-fit: cover; display: block; background: var(--card2);" />
+            <button onclick="event.stopPropagation(); toggleLike('${p.id}')" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.9); border:none; border-radius:50%; width:40px; height:40px; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.3); z-index: 5; cursor:pointer;">
+              ${isLiked ? '❤️' : '🤍'}
+            </button>
+            <span class="stock-badge ${inStock ? 'in' : 'out'}" style="position:absolute; bottom:12px; left:12px; font-size:12px; padding: 4px 12px;">${inStock ? '● In Stock' : '● Out of Stock'}</span>
+          </div>
+          <div style="padding: 16px;">
+             <h3 style="font-size:17px; color:var(--fg); margin-bottom:8px; font-family:var(--font-body); font-weight:600;">${p.name}</h3>
+             <div style="display:flex; align-items:baseline; gap:8px;">
+                <span style="font-size:22px; font-weight:700; color:var(--primary);">₹${price}</span>
+                ${p.discount > 0 ? `<span style="font-size:15px; text-decoration:line-through; color:var(--muted);">₹${p.price}</span>` : ''}
+             </div>
+             ${freeDel}
+             <button class="btn-primary full" style="margin-top:14px; padding:12px; font-size:15px;" ${!inStock ? 'disabled' : ''}>💳 Buy Now</button>
+          </div>
+        `;
+        el.onclick = () => openProductDetail(p);
+        if(inStock) el.querySelector(".btn-primary").onclick = (e) => { e.stopPropagation(); openProductDetail(p); };
+        list.appendChild(el);
+    });
 }
 
 window.openProductDetailById = function(id) {
@@ -573,6 +671,7 @@ window.openProductDetailById = function(id) {
 }
 
 function openProductDetail(p) {
+  pushModalState();
   lockScroll(); currentDetailProduct = p; currentSelectedSize = null;
   const price = finalPrice(p); const inStock = p.inStock !== false; const cat = getCat(p.mainCategoryId);
   const slider = $("pdImageSlider"); const dotsWrap = $("pdImageDots");
@@ -581,7 +680,7 @@ function openProductDetail(p) {
 
   images.forEach((imgUrl, i) => {
     const imgEl = document.createElement("img"); imgEl.src = imgUrl;
-    imgEl.onclick = () => { $("fullImage").src = imgUrl; $("imageViewer").classList.remove("hidden"); allowZoom(); };
+    imgEl.onclick = () => { pushModalState(); $("fullImage").src = imgUrl; $("imageViewer").classList.remove("hidden"); allowZoom(); };
     slider.appendChild(imgEl);
     if (images.length > 1) { const dot = document.createElement("div"); dot.className = "dot" + (i === 0 ? " active" : ""); dotsWrap.appendChild(dot); }
   });
@@ -596,8 +695,18 @@ function openProductDetail(p) {
   const badge = $("pdStockBadge"); badge.textContent = inStock ? "● In Stock" : "● Out of Stock"; badge.className = "stock-badge pd-img-stock " + (inStock ? "in" : "out");
   $("pdBreadcrumb").textContent = (cat ? cat.name : ""); $("pdName").textContent = p.name; $("pdPrice").textContent = "₹" + price;
 
+  const freeDelObj = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:12px; font-weight:800; letter-spacing:0.05em; margin-top:8px; text-transform:uppercase;">FREE Delivery</div>' : '';
+  
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
+  
+  // Attach free delivery text securely near price row
+  const existFreeDel = document.getElementById("pdFreeDelText");
+  if(existFreeDel) existFreeDel.remove();
+  if(p.freeDelivery !== false) {
+      const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj;
+      $("pdName").parentNode.insertBefore(d, $("pdColorsWrap"));
+  }
 
   // RENDER COLORS
   if(p.groupId) {
@@ -641,19 +750,16 @@ function openProductDetail(p) {
       currentSelectedSize = "Default";
   }
 
-  const addBtn = $("pdAddCart"); const buyBtn = $("pdBuyNow");
+  const buyBtn = $("pdBuyNow");
   if (inStock) {
-    addBtn.disabled = false; buyBtn.disabled = false;
-    addBtn.onclick = () => { 
-        if(addToCart(p, currentSelectedSize)) alert("Added to cart!"); 
-    };
+    buyBtn.disabled = false;
     buyBtn.onclick = () => { 
         if(p.sizesIn && p.sizesIn.trim() !== "" && !currentSelectedSize) {
             alert("Please select a size first!"); return;
         }
         directBuyCheckout(p, currentSelectedSize); 
     };
-  } else { addBtn.disabled = true; buyBtn.disabled = true; }
+  } else { buyBtn.disabled = true; }
 
   renderHorizSections(p); $("pdScroll").scrollTop = 0; $("prodDetail").classList.remove("hidden", "closing");
 }
@@ -662,10 +768,12 @@ function closeProductDetail() {
   preventZoom(); const detail = $("prodDetail"); detail.classList.add("closing");
   detail.addEventListener("animationend", () => { detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null; unlockScroll(); }, { once: true });
 }
-$("pdBackBtn").onclick = closeProductDetail;
+$("pdBackBtn").onclick = () => { history.back(); }; // Relies on popstate
 
 function renderHorizSections(currentProduct) {
   const container = $("pdHorizSections"); container.innerHTML = "";
+  const vContainer = $("pdVerticalSections"); if(vContainer) vContainer.innerHTML = "";
+  
   const sameMainList = products.filter((p) => {
       if (p.id === currentProduct.id) return false;
       if (p.mainCategoryId !== currentProduct.mainCategoryId) return false;
@@ -674,7 +782,29 @@ function renderHorizSections(currentProduct) {
   });
   
   if (sameMainList.length > 0) {
+    // Horizontal
     container.appendChild(buildHorizSection("Similar Products", sameMainList));
+    
+    // Vertical Grid
+    if(vContainer) {
+       const vList = sameMainList.slice(0, 10);
+       vList.forEach((p, i) => {
+          const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+          const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:10px; font-weight:800; text-transform:uppercase; margin-top:2px;">Free Delivery</div>' : '';
+          const el = document.createElement("div"); el.className = "product";
+          el.innerHTML = `
+            <div><img src="${mainImg}" alt="${p.name}" loading="lazy" /></div>
+            <div class="info">
+              <div class="name">${p.name}</div>
+              <div class="price-row"><span class="price">₹${price}</span>${p.discount > 0 ? `<span class="strike">₹${p.price}</span>` : ""}</div>
+              ${freeDel}
+              <span class="stock-badge ${inStock ? 'in' : 'out'}">${inStock ? '● In Stock' : '● Out of Stock'}</span>
+            </div>
+          `;
+          el.onclick = () => openProductDetail(p);
+          vContainer.appendChild(el);
+       });
+    }
   }
 }
 
@@ -692,7 +822,7 @@ function buildHorizSection(title, list) {
   section.appendChild(row); return section;
 }
 
-let currentDynamicUpi = "kkfashion@nyes";
+let currentDynamicUpi = "genzstore@nyes";
 
 if ($("chkUtr")) { $("chkUtr").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12); }; }
 if ($("copyUpiBtn")) {
@@ -704,7 +834,16 @@ if ($("copyUpiBtn")) {
   };
 }
 
-function directBuyCheckout(p, size) { requireLogin(() => { preventZoom(); const s = size || "Default"; cart = [{ product: p, qty: 1, size: s }]; save("knk_cart", cart); renderCartCount(); $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); currentDetailProduct = null; openCheckout(); }); }
+function directBuyCheckout(p, size) { 
+    requireLogin(() => { 
+        preventZoom(); 
+        const s = size || "Default"; 
+        currentCheckoutItem = { product: p, qty: 1, size: s }; // Direct buy overrides
+        $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); 
+        currentDetailProduct = null; 
+        pushModalState(); openCheckout(); 
+    }); 
+}
 
 function resetCheckoutUI() {
   $("checkoutStep1").classList.remove("hidden"); $("checkoutStep2").classList.add("hidden"); if ($("checkoutStep3")) $("checkoutStep3").classList.add("hidden");
@@ -721,21 +860,23 @@ function resetCheckoutUI() {
 
 function openCheckout() {
   lockScroll(); resetCheckoutUI();
-  const total = cart.reduce((s, i) => s + finalPrice(i.product) * i.qty, 0);
+  if(!currentCheckoutItem) return;
+  const total = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   $("chkTotalAmt").textContent = "₹" + total;
   $("checkoutOverlay").classList.remove("hidden");
   
   let shopCodEnabled = true; let shopCodAdvance = 0; let shopFullCodEnabled = false;
-  if (cart.length > 0 && cart[0].product.shopId) {
-      const sp = shops.find(s => s.id === cart[0].product.shopId);
-      if (sp) { currentDynamicUpi = sp.upi || "kkfashion@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
-      else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
-  } else { currentDynamicUpi = "kkfashion@nyes"; $("chkQrImage").src = "62673.png"; }
+  if (currentCheckoutItem.product.shopId) {
+      const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId);
+      if (sp) { currentDynamicUpi = sp.upi || "genzstore@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
+      else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
+  } else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
   
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
 
   if(!shopCodEnabled) {
-      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now";
+      $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); 
+      $("step2PayBtn").textContent = "Pay Online (Prepaid)";
   } else {
       $("payCODLabel").classList.remove("hidden");
       if (shopFullCodEnabled) {
@@ -745,21 +886,11 @@ function openCheckout() {
       } else { 
           $("codTextDesc").innerHTML = `Safety Deposit online required.`; 
       }
+      $("step2PayBtn").textContent = "Pay Online (Prepaid)";
   }
 }
 
-$("closeCheckout").onclick = () => {
-  if (!$("qrScanSection").classList.contains("hidden")) {
-    $("qrScanSection").classList.add("hidden"); $("paymentOptionsWrap").classList.remove("hidden");
-    $("confirmOrderBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden");
-    if (window.paymentInterval) clearInterval(window.paymentInterval);
-  } else if (!$("checkoutStep2").classList.contains("hidden")) {
-    $("checkoutStep2").classList.add("hidden"); $("checkoutStep1").classList.remove("hidden");
-    $("step2PayBtn").classList.add("hidden"); $("step1NextBtn").classList.remove("hidden"); $("chkFooterTotalRow").classList.remove("hidden");
-    $("step2Indicator").classList.remove("active"); $("step1Indicator").classList.remove("completed"); $("step1Indicator").classList.add("active");
-    $("line1").classList.remove("completed"); $("step1Circle").innerHTML = "1";
-  } else { $("checkoutOverlay").classList.add("hidden"); unlockScroll(); }
-};
+$("closeCheckout").onclick = () => { history.back(); }; // Relies on popstate
 
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(); const mobile = $("chkMobile").value.trim(); const address = $("chkAddress").value.trim(); const state = $("chkState").value.trim(); const pincode = $("chkPincode").value.trim();
@@ -774,23 +905,32 @@ $("step1NextBtn").onclick = () => {
 };
 
 function renderStep2() {
-  if (!cart.length) return;
-  const item = cart[0]; const p = item.product;
+  if (!currentCheckoutItem) return;
+  const item = currentCheckoutItem; const p = item.product;
   const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
   $("chkStep2Img").src = mainImg; $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty;
   updateStep2Summary();
-  $("chkStep2Qty").onchange = (e) => { item.qty = parseInt(e.target.value); save("knk_cart", cart); renderCartCount(); updateStep2Summary(); };
+  
+  $("chkStep2Qty").onchange = (e) => { 
+      item.qty = parseInt(e.target.value); updateStep2Summary(); 
+      const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
+      if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
+  };
+  
+  const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
+  if(selectedRadio) { selectedRadio.dispatchEvent(new Event('change')); }
 }
 
 function updateStep2Summary() {
-  let actualTotal = 0; let finalTotal = 0;
-  cart.forEach(i => { actualTotal += i.product.price * i.qty; finalTotal += finalPrice(i.product) * i.qty; });
+  if (!currentCheckoutItem) return;
+  let actualTotal = currentCheckoutItem.product.price * currentCheckoutItem.qty; 
+  let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   $("billActual").textContent = "₹" + actualTotal; $("billFinal").textContent = "₹" + finalTotal;
   if (actualTotal > 0) { const discPercent = Math.round(((actualTotal - finalTotal) / actualTotal) * 100); $("billDiscount").textContent = discPercent + "% off"; }
   
   let shopCodAdvance = 0; let shopFullCodEnabled = false;
-  if (cart.length > 0 && cart[0].product.shopId) {
-      const sp = shops.find(s => s.id === cart[0].product.shopId);
+  if (currentCheckoutItem.product.shopId) {
+      const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId);
       if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; }
   }
   
@@ -811,28 +951,39 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
     if (window.paymentInterval) clearInterval(window.paymentInterval);
     if (e.target.value === "COD") { 
         let shopCodAdvance = 0; let shopFullCodEnabled = false;
-        if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
+        if (currentCheckoutItem && currentCheckoutItem.product.shopId) { const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
         
         if (shopFullCodEnabled) {
             $("codWarningBox").classList.add("hidden");
             $("step2PayBtn").textContent = "Place Order (100% COD)";
         } else {
             $("codWarningBox").classList.remove("hidden"); 
-            if(shopCodAdvance > 0) $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; else $("step2PayBtn").textContent = "Pay Advance";
+            if(shopCodAdvance > 0) {
+                $("step2PayBtn").textContent = `Pay ₹${shopCodAdvance} Advance`; 
+            } else { 
+                let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
+                let defaultAdv = Math.round(finalTotal * 0.25);
+                if(defaultAdv > finalTotal) defaultAdv = finalTotal;
+                $("step2PayBtn").textContent = `Pay ₹${defaultAdv} Advance`;
+            }
         }
     } 
-    else { $("codWarningBox").classList.add("hidden"); $("step2PayBtn").textContent = "Pay 100% Now"; }
+    else { 
+        $("codWarningBox").classList.add("hidden"); 
+        $("step2PayBtn").textContent = "Pay Online (Prepaid)"; 
+    }
   });
 });
 
 $("step2PayBtn").onclick = () => {
+  if(!currentCheckoutItem) return;
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
-  let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+  let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
       let shopCodAdvance = 0; let shopFullCodEnabled = false;
-      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
+      if (currentCheckoutItem.product.shopId) { const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
       
       if (shopFullCodEnabled) {
           amountPaid = 0;
@@ -898,14 +1049,15 @@ async function sendTelegramAlert(orderData) {
 
 $("confirmOrderBtn").onclick = () => {
   let utrValue = $("chkUtr").value.trim();
+  if(!currentCheckoutItem) return;
   
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
-  let finalTotal = 0; cart.forEach(i => finalTotal += finalPrice(i.product) * i.qty);
+  let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
       let shopCodAdvance = 0; let shopFullCodEnabled = false;
-      if (cart.length > 0 && cart[0].product.shopId) { const sp = shops.find(s => s.id === cart[0].product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
+      if (currentCheckoutItem.product.shopId) { const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
       
       if (shopFullCodEnabled) {
           amountPaid = 0;
@@ -924,13 +1076,13 @@ $("confirmOrderBtn").onclick = () => {
   let balanceDue = finalTotal - amountPaid;
 
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
-  let orderShopName = "K_K Fashion"; let orderShopLogo = "placeholder.jpg";
-  if (cart.length > 0 && cart[0].product.shopId) {
-      const sp = shops.find(s => s.id === cart[0].product.shopId);
+  let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
+  if (currentCheckoutItem.product.shopId) {
+      const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId);
       if (sp) { orderShopName = sp.name; orderShopLogo = sp.logo || "placeholder.jpg"; }
   }
 
-  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: cart, totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
+  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: [currentCheckoutItem], totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
 
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
   if (window.paymentInterval) clearInterval(window.paymentInterval);
@@ -960,13 +1112,12 @@ function showStep3Success(payMethod, paid, due) {
   else if (payMethod === "COD" && paid === 0) { sumHtml += `<strong>Total Amount to Pay on Delivery:</strong> ₹${due}`; }
   else { sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br><strong style="color:#4cc968">No pending dues!</strong>`; }
   $("successOrderSummary").innerHTML = sumHtml;
-  clearCart();
 }
 
-$("successCloseBtn").onclick = () => { $("checkoutOverlay").classList.add("hidden"); unlockScroll(); resetCheckoutUI(); };
+$("successCloseBtn").onclick = () => { history.back(); };
 
 function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); setTimeout(() => $("pinInput").focus(), 100); }
-$("pinClose").onclick = () => { $("adminPin").classList.add("hidden"); };
+$("pinClose").onclick = () => { history.back(); };
 $("pinUnlock").onclick = tryUnlock;
 $("pinInput").onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
 
@@ -988,19 +1139,17 @@ function openSuperAdminPin() {
     setTimeout(() => $("superPinInput").focus(), 100);
 }
 
-$("superPinClose").onclick = () => { $("superAdminPinModal").classList.add("hidden"); };
+$("superPinClose").onclick = () => { history.back(); };
 $("superPinInput").onkeydown = (e) => { if (e.key === "Enter") trySuperUnlock(); };
 $("superPinUnlock").onclick = trySuperUnlock;
 
 function trySuperUnlock() {
     if ($("superPinInput").value === SUPER_ADMIN_PIN) {
         $("superAdminPinModal").classList.add("hidden");
-        // 🚀 UNLOCK ALL TABS FOR SUPER ADMIN
         $("tabShopsBtn").classList.remove("hidden");
         $("tabOrdersBtn").classList.remove("hidden");
         $("tabCatsBtn").classList.remove("hidden");
         $("tabSettingsBtn").classList.remove("hidden");
-        // 🚀 UNLOCK PRODUCT LIST FOR SUPER ADMIN
         if ($("adminProducts") && $("adminProducts").parentElement) {
             $("adminProducts").parentElement.classList.remove("hidden");
         }
@@ -1009,31 +1158,24 @@ function trySuperUnlock() {
     }
 }
 
-// 🔒 VENDOR VIEW (RESTRICTED TO PRODUCTS ONLY)
+// 🔒 VENDOR VIEW
 function openAdminAsVendor() { 
   lockScroll(); 
   renderAdmin(); 
   $("adminPanel").classList.remove("hidden"); 
-  
-  // HIDE SENSITIVE TABS
   $("tabShopsBtn").classList.add("hidden");
   $("tabOrdersBtn").classList.add("hidden");
   $("tabCatsBtn").classList.add("hidden");
   $("tabSettingsBtn").classList.add("hidden");
-
-  // HIDE PRODUCT LIST (SO VENDORS CAN ONLY ADD, NOT DELETE)
   if ($("adminProducts") && $("adminProducts").parentElement) {
       $("adminProducts").parentElement.classList.add("hidden");
   }
-
-  // SWITCH TO PRODUCTS TAB AUTOMATICALLY
   document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
   $("tabProdsBtn").classList.add('active');
   $("amProds").classList.remove('hidden');
 }
 
-// SECURELY RESET TABS ON CLOSE
 $("adminClose").onclick = () => { 
     $("adminPanel").classList.add("hidden"); 
     unlockScroll(); 
@@ -1041,7 +1183,6 @@ $("adminClose").onclick = () => {
     $("tabOrdersBtn").classList.add("hidden");
     $("tabCatsBtn").classList.add("hidden");
     $("tabSettingsBtn").classList.add("hidden");
-    // SECURELY RE-HIDE PRODUCT LIST ON CLOSE
     if ($("adminProducts") && $("adminProducts").parentElement) {
         $("adminProducts").parentElement.classList.add("hidden");
     }
@@ -1142,7 +1283,7 @@ function syncAddProductDropdowns() {
   const pMainCat = $("pMainCat"); pMainCat.innerHTML = "";
   mainCategories.forEach((cat) => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); });
   const pShop = $("pShop"); const newCatShop = $("newCatShop");
-  if(pShop) { pShop.innerHTML = '<option value="">K_K Fashion (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
+  if(pShop) { pShop.innerHTML = '<option value="">Gen-Z Store (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
   if(newCatShop) { newCatShop.innerHTML = '<option value="GLOBAL">Global (All Shops)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; newCatShop.appendChild(o); }); }
 }
 
@@ -1162,7 +1303,7 @@ window.renderAdminOrders = function (orders) {
       <div class="order-head"><span>Name: ${o.name} (${o.mobile})</span><strong>₹${o.totalAmount}</strong></div>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);">
          <img src="${o.shopLogo || 'placeholder.jpg'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--primary);">
-         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'K_K Fashion'}</strong>
+         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'Gen-Z Store'}</strong>
          <span style="margin-left:auto; font-size:11px; font-weight:700; background:var(--card2); padding:4px 8px; border-radius:4px; color:${o.paymentMethod==='COD'?'var(--destructive)':'#4cc968'}">${o.paymentMethod}</span>
       </div>
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;"><strong>Address:</strong> ${o.address}<br>${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}<strong>State & Pincode:</strong> ${o.state} - ${o.pincode}</div>
@@ -1212,7 +1353,10 @@ function openEditModal(p) {
   let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", ");
   $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
+  
   const inStock = p.inStock !== false; $("editInStock").checked = inStock;
+  const freeDel = p.freeDelivery !== false; if($("editPFreeDelivery")) $("editPFreeDelivery").checked = freeDel;
+
   const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out");
   $("editModal").classList.remove("hidden");
 }
@@ -1225,13 +1369,64 @@ if ($("saveEditBtn")) {
     if (!editingProductId) return;
     const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
     const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
+    const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
+    
     if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
     const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
+    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
+    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
     $("editModal").classList.add("hidden"); editingProductId = null;
   };
 }
 
-$("closeViewerBtn").onclick = () => { $("imageViewer").classList.add("hidden"); preventZoom(); };
-$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { $("imageViewer").classList.add("hidden"); preventZoom(); } };
+$("closeViewerBtn").onclick = () => { history.back(); };
+$("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
+preventZoom(); renderLikesCount();
+
+// --- PUSH NOTIFICATION SYSTEM ---
+window.requestFCMToken = async function(messaging, getToken) {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY });
+            if (token) {
+                save("knk_fcm_token", token);
+                const user = window.fbAuth ? window.fbAuth.currentUser : null;
+                if(user && window.fbAddDoc && window.fbCollection && window.fbDb) {
+                    await window.fbAddDoc(window.fbCollection(window.fbDb, "push_tokens"), { 
+                        token: token, email: user.email || "guest", savedAt: Date.now() 
+                    });
+                }
+            }
+        }
+    } catch(e) { console.log("FCM Error:", e); }
+};
+
+if ($("sendNotifBtn")) {
+    if ($("fcmServerKey")) $("fcmServerKey").value = load("knk_fcm_server_key", "");
+
+    $("sendNotifBtn").onclick = async () => {
+        const t = $("notifTitle").value.trim(); const b = $("notifBody").value.trim(); const i = $("notifImage").value.trim();
+        const key = $("fcmServerKey") ? $("fcmServerKey").value.trim() : "";
+        if (!t || !b) return alert("Title aur Message zaroori hai!");
+        if (!key) return alert("Kripya Firebase Legacy Server Key daalein!");
+        save("knk_fcm_server_key", key); $("sendNotifBtn").textContent = "Sending...";
+
+        try {
+            if (!window.fbGetDocs) { alert("Technical setup issue. Please reload page."); $("sendNotifBtn").textContent = "Send Notification"; return; }
+            const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "push_tokens"));
+            const tokenMap = {};
+            snap.forEach(doc => { if (doc.data().token) tokenMap[doc.data().token] = true; });
+            const uniqueTokens = Object.keys(tokenMap);
+
+            if (uniqueTokens.length === 0) { alert("Koi device notification ke liye registered nahi hai!"); $("sendNotifBtn").textContent = "Send Notification"; return; }
+
+            const payload = { registration_ids: uniqueTokens, notification: { title: t, body: b, icon: "logo.png", image: i || "" } };
+            const res = await fetch("https://fcm.googleapis.com/fcm/send", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "key=" + key }, body: JSON.stringify(payload) });
+
+            if (res.ok) { alert("Notification Sent Successfully! (" + uniqueTokens.length + " devices)"); $("notifTitle").value = ""; $("notifBody").value = ""; $("notifImage").value = ""; } 
+            else { const errText = await res.text(); alert("Failed to send. Firebase Error: " + errText); }
+        } catch(e) { console.error(e); alert("Error: " + e.message); }
+        $("sendNotifBtn").textContent = "Send Notification";
+    };
+}
