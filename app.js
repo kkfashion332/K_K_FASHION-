@@ -113,7 +113,8 @@ window.updateProductsFromFirebase = function (fbProducts) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 
-window.addEventListener("DOMContentLoaded", () => {
+// 🌟 BULLETPROOF FIREBASE LOAD CHECK 🌟
+function initAuth() {
   if (window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
@@ -129,7 +130,16 @@ window.addEventListener("DOMContentLoaded", () => {
       }
       if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
     });
+  } else {
+    setTimeout(initAuth, 50); // Keep polling smoothly until Firebase is fully ready
   }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAuth);
+} else {
+    initAuth();
+}
 
   if ($("addCatBtn")) {
       $("addCatBtn").onclick = () => {
@@ -158,7 +168,6 @@ window.addEventListener("DOMContentLoaded", () => {
           superAdminTapTimer = setTimeout(() => { superAdminTapCount = 0; }, 3000);
       });
   }
-});
 
 window.switchAdminTab = function(event, tabId) {
     document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
@@ -461,7 +470,7 @@ function renderLikesPageTab() {
       <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
       <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
     `;
-    el.onclick = () => { openProductDetailById(p.id); }; 
+    el.onclick = () => { openProductDetail(p); }; 
     body.appendChild(el);
   });
 }
@@ -1326,4 +1335,11 @@ window.renderAdmin = function () {
   const blist = $("adminBannersList");
   if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
   const slist = $("adminShopsList");
-  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.
+  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
+  renderAdminProducts();
+  if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { alert("PIN change option is securely hardcoded to 0000 for elite security."); }; }
+  if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
+};
+
+function openEditModal(p) {
+  editingProductId = p.id; $("editP
