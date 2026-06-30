@@ -1426,10 +1426,14 @@ if ($("sendNotifBtn")) {
         }
 
         try {
-            const response = await fetch("https://onesignal.com/api/v1/notifications", {
+            // CORS FIX: Proxy URL added here
+            const targetUrl = "https://onesignal.com/api/v1/notifications";
+            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
+
+            const response = await fetch(proxyUrl, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json; charset=utf-8",
+                    "Content-Type": "application/json",
                     "Authorization": "Basic " + ONESIGNAL_REST_API_KEY
                 },
                 body: JSON.stringify(payload)
@@ -1444,7 +1448,7 @@ if ($("sendNotifBtn")) {
                 $("notifImage").value = "";
             } else {
                 console.error("OneSignal Error:", data);
-                alert("Error: " + (data.errors ? data.errors.join(", ") : "Notification fail ho गया। Console check karein."));
+                alert("Error: " + (data.errors ? data.errors.join(", ") : "Notification fail ho gaya. Console check karein."));
             }
         } catch(e) { 
             console.error(e); 
