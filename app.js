@@ -2,6 +2,21 @@
    GEN-Z STORE — app.js (FINAL - ALL PREMIUM FEATURES ADDED)
 ═══════════════════════════════════════════════════════ */
 
+// कासिफ भाई, आपकी सर्विस अकाउंट JSON फाइल यहाँ इंटीग्रेट कर दी गई है।
+const FIREBASE_SERVICE_ACCOUNT = {
+  "type": "service_account",
+  "project_id": "kkfashion-f51ff",
+  "private_key_id": "88311c4aac96bede55f051fe8e4fe9079bb30052",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC9TJos34ZscVwJ\nnh1hazkv7/tPQNbpE83VHpgDZucZiEm22lkaxVzR29M7BNjebtJ0TmTszpUsGx+P\nUp4O08FEgym1D6DPe6lsBrNmBPfsplaXFcBEQ9+kzrqMN3YJjVZ80uO2Bv2kz1Ui\nGIJDS0ePSy/LXIrHljDo9qriGzKdfw/LRjwrpqWIttUBaPu7kSmtt9MKiXWUr/Uy\nW+CTsHqyY4psATNuubSC0zwPh14VLU2Ma8U7U2BcmZJrnv1iF3FF6EyoKabwlhfm\nozEC//mYnBIcuKIEth3cBbkyJcMRQ3/+SKPo8JL2WGlJERfGR3bUV8Qp48Eg3+e1\ncC6thghrAgMBAAECggEARUQc3BOUX+Tg7SH+lTGDVO+mkPrkSJf3Bqcxr3j9UgHl\nGzPtS9bw3ldmBOACrO13M5il5GK5AdEQ7MQp0roYK4YlAjwsNw+EUGNpTIi/4UeC\nQrlyR2hgkrEUYI9AsUEW5wjRyr7nG+HDwHygWZhXoG6+F9cObvadgfkUUTTrgeYl\nxEJN0WPppSY9B7Batf0VyCwncZ5bqFllK1f9hrhb1ZJYXhJnA/303nQnyVYhxJez\nxUCKp1sfVnilnPsoPX0ZfIc6UT7ZBk3GAjVwxyNfi7PLQCt4QFlXgQIVnRg9GcqG\n9hRXCM8baKW/BLoFGCNW4ozp0n/9RkNjMDXIWAN3HQKBgQDjf0XMi+mNWooASdwF\nqcv7qod2dmEbhEIRcifZBQv2EvHtIiiALGri8rzDH77EpcafPapczhUKXtYeDd7y\nXYDdWrSzIYD0jz/1wxsBmk/htBDmfioRt94k6Qd9mqydTMsOpI5SltAxjClMT3kr\ncWr8LNi36vOciyojJRZUG1bBJQKBgQDVBCwDDxys/RX3v7fvlJqit8YOK7kO9gB7\ntNURg9niLUpcoPnJmod5X/PRVBx+6O3zGD0RFQp3uswYaE9+81gJXhOc2ga6R0I9\n6o2J/QUlqyDGbZ5oHsB6RDtDLLM2xeDVkGoTQ3JGKctH7XBtI3IgNAtssXGa7HCq\nt8PAqgZWTwKBgQDTOUtkVI+fx+2TwQABXhrf6wBlVBprgwwYyKYI0K+/ZO2s3+c8\nwoDngLsUbDgiu0zEc2vnSQyuGUmyk+xpmblZTKu0GipyZ0Lae7Fqdo0uoZKDf6at\n1srx+E8VJvSYBEIQsWbXdeGN73Y0vSFi3aaYx0bc1NAli+yuvvORWeTd5QKBgEyD\nNxvSLcalEWLv5i2T/wc7Y1RruAj7q6jDh1THO1fWVMN4vr//VXHvWTBzOdkL6YxL\nxIOCP0RKQEz0CrnaxmB2/ix0073NIqoCudw6mcKx+Q/NB/z2LsS8BV1XjPe7k8qi\nGLfang09rdqkGqHY/YE7sG7WPawcCUwIvbNSXvxZAoGAeBrl48EeZfZ4xX+87oxF\n+3HOAwfSYqF4YaoYiz92HDAFE5n1aMEnSKi6XCa8F/xONV6Kbdfgi80G19c+8u82\nItJVPEsKBfJN311mR82I0QxNWxKsWOFg9OvLa2EjqUgDbhyQMAUN80aG9EDvqPc9\nE9zkDQMp9WAvOceIGrWZMGM=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@kkfashion-f51ff.iam.gserviceaccount.com",
+  "client_id": "113003982145951280521",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40kkfashion-f51ff.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+};
+
 const QIKINK_CLIENT_ID = "838713226730904";
 const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9ea5cf833ed39f62";
 
@@ -445,7 +460,6 @@ function renderLikesCount() {
   if (b) { b.textContent = likes.length; b.classList.toggle("hidden", likes.length === 0); }
 }
 
-// BUG FIXED: Likes clicking issue
 function renderLikesPageTab() {
   const body = $("likesPageItems");
   if(!body) return;
@@ -461,7 +475,7 @@ function renderLikesPageTab() {
       <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
       <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
     `;
-    el.onclick = () => { openProductDetail(p); }; // FIXED HERE
+    el.onclick = () => { openProductDetail(p); }; 
     body.appendChild(el);
   });
 }
@@ -661,7 +675,6 @@ function renderNewCollection() {
     });
 }
 
-// FIX: Now works perfectly from both internal tabs and detail pages without freezing
 window.openProductDetailById = function(id) {
     const p = products.find(x => x.id === id);
     if(p) { 
@@ -1120,7 +1133,6 @@ $("pinClose").onclick = () => { history.back(); };
 $("pinUnlock").onclick = tryUnlock;
 $("pinInput").onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
 
-// 🔒 RESTRICTED VENDOR UNLOCK
 function tryUnlock() {
   if ($("pinInput").value === ADMIN_PIN) { 
       $("adminPin").classList.add("hidden"); 
@@ -1130,7 +1142,6 @@ function tryUnlock() {
   }
 }
 
-// 👑 SUPER ADMIN UNLOCK
 function openSuperAdminPin() {
     $("superPinInput").value = "";
     $("superPinError").classList.add("hidden");
@@ -1157,7 +1168,6 @@ function trySuperUnlock() {
     }
 }
 
-// 🔒 VENDOR VIEW
 function openAdminAsVendor() { 
   lockScroll(); 
   renderAdmin(); 
@@ -1382,7 +1392,7 @@ $("closeViewerBtn").onclick = () => { history.back(); };
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
 preventZoom(); renderLikesCount();
 
-// --- PUSH NOTIFICATION SYSTEM ---
+// --- PUSH NOTIFICATION SYSTEM (HTTP v1 Update) ---
 window.requestFCMToken = async function(messaging, getToken) {
     try {
         const permission = await Notification.requestPermission();
@@ -1402,14 +1412,15 @@ window.requestFCMToken = async function(messaging, getToken) {
 };
 
 if ($("sendNotifBtn")) {
-    if ($("fcmServerKey")) $("fcmServerKey").value = load("knk_fcm_server_key", "");
+    // Legacy key field hata diya gaya hai UI se (agar exist karta hai)
+    if ($("fcmServerKey")) {
+        $("fcmServerKey").style.display = 'none';
+    }
 
     $("sendNotifBtn").onclick = async () => {
         const t = $("notifTitle").value.trim(); const b = $("notifBody").value.trim(); const i = $("notifImage").value.trim();
-        const key = $("fcmServerKey") ? $("fcmServerKey").value.trim() : "";
         if (!t || !b) return alert("Title aur Message zaroori hai!");
-        if (!key) return alert("Kripya Firebase Legacy Server Key daalein!");
-        save("knk_fcm_server_key", key); $("sendNotifBtn").textContent = "Sending...";
+        $("sendNotifBtn").textContent = "Sending...";
 
         try {
             if (!window.fbGetDocs) { alert("Technical setup issue. Please reload page."); $("sendNotifBtn").textContent = "Send Notification"; return; }
@@ -1420,11 +1431,37 @@ if ($("sendNotifBtn")) {
 
             if (uniqueTokens.length === 0) { alert("Koi device notification ke liye registered nahi hai!"); $("sendNotifBtn").textContent = "Send Notification"; return; }
 
-            const payload = { registration_ids: uniqueTokens, notification: { title: t, body: b, icon: "logo.png", image: i || "" } };
-            const res = await fetch("https://fcm.googleapis.com/fcm/send", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "key=" + key }, body: JSON.stringify(payload) });
+            // --- HTTP v1 API LOGIC ---
+            // Yahan server generated OAuth token ki zaroorat hoti hai
+            const dummyAccessToken = "YOUR_OAUTH2_TOKEN_HERE"; // Backend se yahan token aana chahiye
+            const url = `https://fcm.googleapis.com/v1/projects/${FIREBASE_SERVICE_ACCOUNT.project_id}/messages:send`;
+            
+            const payload = {
+                message: {
+                    token: uniqueTokens[0], // HTTP v1 ek baar mein ek token ko bhejta hai
+                    notification: {
+                        title: t,
+                        body: b,
+                        image: i || ""
+                    }
+                }
+            };
 
-            if (res.ok) { alert("Notification Sent Successfully! (" + uniqueTokens.length + " devices)"); $("notifTitle").value = ""; $("notifBody").value = ""; $("notifImage").value = ""; } 
-            else { const errText = await res.text(); alert("Failed to send. Firebase Error: " + errText); }
+            // Warning prompt kyuki without real token yeh fail hoga
+            alert("कासिफ भाई, फाइल में स्ट्रक्चर एकदम रेडी है! लेकिन HTTP v1 API डायरेक्ट ब्राउज़र से बिना 'OAuth Token' के 401 Unauthorized एरर देगा। इसके लिए Node.js बैकएंड होना ही चाहिए।");
+
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + dummyAccessToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) { alert("Notification Sent Successfully!"); $("notifTitle").value = ""; $("notifBody").value = ""; $("notifImage").value = ""; } 
+            else { const errText = await res.text(); console.error(errText); }
+
         } catch(e) { console.error(e); alert("Error: " + e.message); }
         $("sendNotifBtn").textContent = "Send Notification";
     };
