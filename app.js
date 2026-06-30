@@ -48,20 +48,49 @@ OneSignalDeferred.push(async function(OneSignal) {
 // --- CUSTOM PREMIUM CSS FOR ONESIGNAL ---
 const osStyle = document.createElement('style');
 osStyle.innerHTML = `
+  /* Position exact at top right parallel to logo */
   .onesignal-bell-launcher,
   #onesignal-bell-container {
-    top: 20px !important;
+    top: 18px !important;
     bottom: auto !important;
-    right: 20px !important;
+    right: 15px !important;
     left: auto !important;
     z-index: 999999 !important;
   }
+  
+  /* FORCE Dark Premium Background & Gold Border */
+  .onesignal-bell-launcher .onesignal-bell-launcher-button {
+    background-color: #121212 !important;
+    border: 2px solid #D4AF37 !important; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.6) !important;
+  }
+
+  /* FORCE Premium Gold Icon Color */
+  .onesignal-bell-launcher .onesignal-bell-launcher-button svg {
+    fill: #D4AF37 !important;
+  }
+
+  /* FORCE Premium Badge Color (Unread count) */
+  .onesignal-bell-launcher .onesignal-bell-launcher-badge {
+    background-color: #D4AF37 !important;
+    color: #121212 !important;
+    border: 1px solid #121212 !important;
+  }
+
+  /* Remove pulsing ring */
   .onesignal-bell-launcher-button-pulse {
     display: none !important; 
   }
+  
+  /* Menu box positioning */
   .onesignal-bell-launcher-dialog {
-    top: 80px !important;
+    top: 75px !important;
     bottom: auto !important;
+  }
+
+  /* Hide when splash is active */
+  body:has(#splash:not(.hidden)) #onesignal-bell-container {
+    display: none !important;
   }
 `;
 document.head.appendChild(osStyle);
