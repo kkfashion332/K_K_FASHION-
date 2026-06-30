@@ -31,8 +31,54 @@ window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
   await OneSignal.init({
     appId: ONESIGNAL_APP_ID,
+    notifyButton: {
+      enable: true,
+      colors: {
+        'circle.background': '#121212', // Premium Dark Black
+        'circle.foreground': '#D4AF37', // Premium Gold Icon
+        'badge.background': '#D4AF37',  // Gold Badge
+        'badge.foreground': '#121212',
+        'badge.bordercolor': '#121212',
+        'pulse.color': 'transparent'    // Default ring animation hata diya
+      }
+    }
   });
 });
+
+// --- CUSTOM PREMIUM CSS FOR ONESIGNAL ---
+const osStyle = document.createElement('style');
+osStyle.innerHTML = `
+  /* Bell ko Top-Right par set karne ke liye */
+  #onesignal-bell-container {
+    top: 15px !important;
+    bottom: auto !important;
+    right: 15px !important;
+    left: auto !important;
+    z-index: 99 !important; /* Splash screen ke z-index se kam */
+  }
+  
+  /* Pulsing Animation remove karne ke liye */
+  .onesignal-bell-launcher-button-pulse {
+    display: none !important; 
+  }
+  
+  /* Notification ka box bhi upar se khule */
+  .onesignal-bell-launcher-dialog {
+    top: 70px !important;
+    bottom: auto !important;
+  }
+
+  /* 1. Splash (Logo Animation) ke time bell ko hide karne ke liye */
+  body:has(#splash:not(.hidden)) #onesignal-bell-container {
+    display: none !important;
+  }
+
+  /* 2. Sirf Home Page par dikhane ke liye */
+  body:has(#homeContent.hidden) #onesignal-bell-container {
+    display: none !important;
+  }
+`;
+document.head.appendChild(osStyle);
 // --------------------------------
 
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
