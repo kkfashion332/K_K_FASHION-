@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL - ALL PREMIUM FEATURES ADDED)
+   GEN-Z STORE — app.js (FINAL - ALL PREMIUM FEATURES ADDED + REALTIME DB)
 ═══════════════════════════════════════════════════════ */
 
 // कासिफ भाई, आपकी सर्विस अकाउंट JSON फाइल यहाँ इंटीग्रेट कर दी गई है।
@@ -25,6 +25,21 @@ const TELEGRAM_CHAT_ID = "7503426190";
 
 const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
 const ONESIGNAL_APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
+
+// --- REALTIME DATABASE SYNC LOGIC (NEW) ---
+window.syncToRTDB = async (path, data, isDelete = false) => {
+    if (window.fbRtdb && window.fbRtdbRef) {
+        try {
+            const rRef = window.fbRtdbRef(window.fbRtdb, path);
+            if (isDelete && window.fbRtdbRemove) {
+                await window.fbRtdbRemove(rRef);
+            } else if (!isDelete && window.fbRtdbSet) {
+                await window.fbRtdbSet(rRef, data);
+            }
+        } catch (e) { console.error("RTDB Sync Error:", e); }
+    }
+};
+// ------------------------------------------
 
 // --- OneSignal Initialization ---
 window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -220,7 +235,10 @@ window.addEventListener("DOMContentLoaded", () => {
           const n = $("newCatName").value.trim().toUpperCase();
           const shopSel = $("newCatShop"); const sId = shopSel ? shopSel.value : "GLOBAL";
           if (!n) return alert("Category ka naam daalein!");
-          mainCategories.push({ id: genId(), name: n, shopId: sId });
+          const newId = genId();
+          const newCat = { id: newId, name: n, shopId: sId };
+          mainCategories.push(newCat);
+          window.syncToRTDB("categories/" + newId, newCat); // Sync to RTDB
           saveCategories(); $("newCatName").value = ""; renderAdmin(); renderMainCats();
       };
   }
@@ -1268,6 +1286,7 @@ if ($("addBannerBtn")) {
         if(!i) return alert("Banner Image URL zaroori hai!");
         $("addBannerBtn").textContent = "Adding...";
         const newBanner = { id: genId(), image: i, link: l }; homeBanners.push(newBanner);
+        window.syncToRTDB("banners/" + newBanner.id, newBanner); // Sync to RTDB
         if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners);
         $("newBannerImg").value = ""; $("newBannerLink").value = "";
         renderAdmin(); renderHomeBanners(); alert("Banner Add Ho Gaya!"); $("addBannerBtn").textContent = "+ Add Banner";
@@ -1285,12 +1304,16 @@ if ($("addShopBtn")) {
         try {
             if(editingShopId && window.fbUpdateDoc && window.fbDoc && window.fbDb) {
                 await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
+                const shopData = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 const idx = shops.findIndex(s => s.id === editingShopId);
-                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
+                if(idx > -1) shops[idx] = shopData;
+                window.syncToRTDB("shops/" + editingShopId, shopData); // Sync to RTDB
                 alert("Dukaan Update Ho Gayi!");
             } else if(window.fbAddDoc && window.fbCollection && window.fbDb) {
                 const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat, timestamp: new Date() });
-                shops.push({ id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
+                const shopData = { id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
+                shops.push(shopData);
+                window.syncToRTDB("shops/" + docRef.id, shopData); // Sync to RTDB
                 alert("Nai Dukaan Add Ho Gayi!");
             }
             $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true; if($("newShopFullCodStatus")) $("newShopFullCodStatus").checked = false;
@@ -1311,8 +1334,10 @@ if ($("saveEditShopBtn")) {
         try {
             if(window.fbUpdateDoc && window.fbDoc && window.fbDb) {
                 await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
+                const shopData = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 const idx = shops.findIndex(s => s.id === editingShopId);
-                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
+                if(idx > -1) shops[idx] = shopData;
+                window.syncToRTDB("shops/" + editingShopId, shopData); // Sync to RTDB
                 renderAdmin(); renderShopsPage();
             }
         } catch(e) {}
@@ -1344,7 +1369,9 @@ function renderCatMgmt() {
     `;
     card.querySelector(".del-cat-btn").onclick = () => {
         if(confirm(`Are you sure you want to permanently delete the category "${cat.name}"?`)) {
-            mainCategories = mainCategories.filter(c => c.id !== cat.id); saveCategories(); renderAdmin(); renderMainCats(); renderProducts();
+            mainCategories = mainCategories.filter(c => c.id !== cat.id); 
+            window.syncToRTDB("categories/" + cat.id, null, true); // Sync Delete to RTDB
+            saveCategories(); renderAdmin(); renderMainCats(); renderProducts();
         }
     };
     list.appendChild(card);
@@ -1403,7 +1430,13 @@ function renderAdminProducts() {
       <div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div>
       <div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
     el.querySelector(".edit-btn").onclick = () => openEditModal(p);
-    el.querySelector(".trash").onclick = () => { if (!confirm("Delete this product?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); } };
+    el.querySelector(".trash").onclick = () => { 
+        if (!confirm("Delete this product?")) return; 
+        products = products.filter(x => x.id !== p.id); 
+        renderProducts(); renderAdmin(); 
+        if (window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); } 
+        window.syncToRTDB("products/" + p.id, null, true); // Sync Delete to RTDB
+    };
     list.appendChild(el);
   });
 }
@@ -1412,9 +1445,9 @@ window.renderAdmin = function () {
   renderCatMgmt(); syncAddProductDropdowns();
   if ($("adminFilterCat")) { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
   const blist = $("adminBannersList");
-  if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
+  if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); window.syncToRTDB("banners/" + b.id, null, true); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
   const slist = $("adminShopsList");
-  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
+  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); window.syncToRTDB("shops/" + s.id, null, true); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
   renderAdminProducts();
   if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { alert("PIN change option is securely hardcoded to 0000 for elite security."); }; }
   if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
@@ -1444,9 +1477,18 @@ if ($("saveEditBtn")) {
     const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
     
     if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
+    
+    const updatedData = { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid };
+    
     const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
+    if (idx > -1) { 
+        products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; 
+        renderProducts(); renderAdmin(); 
+    }
+    
+    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, updatedData); }
+    window.syncToRTDB("products/" + editingProductId, updatedData); // Sync to RTDB
+    
     $("editModal").classList.add("hidden"); editingProductId = null;
   };
 }
