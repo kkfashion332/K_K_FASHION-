@@ -882,6 +882,10 @@
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    
+    // --- REALTIME DATABASE IMPORT ADDED ---
+    import { getDatabase, ref, set, remove } 
+      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBrIfQnPpM4lywZWIiSxaz_v0o1S9PfOqg",
@@ -889,13 +893,22 @@
       projectId: "kkfashion-f51ff",
       storageBucket: "kkfashion-f51ff.firebasestorage.app",
       messagingSenderId: "720286728954",
-      appId: "1:720286728954:web:eebcf2a28f5ad696e87f43"
+      appId: "1:720286728954:web:eebcf2a28f5ad696e87f43",
+      databaseURL: "https://kkfashion-f51ff-default-rtdb.firebaseio.com" // RTDB URL added here
     };
 
     const fbApp = initializeApp(firebaseConfig);
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
     
+    // --- REALTIME DATABASE INITIALIZED AND EXPOSED FOR APP.JS ---
+    const rtdb = getDatabase(fbApp);
+    window.fbRtdb = rtdb;
+    window.fbRtdbRef = ref;
+    window.fbRtdbSet = set;
+    window.fbRtdbRemove = remove;
+    // ------------------------------------------------------------
+
     window.fbAuth = getAuth(fbApp);
     window.GoogleAuthProvider = GoogleAuthProvider;
     window.signInWithPopup = signInWithPopup;
@@ -1019,17 +1032,28 @@
 
       if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
       const btn = document.getElementById("addProductBtn"); btn.textContent = "Listing...";
-      try {
-        await addDoc(collection(db, "products"), {
+      
+      const newProductData = {
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
           mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
           sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
           timestamp: new Date()
-        });
+      };
+
+      try {
+        const docRef = await addDoc(collection(db, "products"), newProductData);
         alert("Product listed successfully in Elite Collection! 🎉");
+        
+        // --- REALTIME DB ME BHI DATA BHEJ RAHE HAIN ---
+        if (window.syncToRTDB) {
+           window.syncToRTDB("products/" + docRef.id, newProductData);
+        }
+        
         ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
         fetchProducts();
-      } catch(e) {}
+      } catch(e) {
+          console.error(e);
+      }
       finally { btn.textContent = "Add Product to Collection"; }
     });
   </script>
