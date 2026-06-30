@@ -1395,7 +1395,6 @@ $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.targe
 preventZoom(); renderLikesCount();
 
 // --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
-// User requested OneSignal Admin Panel Integration
 
 if ($("sendNotifBtn")) {
     if ($("fcmServerKey")) {
@@ -1421,14 +1420,14 @@ if ($("sendNotifBtn")) {
         };
 
         if (i) {
-            payload.big_picture = i; // Android devices ke liye image
-            payload.chrome_web_image = i; // Chrome/Web browsers ke liye image
+            payload.big_picture = i; 
+            payload.chrome_web_image = i; 
         }
 
         try {
-            // CORS FIX: Proxy URL added here
+            // CORS FIX 2: Using ThingProxy instead
             const targetUrl = "https://onesignal.com/api/v1/notifications";
-            const proxyUrl = "https://corsproxy.io/?" + encodeURIComponent(targetUrl);
+            const proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl;
 
             const response = await fetch(proxyUrl, {
                 method: "POST",
@@ -1442,17 +1441,17 @@ if ($("sendNotifBtn")) {
             const data = await response.json();
 
             if (response.ok && data.id) {
-                alert("OneSignal Notification Sent Successfully!");
+                alert("OneSignal Notification Sent Successfully! 🚀");
                 $("notifTitle").value = ""; 
                 $("notifBody").value = ""; 
                 $("notifImage").value = "";
             } else {
                 console.error("OneSignal Error:", data);
-                alert("Error: " + (data.errors ? data.errors.join(", ") : "Notification fail ho gaya. Console check karein."));
+                alert("Error: " + JSON.stringify(data));
             }
         } catch(e) { 
             console.error(e); 
-            alert("Error: " + e.message); 
+            alert("Proxy Error: " + e.message + "\n\nBhai free proxy block kar raha hai. Abhi ke liye OneSignal Dashboard se bhej lo."); 
         }
         
         $("sendNotifBtn").textContent = "Send Notification";
