@@ -883,8 +883,8 @@
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
     
-    // --- REALTIME DATABASE IMPORT ADDED ---
-    import { getDatabase, ref, set, remove } 
+    // --- REALTIME DATABASE IMPORT ME 'push' BHI ADD KIYA ---
+    import { getDatabase, ref, set, remove, push } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -894,19 +894,20 @@
       storageBucket: "kkfashion-f51ff.firebasestorage.app",
       messagingSenderId: "720286728954",
       appId: "1:720286728954:web:eebcf2a28f5ad696e87f43",
-      databaseURL: "https://kkfashion-f51ff-default-rtdb.firebaseio.com" // RTDB URL added here
+      databaseURL: "https://kkfashion-f51ff-default-rtdb.firebaseio.com" // RTDB URL
     };
 
     const fbApp = initializeApp(firebaseConfig);
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
     
-    // --- REALTIME DATABASE INITIALIZED AND EXPOSED FOR APP.JS ---
+    // --- REALTIME DATABASE INITIALIZATION ---
     const rtdb = getDatabase(fbApp);
     window.fbRtdb = rtdb;
     window.fbRtdbRef = ref;
     window.fbRtdbSet = set;
     window.fbRtdbRemove = remove;
+    window.fbRtdbPush = push; // Push bhi add kar diya
     // ------------------------------------------------------------
 
     window.fbAuth = getAuth(fbApp);
@@ -922,6 +923,7 @@
         document.getElementById('initLoader').style.display = 'none';
     }
 
+    // Baaki ke Firebase functions abhi bhi chalenge taaki error na aaye
     async function fetchShops() {
       try {
         const snap = await getDocs(collection(db, "shops"));
@@ -1012,6 +1014,7 @@
       try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
     };
 
+    // --- ADD PRODUCT LOGIC CHANGED ENTIRELY TO REALTIME DATABASE ---
     document.getElementById("addProductBtn").addEventListener("click", async () => {
       const pName    = document.getElementById("pName").value.trim();
       const rawImage = document.getElementById("pImage").value.trim();
@@ -1030,31 +1033,50 @@
 
       const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
 
-      if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); return; }
-      const btn = document.getElementById("addProductBtn"); btn.textContent = "Listing...";
+      if (!pName || imgArray.length === 0 || !pPrice) { 
+          alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); 
+          return; 
+      }
+      
+      const btn = document.getElementById("addProductBtn"); 
+      btn.textContent = "Listing...";
       
       const newProductData = {
-          name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
-          sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
-          timestamp: new Date()
+          name: pName, 
+          imageUrl: imgArray, 
+          price: Number(pPrice), 
+          discount: Number(pDisc) || 0, 
+          extra: Number(pExtra) || 0,
+          mainCategoryId: pCatId, 
+          shopId: pShopId, 
+          inStock: pInStock, 
+          freeDelivery: pFreeDelivery,
+          sizesIn: pSizesIn, 
+          sizesOut: pSizesOut, 
+          color: pColor, 
+          groupId: pGroupId,
+          timestamp: Date.now() // RTDB me number ke roop me timestamp best hota hai
       };
 
       try {
-        const docRef = await addDoc(collection(db, "products"), newProductData);
-        alert("Product listed successfully in Elite Collection! 🎉");
+        // Sirf Realtime Database me push aur set kar rahe hain!
+        const productsRef = ref(rtdb, 'products');
+        const newProductRef = push(productsRef); // Naya unique ID banata hai
+        await set(newProductRef, newProductData); // Us ID par data save kar deta hai
         
-        // --- REALTIME DB ME BHI DATA BHEJ RAHE HAIN ---
-        if (window.syncToRTDB) {
-           window.syncToRTDB("products/" + docRef.id, newProductData);
-        }
+        alert("Product listed successfully in Realtime Database! 🎉");
         
         ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
+        
+        // Agar aap chahein ki screen par bhi turant dikhe, toh fetchProducts call ho jayega
         fetchProducts();
       } catch(e) {
-          console.error(e);
+          console.error("Error adding product to RTDB: ", e);
+          alert("Error adding product! Check console.");
       }
-      finally { btn.textContent = "Add Product to Collection"; }
+      finally { 
+          btn.textContent = "Add Product to Collection"; 
+      }
     });
   </script>
 
