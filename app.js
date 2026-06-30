@@ -146,7 +146,6 @@ window.addEventListener("DOMContentLoaded", () => {
         else { 
             $("app").classList.remove("hidden"); 
             renderProfile(); 
-            if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) { window.requestFCMToken(window.fbMessaging, window.fbGetToken); }
         }
       } else {
         if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
@@ -242,13 +241,6 @@ async function showSplashAndStart() {
     $("app").classList.remove("hidden"); 
     renderLikesCount(); 
     initBannerAutoScroll();
-    
-    setTimeout(() => {
-        if ("Notification" in window && Notification.permission === "default") {
-            if(window.requestFCMToken && window.fbMessaging && window.fbGetToken) window.requestFCMToken(window.fbMessaging, window.fbGetToken);
-            else Notification.requestPermission();
-        }
-    }, 5000);
   }, 400);
 }
 
@@ -1402,77 +1394,63 @@ $("closeViewerBtn").onclick = () => { history.back(); };
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
 preventZoom(); renderLikesCount();
 
-// --- PUSH NOTIFICATION SYSTEM (HTTP v1 Update) ---
-window.requestFCMToken = async function(messaging, getToken) {
-    try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            const token = await getToken(messaging, { vapidKey: FCM_VAPID_KEY });
-            if (token) {
-                save("knk_fcm_token", token);
-                const user = window.fbAuth ? window.fbAuth.currentUser : null;
-                if(user && window.fbAddDoc && window.fbCollection && window.fbDb) {
-                    await window.fbAddDoc(window.fbCollection(window.fbDb, "push_tokens"), { 
-                        token: token, email: user.email || "guest", savedAt: Date.now() 
-                    });
-                }
-            }
-        }
-    } catch(e) { console.log("FCM Error:", e); }
-};
+// --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
+// User requested OneSignal Admin Panel Integration
 
 if ($("sendNotifBtn")) {
-    // Legacy key field hata diya gaya hai UI se (agar exist karta hai)
     if ($("fcmServerKey")) {
         $("fcmServerKey").style.display = 'none';
     }
 
     $("sendNotifBtn").onclick = async () => {
-        const t = $("notifTitle").value.trim(); const b = $("notifBody").value.trim(); const i = $("notifImage").value.trim();
+        const t = $("notifTitle").value.trim(); 
+        const b = $("notifBody").value.trim(); 
+        const i = $("notifImage").value.trim();
+        
         if (!t || !b) return alert("Title aur Message zaroori hai!");
         $("sendNotifBtn").textContent = "Sending...";
 
+        const ONESIGNAL_REST_API_KEY = "Os_v2_app_qdouupm7nzgedeh6zj7rp2k6izhafxu7gxfeeufqk4tjinp6wji5xgazkbefoksqizklpsrdkp4aro634o7rbj4iierkcx5wtz42aha";
+        const APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
+
+        const payload = {
+            app_id: APP_ID,
+            included_segments: ["Subscribed Users"], 
+            headings: { "en": t },
+            contents: { "en": b }
+        };
+
+        if (i) {
+            payload.big_picture = i; // Android devices ke liye image
+            payload.chrome_web_image = i; // Chrome/Web browsers ke liye image
+        }
+
         try {
-            if (!window.fbGetDocs) { alert("Technical setup issue. Please reload page."); $("sendNotifBtn").textContent = "Send Notification"; return; }
-            const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "push_tokens"));
-            const tokenMap = {};
-            snap.forEach(doc => { if (doc.data().token) tokenMap[doc.data().token] = true; });
-            const uniqueTokens = Object.keys(tokenMap);
-
-            if (uniqueTokens.length === 0) { alert("Koi device notification ke liye registered nahi hai!"); $("sendNotifBtn").textContent = "Send Notification"; return; }
-
-            // --- HTTP v1 API LOGIC ---
-            // Yahan server generated OAuth token ki zaroorat hoti hai
-            const dummyAccessToken = "YOUR_OAUTH2_TOKEN_HERE"; // Backend se yahan token aana chahiye
-            const url = `https://fcm.googleapis.com/v1/projects/${FIREBASE_SERVICE_ACCOUNT.project_id}/messages:send`;
-            
-            const payload = {
-                message: {
-                    token: uniqueTokens[0], // HTTP v1 ek baar mein ek token ko bhejta hai
-                    notification: {
-                        title: t,
-                        body: b,
-                        image: i || ""
-                    }
-                }
-            };
-
-            // Warning prompt kyuki without real token yeh fail hoga
-            alert("कासिफ भाई, फाइल में स्ट्रक्चर एकदम रेडी है! लेकिन HTTP v1 API डायरेक्ट ब्राउज़र से बिना 'OAuth Token' के 401 Unauthorized एरर देगा। इसके लिए Node.js बैकएंड होना ही चाहिए।");
-
-            const res = await fetch(url, {
+            const response = await fetch("https://onesignal.com/api/v1/notifications", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + dummyAccessToken
+                    "Content-Type": "application/json; charset=utf-8",
+                    "Authorization": "Basic " + ONESIGNAL_REST_API_KEY
                 },
                 body: JSON.stringify(payload)
             });
 
-            if (res.ok) { alert("Notification Sent Successfully!"); $("notifTitle").value = ""; $("notifBody").value = ""; $("notifImage").value = ""; } 
-            else { const errText = await res.text(); console.error(errText); }
+            const data = await response.json();
 
-        } catch(e) { console.error(e); alert("Error: " + e.message); }
+            if (response.ok && data.id) {
+                alert("OneSignal Notification Sent Successfully!");
+                $("notifTitle").value = ""; 
+                $("notifBody").value = ""; 
+                $("notifImage").value = "";
+            } else {
+                console.error("OneSignal Error:", data);
+                alert("Error: " + (data.errors ? data.errors.join(", ") : "Notification fail ho गया। Console check karein."));
+            }
+        } catch(e) { 
+            console.error(e); 
+            alert("Error: " + e.message); 
+        }
+        
         $("sendNotifBtn").textContent = "Send Notification";
     };
 }
