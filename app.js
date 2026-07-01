@@ -158,7 +158,10 @@ function getProfileKey() {
 }
 
 const genId = () => { return "cat_" + Date.now() + Math.floor(Math.random() * 1000); };
-const finalPrice = (p) => { return Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0)); };
+
+// BUG FIX: Crash-proof finalPrice so broken products don't stop rendering
+const finalPrice = (p) => { return Math.round((p.price || 0) - ((p.price || 0) * (p.discount || 0)) / 100 + (p.extra || 0)); };
+
 const getCat = (id) => { return mainCategories.find((c) => c.id === id); };
 
 const lockScroll = () => { document.body.classList.add("no-scroll"); };
@@ -208,7 +211,7 @@ window.updateCategoriesFromFirebase = function (cats) {
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
 window.updateProductsFromFirebase = function (fbProducts) {
-  products = fbProducts;
+  products = fbProducts || [];
   renderProducts();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
@@ -662,6 +665,15 @@ $("searchClear").addEventListener("click", () => {
   renderMainCats(); renderProducts(); $("searchInput").focus();
 });
 
+// BUG FIX: Helper function for solid time parsing
+const getProdTime = (obj) => {
+    let t = obj.timestamp || obj.createdAt || obj.savedAt;
+    if (!t) return 0;
+    if (t.seconds) return t.seconds * 1000;
+    let ms = new Date(t).getTime();
+    return isNaN(ms) ? 0 : ms;
+};
+
 function renderProducts() {
   const title = $("activeTitle"); let list = products;
 
@@ -672,7 +684,14 @@ function renderProducts() {
       if (activeMainCatId) {
           const cat = getCat(activeMainCatId);
           title.textContent = cat ? cat.name : "PREMIUM COLLECTIONS";
-          list = list.filter(p => p.mainCategoryId === activeMainCatId);
+          // BUG FIX: Super solid Category Filter Match (ignores spaces and capitals)
+          const targetCat = String(activeMainCatId).trim().toLowerCase();
+          list = list.filter(p => {
+              const c1 = p.mainCategoryId ? String(p.mainCategoryId).trim().toLowerCase() : "";
+              const c2 = p.categoryId ? String(p.categoryId).trim().toLowerCase() : "";
+              const c3 = p.category ? String(p.category).trim().toLowerCase() : "";
+              return c1 === targetCat || c2 === targetCat || c3 === targetCat;
+          });
       } else {
           title.textContent = "ALL PREMIUM COLLECTIONS";
       }
@@ -682,10 +701,15 @@ function renderProducts() {
   if (activeShopId) $("activeShopBanner").classList.add("hidden"); else $("activeShopBanner").classList.add("hidden");
 
   const grid = $("products");
+  if (!grid) return;
   if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
   grid.innerHTML = "";
 
-  if(!activeShopId && !searchQuery) { list = [...list].sort(() => Math.random() - 0.5); }
+  // BUG FIX: Guaranteed Newest First Sorting
+  if(!activeShopId && !searchQuery) { 
+      list = [...list].sort((a, b) => getProdTime(b) - getProdTime(a));
+      if (list.length > 0 && getProdTime(list[0]) === 0) list.reverse();
+  }
 
   list.forEach((p, i) => {
     const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
@@ -722,7 +746,10 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    const sorted = [...products].reverse(); 
+    // BUG FIX: Guaranteed Newest First Sorting
+    const sorted = [...products].sort((a, b) => getProdTime(b) - getProdTime(a));
+    if (sorted.length > 0 && getProdTime(sorted[0]) === 0) sorted.reverse();
+
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
@@ -1559,4 +1586,4 @@ if ($("sendNotifBtn")) {
         
         $("sendNotifBtn").textContent = "Send Notification";
     };
-} 
+}
