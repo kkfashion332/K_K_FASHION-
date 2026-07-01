@@ -672,8 +672,7 @@ function renderProducts() {
       if (activeMainCatId) {
           const cat = getCat(activeMainCatId);
           title.textContent = cat ? cat.name : "PREMIUM COLLECTIONS";
-          // BUG FIX: Added extra category properties to handle missing filters
-          list = list.filter(p => p.mainCategoryId === activeMainCatId || p.categoryId === activeMainCatId || p.category === activeMainCatId);
+          list = list.filter(p => p.mainCategoryId === activeMainCatId);
       } else {
           title.textContent = "ALL PREMIUM COLLECTIONS";
       }
@@ -686,17 +685,7 @@ function renderProducts() {
   if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
   grid.innerHTML = "";
 
-  // BUG FIX: Top to Bottom sorting (Newest first) instead of random
-  if(!activeShopId && !searchQuery) { 
-      list = [...list].sort((a, b) => {
-          const timeA = a.timestamp ? (a.timestamp.seconds || a.timestamp) : (a.createdAt || 0);
-          const timeB = b.timestamp ? (b.timestamp.seconds || b.timestamp) : (b.createdAt || 0);
-          return timeB - timeA;
-      });
-      if (list.length > 0 && !(list[0].timestamp || list[0].createdAt)) {
-          list.reverse();
-      }
-  }
+  if(!activeShopId && !searchQuery) { list = [...list].sort(() => Math.random() - 0.5); }
 
   list.forEach((p, i) => {
     const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
@@ -733,17 +722,7 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    // BUG FIX: Newest first sorting
-    const sorted = [...products].sort((a, b) => {
-        const timeA = a.timestamp ? (a.timestamp.seconds || a.timestamp) : (a.createdAt || 0);
-        const timeB = b.timestamp ? (b.timestamp.seconds || b.timestamp) : (b.createdAt || 0);
-        return timeB - timeA;
-    });
-
-    if (sorted.length > 0 && !(sorted[0].timestamp || sorted[0].createdAt)) {
-        sorted.reverse();
-    }
-
+    const sorted = [...products].reverse(); 
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
@@ -1580,4 +1559,4 @@ if ($("sendNotifBtn")) {
         
         $("sendNotifBtn").textContent = "Send Notification";
     };
-}
+} 
