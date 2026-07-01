@@ -26,7 +26,7 @@ const TELEGRAM_CHAT_ID = "7503426190";
 const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
 const ONESIGNAL_APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
 
-// --- REALTIME DATABASE SYNC LOGIC (NEW) ---
+// --- REALTIME DATABASE SYNC LOGIC ---
 window.syncToRTDB = async (path, data, isDelete = false) => {
     if (window.fbRtdb && window.fbRtdbRef) {
         try {
@@ -63,7 +63,6 @@ OneSignalDeferred.push(async function(OneSignal) {
 // --- CUSTOM PREMIUM CSS FOR ONESIGNAL ---
 const osStyle = document.createElement('style');
 osStyle.innerHTML = `
-  /* Position exact at top right parallel to logo */
   .onesignal-bell-launcher,
   #onesignal-bell-container {
     top: 18px !important;
@@ -72,38 +71,26 @@ osStyle.innerHTML = `
     left: auto !important;
     z-index: 999999 !important;
   }
-  
-  /* FORCE Dark Premium Background & Gold Border */
   .onesignal-bell-launcher .onesignal-bell-launcher-button {
     background-color: #121212 !important;
     border: 2px solid #D4AF37 !important; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.6) !important;
   }
-
-  /* FORCE Premium Gold Icon Color */
   .onesignal-bell-launcher .onesignal-bell-launcher-button svg {
     fill: #D4AF37 !important;
   }
-
-  /* FORCE Premium Badge Color (Unread count) */
   .onesignal-bell-launcher .onesignal-bell-launcher-badge {
     background-color: #D4AF37 !important;
     color: #121212 !important;
     border: 1px solid #121212 !important;
   }
-
-  /* Remove pulsing ring */
   .onesignal-bell-launcher-button-pulse {
     display: none !important; 
   }
-  
-  /* Menu box positioning */
   .onesignal-bell-launcher-dialog {
     top: 75px !important;
     bottom: auto !important;
   }
-
-  /* Hide when splash is active */
   body:has(#splash:not(.hidden)) #onesignal-bell-container {
     display: none !important;
   }
@@ -158,10 +145,7 @@ function getProfileKey() {
 }
 
 const genId = () => { return "cat_" + Date.now() + Math.floor(Math.random() * 1000); };
-
-// BUG FIX: Crash-proof finalPrice so broken products don't stop rendering
 const finalPrice = (p) => { return Math.round((p.price || 0) - ((p.price || 0) * (p.discount || 0)) / 100 + (p.extra || 0)); };
-
 const getCat = (id) => { return mainCategories.find((c) => c.id === id); };
 
 const lockScroll = () => { document.body.classList.add("no-scroll"); };
@@ -210,8 +194,47 @@ window.updateCategoriesFromFirebase = function (cats) {
   renderMainCats(); renderProducts();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
+
+// ═══════════════════════════════════════════════════════
+// CRITICAL FIX: REALTIME DATABASE ARRAY & CODES SYNC CONVERTER
+// ═══════════════════════════════════════════════════════
 window.updateProductsFromFirebase = function (fbProducts) {
-  products = fbProducts || [];
+  if (fbProducts && typeof fbProducts === 'object' && !Array.isArray(fbProducts)) {
+      // RTDB JSON Object format ko Array me parse karne ka bulletproof logic
+      products = Object.keys(fbProducts).map(key => {
+          const prod = fbProducts[key];
+          return {
+              id: prod.id || key,
+              name: prod.name || '',
+              price: Number(prod.price) || 0,
+              discount: Number(prod.discount) || 0,
+              extra: Number(prod.extra) || 0,
+              // Fallback array parsing format check to map image fields safely
+              image: prod.image || prod.imageUrl || "placeholder.jpg",
+              inStock: prod.inStock !== false,
+              freeDelivery: prod.freeDelivery !== false,
+              mainCategoryId: prod.mainCategoryId || prod.categoryId || prod.category || '',
+              shopId: prod.shopId || '',
+              sizesIn: prod.sizesIn || '',
+              sizesOut: prod.sizesOut || '',
+              color: prod.color || '',
+              groupId: prod.groupId || '',
+              timestamp: prod.timestamp || prod.createdAt || prod.savedAt || 0
+          };
+      });
+  } else {
+      products = fbProducts || [];
+  }
+
+  // Ensure parsing rules for multi-image string formats to arrays
+  products = products.map(p => {
+      if (p.imageUrl && !p.image) p.image = p.imageUrl;
+      if (typeof p.image === 'string' && p.image.includes(',')) {
+          p.image = p.image.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      return p;
+  });
+
   renderProducts();
   if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
 };
@@ -241,7 +264,7 @@ window.addEventListener("DOMContentLoaded", () => {
           const newId = genId();
           const newCat = { id: newId, name: n, shopId: sId };
           mainCategories.push(newCat);
-          window.syncToRTDB("categories/" + newId, newCat); // Sync to RTDB
+          window.syncToRTDB("categories/" + newId, newCat);
           saveCategories(); $("newCatName").value = ""; renderAdmin(); renderMainCats();
       };
   }
@@ -665,12 +688,15 @@ $("searchClear").addEventListener("click", () => {
   renderMainCats(); renderProducts(); $("searchInput").focus();
 });
 
-// BUG FIX: Helper function for solid time parsing
+// CRITICAL FIX: Bulletproof Server & Local Timestamp Sync Parser
 const getProdTime = (obj) => {
+    if (!obj) return 0;
     let t = obj.timestamp || obj.createdAt || obj.savedAt;
     if (!t) return 0;
-    if (t.seconds) return t.seconds * 1000;
-    let ms = new Date(t).getTime();
+    if (typeof t === 'object' && t.seconds) return t.seconds * 1000;
+    let ms = Number(t);
+    if (!isNaN(ms) && ms > 0) return ms;
+    ms = new Date(t).getTime();
     return isNaN(ms) ? 0 : ms;
 };
 
@@ -684,7 +710,8 @@ function renderProducts() {
       if (activeMainCatId) {
           const cat = getCat(activeMainCatId);
           title.textContent = cat ? cat.name : "PREMIUM COLLECTIONS";
-          // BUG FIX: Super solid Category Filter Match (ignores spaces and capitals)
+          
+          // CATEGORY MATCH FIX: Fallback field sync and case-insensitive check
           const targetCat = String(activeMainCatId).trim().toLowerCase();
           list = list.filter(p => {
               const c1 = p.mainCategoryId ? String(p.mainCategoryId).trim().toLowerCase() : "";
@@ -705,14 +732,15 @@ function renderProducts() {
   if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
   grid.innerHTML = "";
 
-  // BUG FIX: Guaranteed Newest First Sorting
+  // NEWEST FIRST SORT FIX: Top to bottom sorting logic triggered safely
   if(!activeShopId && !searchQuery) { 
       list = [...list].sort((a, b) => getProdTime(b) - getProdTime(a));
       if (list.length > 0 && getProdTime(list[0]) === 0) list.reverse();
   }
 
   list.forEach((p, i) => {
-    const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const price = finalPrice(p); const inStock = p.inStock !== false; 
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
     const isLiked = likes.some(l => l.id === p.id);
     const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:10px; font-weight:800; letter-spacing:0.05em; margin-top:3px; text-transform:uppercase;">FREE Delivery</div>' : '';
 
@@ -746,14 +774,14 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    // BUG FIX: Guaranteed Newest First Sorting
+    // SORT FIX: Chronological sequence top to bottom sync
     const sorted = [...products].sort((a, b) => getProdTime(b) - getProdTime(a));
     if (sorted.length > 0 && getProdTime(sorted[0]) === 0) sorted.reverse();
 
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
-        const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+        const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
         const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:12px; font-weight:800; letter-spacing:0.05em; margin-top:5px; text-transform:uppercase;">FREE Delivery</div>' : '';
         const isLiked = likes.some(l => l.id === p.id);
 
@@ -909,7 +937,8 @@ function renderHorizSections(currentProduct) {
     if(vContainer) {
        const vList = sameMainList.slice(0, 10);
        vList.forEach((p, i) => {
-          const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+          const price = finalPrice(p); const inStock = p.inStock !== false; 
+          const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
           const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:10px; font-weight:800; text-transform:uppercase; margin-top:2px;">Free Delivery</div>' : '';
           const el = document.createElement("div"); el.className = "product";
           el.innerHTML = `
@@ -934,7 +963,8 @@ function buildHorizSection(title, list) {
   head.innerHTML = `<span class="horiz-section-title">${title}</span>`; section.appendChild(head);
   const row = document.createElement("div"); row.className = "horiz-row";
   list.forEach((p) => {
-    const price = finalPrice(p); const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const price = finalPrice(p); 
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
     const card = document.createElement("div"); card.className = "horiz-card";
     card.innerHTML = `<img src="${mainImg}" /><div><div class="horiz-card-name">${p.name}</div><div class="horiz-card-price">₹${price}</div></div>`;
     card.onclick = () => { closeProductDetail(); setTimeout(() => openProductDetail(p), 300); }; row.appendChild(card);
@@ -1019,8 +1049,8 @@ $("step1NextBtn").onclick = () => {
   
   $("checkoutStep1").classList.add("hidden"); $("checkoutStep2").classList.remove("hidden");
   $("step1NextBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden"); $("chkFooterTotalRow").classList.add("hidden");
-  $("step1Indicator").classList.remove("active"); $("step1Indicator").classList.add("completed"); $("step1Circle").innerHTML = "✔";
-  $("line1").classList.add("completed"); $("step2Indicator").classList.add("active");
+  $("step1Indicator").className = "step-item completed"; $("step1Circle").innerHTML = "✔";
+  $("line1").className = "step-line completed"; $("step2Indicator").className = "step-item active";
   renderStep2();
 };
 
@@ -1225,8 +1255,8 @@ $("confirmOrderBtn").onclick = () => {
 
 function showStep3Success(payMethod, paid, due) {
   $("checkoutStep2").classList.add("hidden"); $("checkoutStep3").classList.remove("hidden"); $("checkoutFooter").classList.add("hidden");
-  $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed"); $("step2Circle").innerHTML = "✔";
-  $("line2").classList.add("completed"); $("step3Indicator").classList.add("active");
+  $("step2Indicator").className = "step-item completed"; $("step2Circle").innerHTML = "✔";
+  $("line2").className = "step-line completed"; $("step3Indicator").className = "step-item active";
   let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
   if (payMethod === "COD" && paid > 0) { sumHtml += `<strong>Safety Deposit Paid:</strong> ₹${paid}<br><strong style="color:var(--destructive)">Balance Cash on Delivery:</strong> ₹${due}`; } 
   else if (payMethod === "COD" && paid === 0) { sumHtml += `<strong>Total Amount to Pay on Delivery:</strong> ₹${due}`; }
@@ -1313,7 +1343,7 @@ if ($("addBannerBtn")) {
         if(!i) return alert("Banner Image URL zaroori hai!");
         $("addBannerBtn").textContent = "Adding...";
         const newBanner = { id: genId(), image: i, link: l }; homeBanners.push(newBanner);
-        window.syncToRTDB("banners/" + newBanner.id, newBanner); // Sync to RTDB
+        window.syncToRTDB("banners/" + newBanner.id, newBanner);
         if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners);
         $("newBannerImg").value = ""; $("newBannerLink").value = "";
         renderAdmin(); renderHomeBanners(); alert("Banner Add Ho Gaya!"); $("addBannerBtn").textContent = "+ Add Banner";
@@ -1334,13 +1364,13 @@ if ($("addShopBtn")) {
                 const shopData = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 const idx = shops.findIndex(s => s.id === editingShopId);
                 if(idx > -1) shops[idx] = shopData;
-                window.syncToRTDB("shops/" + editingShopId, shopData); // Sync to RTDB
+                window.syncToRTDB("shops/" + editingShopId, shopData);
                 alert("Dukaan Update Ho Gayi!");
             } else if(window.fbAddDoc && window.fbCollection && window.fbDb) {
                 const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat, timestamp: new Date() });
                 const shopData = { id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 shops.push(shopData);
-                window.syncToRTDB("shops/" + docRef.id, shopData); // Sync to RTDB
+                window.syncToRTDB("shops/" + docRef.id, shopData);
                 alert("Nai Dukaan Add Ho Gayi!");
             }
             $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true; if($("newShopFullCodStatus")) $("newShopFullCodStatus").checked = false;
@@ -1364,7 +1394,7 @@ if ($("saveEditShopBtn")) {
                 const shopData = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 const idx = shops.findIndex(s => s.id === editingShopId);
                 if(idx > -1) shops[idx] = shopData;
-                window.syncToRTDB("shops/" + editingShopId, shopData); // Sync to RTDB
+                window.syncToRTDB("shops/" + editingShopId, shopData);
                 renderAdmin(); renderShopsPage();
             }
         } catch(e) {}
@@ -1397,7 +1427,7 @@ function renderCatMgmt() {
     card.querySelector(".del-cat-btn").onclick = () => {
         if(confirm(`Are you sure you want to permanently delete the category "${cat.name}"?`)) {
             mainCategories = mainCategories.filter(c => c.id !== cat.id); 
-            window.syncToRTDB("categories/" + cat.id, null, true); // Sync Delete to RTDB
+            window.syncToRTDB("categories/" + cat.id, null, true);
             saveCategories(); renderAdmin(); renderMainCats(); renderProducts();
         }
     };
@@ -1462,7 +1492,7 @@ function renderAdminProducts() {
         products = products.filter(x => x.id !== p.id); 
         renderProducts(); renderAdmin(); 
         if (window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); } 
-        window.syncToRTDB("products/" + p.id, null, true); // Sync Delete to RTDB
+        window.syncToRTDB("products/" + p.id, null, true);
     };
     list.appendChild(el);
   });
@@ -1514,7 +1544,7 @@ if ($("saveEditBtn")) {
     }
     
     if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, updatedData); }
-    window.syncToRTDB("products/" + editingProductId, updatedData); // Sync to RTDB
+    window.syncToRTDB("products/" + editingProductId, updatedData);
     
     $("editModal").classList.add("hidden"); editingProductId = null;
   };
@@ -1555,7 +1585,6 @@ if ($("sendNotifBtn")) {
         }
 
         try {
-            // CORS FIX 2: Using ThingProxy instead
             const targetUrl = "https://onesignal.com/api/v1/notifications";
             const proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl;
 
