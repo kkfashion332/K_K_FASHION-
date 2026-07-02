@@ -1,3 +1,5 @@
+Ab iske aage nahin badh Raha he yaar ye le Meri HTML.
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -876,15 +878,16 @@
   <script defer src="app.js"></script>
 
   <script type="module">
-    // --- Stable and verified Firebase v10.12.2 CDN Links ---
-    import { initializeApp }    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAnalytics }     from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+    import { initializeApp }    from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getAnalytics }     from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
     import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc }
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    
+    // --- REALTIME DATABASE FULL IMPORTS (CRITICAL FIX) ---
     import { getDatabase, ref, set, remove, push, get, child } 
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+      from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBrIfQnPpM4lywZWIiSxaz_v0o1S9PfOqg",
@@ -916,24 +919,12 @@
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.updateProfile = updateProfile;
 
-    // Correctly hiding the custom initLoader when setup completes
     if(document.getElementById('initLoader')) {
         document.getElementById('initLoader').style.display = 'none';
     }
 
-    // --- Fixed and fully closed fetchShops syntax ---
     async function fetchShops() {
       try {
         const snap = await getDocs(collection(db, "shops"));
         const list = [];
-        snap.forEach(d => { 
-          list.push({ id: d.id, ...d.data() });
-        });
-        return list;
-      } catch (error) {
-        console.error("Error fetching shops:", error);
-      }
-    }
-  </script>
-</body>
-</html>
+        snap.forEach(d => { list.push({ id: d.id, ...d.data()
