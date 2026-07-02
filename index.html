@@ -883,8 +883,8 @@
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
     
-    // --- REALTIME DATABASE IMPORT ME 'push' BHI ADD KIYA ---
-    import { getDatabase, ref, set, remove, push } 
+    // --- REALTIME DATABASE FULL IMPORTS (CRITICAL FIX) ---
+    import { getDatabase, ref, set, remove, push, get, child } 
       from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -901,14 +901,12 @@
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
     
-    // --- REALTIME DATABASE INITIALIZATION ---
     const rtdb = getDatabase(fbApp);
     window.fbRtdb = rtdb;
     window.fbRtdbRef = ref;
     window.fbRtdbSet = set;
     window.fbRtdbRemove = remove;
-    window.fbRtdbPush = push; // Push bhi add kar diya
-    // ------------------------------------------------------------
+    window.fbRtdbPush = push; 
 
     window.fbAuth = getAuth(fbApp);
     window.GoogleAuthProvider = GoogleAuthProvider;
@@ -923,162 +921,8 @@
         document.getElementById('initLoader').style.display = 'none';
     }
 
-    // Baaki ke Firebase functions abhi bhi chalenge taaki error na aaye
     async function fetchShops() {
       try {
         const snap = await getDocs(collection(db, "shops"));
         const list = [];
-        snap.forEach(d => { list.push({ id: d.id, ...d.data() }); });
-        if (window.updateShopsFromFirebase) window.updateShopsFromFirebase(list);
-      } catch(e) { console.error(e); }
-    }
-
-    async function fetchSettings() {
-      try {
-        const snap = await getDoc(doc(db, "settings", "storeData"));
-        let cats, bannersData;
-        if (snap.exists()) {
-          cats = snap.data().mainCategories || [];
-          bannersData = snap.data().banners || [];
-        } else {
-          cats = [{ id: "cat_genz",  name: "GEN-Z PREMIUM", shopId: "GLOBAL" }];
-          bannersData = [];
-          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData }, { merge: true });
-        }
-        if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats);
-        if (window.updateBannersFromFirebase) window.updateBannersFromFirebase(bannersData);
-      } catch(e) { console.error(e); }
-    }
-
-    async function fetchProducts() {
-      try {
-        const snap = await getDocs(collection(db, "products"));
-        const list = [];
-        snap.forEach(d => {
-          const data = d.data();
-          let imgData = [];
-          if(Array.isArray(data.imageUrl)) { imgData = data.imageUrl; } else if(data.imageUrl) { imgData = [data.imageUrl]; }
-          list.push({
-            id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0,
-            mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false,
-            sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || "",
-            freeDelivery: data.freeDelivery !== false,
-            timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0
-          });
-        });
-        if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
-      } catch(e) { console.error(e); }
-    }
-
-    window.saveOrderToFirebase = async function(orderData) {
-      try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { alert("Elite Order save error: " + e.message); return false; }
-    };
-
-    window.fetchOrdersFromFirebase = async function() {
-      try {
-        const snap = await getDocs(collection(db, "orders"));
-        const list = [];
-        snap.forEach(d => list.push({ id: d.id, ...d.data() }));
-        list.sort((a,b) => b.timestamp - a.timestamp);
-        window.allFirebaseOrders = list;
-        if (window.renderAdminOrders) window.renderAdminOrders(list);
-        if (typeof window.renderMyOrders === "function") window.renderMyOrders();
-      } catch (e) { console.error("Fetch elite orders error:", e); }
-    };
-
-    window.updateOrderStatusInFirebase = async function(id, status) {
-      try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) { console.error(e); }
-    };
-    
-    window.deleteOrderFromFirebase = async function(id) {
-      try { await deleteDoc(doc(db, "orders", id)); } catch(e) { console.error(e); }
-    };
-
-    fetchShops(); fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
-
-    window.saveCategoriesToFirebase = async function(cats) {
-      try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {}
-    };
-    
-    window.saveBannersToFirebase = async function(bData) {
-      try { await setDoc(doc(db, "settings", "storeData"), { banners: bData }, { merge: true }); } catch(e) {}
-    };
-
-    window.deleteProductFromFirebase = async function(id) {
-      try { await deleteDoc(doc(db, "products", id)); } catch(e) {}
-    };
-
-    window.fbAddDoc = addDoc; window.fbCollection = collection; window.fbDb = db; window.fbDeleteDoc = deleteDoc; window.fbDoc = doc; window.fbUpdateDoc = updateDoc; window.fbGetDocs = getDocs;
-
-    window.updateProductInFirebase = async function(id, data) {
-      try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); }
-    };
-
-    // --- ADD PRODUCT LOGIC CHANGED ENTIRELY TO REALTIME DATABASE ---
-    document.getElementById("addProductBtn").addEventListener("click", async () => {
-      const pName    = document.getElementById("pName").value.trim();
-      const rawImage = document.getElementById("pImage").value.trim();
-      const pPrice   = document.getElementById("pPrice").value;
-      const pDisc    = document.getElementById("pDiscount").value;
-      const pExtra   = document.getElementById("pExtra").value;
-      const pCatId   = document.getElementById("pMainCat").value;
-      const pShopId  = document.getElementById("pShop").value || "";
-      const pInStock = document.getElementById("pInStock").checked;
-      const pFreeDelivery = document.getElementById("pFreeDelivery").checked;
-      
-      const pSizesIn = document.getElementById("pSizesIn").value.trim();
-      const pSizesOut = document.getElementById("pSizesOut").value.trim();
-      const pColor = document.getElementById("pColor").value.trim();
-      const pGroupId = document.getElementById("pGroupId").value.trim();
-
-      const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-
-      if (!pName || imgArray.length === 0 || !pPrice) { 
-          alert("Naam, Image URL(s) aur Price zaroori hain premium listing ke liye!"); 
-          return; 
-      }
-      
-      const btn = document.getElementById("addProductBtn"); 
-      btn.textContent = "Listing...";
-      
-      const newProductData = {
-          name: pName, 
-          imageUrl: imgArray, 
-          price: Number(pPrice), 
-          discount: Number(pDisc) || 0, 
-          extra: Number(pExtra) || 0,
-          mainCategoryId: pCatId, 
-          shopId: pShopId, 
-          inStock: pInStock, 
-          freeDelivery: pFreeDelivery,
-          sizesIn: pSizesIn, 
-          sizesOut: pSizesOut, 
-          color: pColor, 
-          groupId: pGroupId,
-          timestamp: Date.now() // RTDB me number ke roop me timestamp best hota hai
-      };
-
-      try {
-        // Sirf Realtime Database me push aur set kar rahe hain!
-        const productsRef = ref(rtdb, 'products');
-        const newProductRef = push(productsRef); // Naya unique ID banata hai
-        await set(newProductRef, newProductData); // Us ID par data save kar deta hai
-        
-        alert("Product listed successfully in Realtime Database! 🎉");
-        
-        ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
-        
-        // Agar aap chahein ki screen par bhi turant dikhe, toh fetchProducts call ho jayega
-        fetchProducts();
-      } catch(e) {
-          console.error("Error adding product to RTDB: ", e);
-          alert("Error adding product! Check console.");
-      }
-      finally { 
-          btn.textContent = "Add Product to Collection"; 
-      }
-    });
-  </script>
-
-</body>
-</html>
+        snap.forEach(d => { list.push({ id: d.id, ...d.data()
