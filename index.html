@@ -901,6 +901,9 @@
     getAnalytics(fbApp);
     const db = getFirestore(fbApp);
     
+    // Yahan db ko window object me add kar diya taaki app.js asani se read kar le
+    window.db = db;
+    
     const rtdb = getDatabase(fbApp);
     window.fbRtdb = rtdb;
     window.fbRtdbRef = ref;
@@ -921,8 +924,20 @@
         document.getElementById('initLoader').style.display = 'none';
     }
 
-    async function fetchShops() {
+    // Bas is code ko appropriately close kiya gaya hai niche!
+    window.fetchShops = async function fetchShops() {
       try {
         const snap = await getDocs(collection(db, "shops"));
         const list = [];
-        snap.forEach(d => { list.push({ id: d.id, ...d.data()
+        snap.forEach(d => { 
+            list.push({ id: d.id, ...d.data() }); 
+        });
+        return list;
+      } catch (error) {
+        console.error("Error fetching shops:", error);
+        return [];
+      }
+    };
+  </script>
+</body>
+</html>
