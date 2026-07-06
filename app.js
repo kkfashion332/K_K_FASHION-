@@ -1559,4 +1559,4 @@ if ($("sendNotifBtn")) {
         
         $("sendNotifBtn").textContent = "Send Notification";
     };
-} 
+}
