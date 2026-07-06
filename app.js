@@ -1,6 +1,7 @@
-/* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL - ALL PREMIUM FEATURES ADDED + REALTIME DB)
-═══════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════════════
+   GEN-Z STORE — app.js (FINAL COMPLETE - FIRESTORE INTEGRATION)
+   All original features preserved + Firestore real-time sync added
+   ════════════════════════════════════════════════════════════════════════════ */
 
 // कासिफ भाई, आपकी सर्विस अकाउंट JSON फाइल यहाँ इंटीग्रेट कर दी गई है।
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -26,7 +27,159 @@ const TELEGRAM_CHAT_ID = "7503426190";
 const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
 const ONESIGNAL_APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
 
-// --- REALTIME DATABASE SYNC LOGIC (NEW) ---
+// --- FIRESTORE SYNC FUNCTIONS (NEW) ---
+window.syncToFirestore = async (collectionName, docId, data, isDelete = false) => {
+    if (!window.firebase || !window.firebase.firestore) {
+        console.warn("⚠️ Firestore not available");
+        return false;
+    }
+    
+    try {
+        const db = window.firebase.firestore();
+        const docRef = db.collection(collectionName).doc(String(docId));
+        
+        if (isDelete) {
+            await docRef.delete();
+            console.log(`🗑️ Firestore Deleted: ${collectionName}/${docId}`);
+        } else {
+            const payload = {
+                ...data,
+                updatedAt: new Date().toISOString()
+            };
+            if (window.firebase.firestore.FieldValue) {
+                payload.serverTimestamp = window.firebase.firestore.FieldValue.serverTimestamp();
+            }
+            await docRef.set(payload, { merge: true });
+            console.log(`✅ Firestore Synced: ${collectionName}/${docId}`);
+        }
+        return true;
+    } catch (error) {
+        console.error(`❌ Firestore Error (${collectionName}/${docId}):`, error);
+        return false;
+    }
+};
+
+// --- FIRESTORE REAL-TIME LISTENERS (NEW) ---
+window.initFirestoreListeners = function() {
+    if (!window.firebase || !window.firebase.firestore) {
+        console.warn("⚠️ Firestore not ready for listeners");
+        return;
+    }
+    
+    const db = window.firebase.firestore();
+    
+    // Products Listener
+    db.collection('products').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const docData = { id: change.doc.id, ...change.doc.data() };
+            
+            if (change.type === 'removed') {
+                products = products.filter(p => p.id !== change.doc.id);
+            } else {
+                const idx = products.findIndex(p => p.id === change.doc.id);
+                if (idx > -1) {
+                    products[idx] = { ...products[idx], ...docData };
+                } else {
+                    products.push(docData);
+                }
+            }
+        });
+        
+        renderProducts();
+        if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
+        if ($("newPage") && !$("newPage").classList.contains("hidden")) renderNewCollection();
+        console.log('📦 Products auto-updated from Firestore');
+    });
+    
+    // Categories Listener
+    db.collection('categories').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const docData = { id: change.doc.id, ...change.doc.data() };
+            
+            if (change.type === 'removed') {
+                mainCategories = mainCategories.filter(c => c.id !== change.doc.id);
+            } else {
+                const idx = mainCategories.findIndex(c => c.id === change.doc.id);
+                if (idx > -1) {
+                    mainCategories[idx] = { ...mainCategories[idx], ...docData };
+                } else {
+                    mainCategories.push(docData);
+                }
+            }
+        });
+        
+        renderMainCats();
+        renderProducts();
+        if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
+        console.log('📁 Categories auto-updated from Firestore');
+    });
+    
+    // Shops Listener
+    db.collection('shops').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const docData = { id: change.doc.id, ...change.doc.data() };
+            
+            if (change.type === 'removed') {
+                shops = shops.filter(s => s.id !== change.doc.id);
+            } else {
+                const idx = shops.findIndex(s => s.id === change.doc.id);
+                if (idx > -1) {
+                    shops[idx] = { ...shops[idx], ...docData };
+                } else {
+                    shops.push(docData);
+                }
+            }
+        });
+        
+        renderShopsPage();
+        if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
+        console.log('🏪 Shops auto-updated from Firestore');
+    });
+    
+    // Banners Listener
+    db.collection('banners').onSnapshot((snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+            const docData = { id: change.doc.id, ...change.doc.data() };
+            
+            if (change.type === 'removed') {
+                homeBanners = homeBanners.filter(b => b.id !== change.doc.id);
+            } else {
+                const idx = homeBanners.findIndex(b => b.id === change.doc.id);
+                if (idx > -1) {
+                    homeBanners[idx] = { ...homeBanners[idx], ...docData };
+                } else {
+                    homeBanners.push(docData);
+                }
+            }
+        });
+        
+        renderHomeBanners();
+        if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
+        console.log('🎨 Banners auto-updated from Firestore');
+    });
+    
+    // Orders Listener
+    db.collection('orders').onSnapshot((snapshot) => {
+        const allOrders = [];
+        snapshot.forEach((doc) => {
+            allOrders.push({ id: doc.id, ...doc.data() });
+        });
+        
+        window.allFirebaseOrders = allOrders;
+        
+        if ($("orderPage") && !$("orderPage").classList.contains("hidden")) {
+            window.renderMyOrders();
+        }
+        if (!$("adminPanel").classList.contains("hidden")) {
+            window.renderAdminOrders(allOrders);
+        }
+        console.log('📋 Orders auto-updated from Firestore');
+    });
+    
+    console.log('🔥 All Firestore real-time listeners activated!');
+};
+
+// --- REALTIME DATABASE SYNC LOGIC ---
 window.syncToRTDB = async (path, data, isDelete = false) => {
     if (window.fbRtdb && window.fbRtdbRef) {
         try {
@@ -37,6 +190,27 @@ window.syncToRTDB = async (path, data, isDelete = false) => {
                 await window.fbRtdbSet(rRef, data);
             }
         } catch (e) { console.error("RTDB Sync Error:", e); }
+    }
+};
+
+// --- MODIFIED: Universal sync function (syncs to both Firestore and RTDB) ---
+window.universalSync = async function(collection, docId, data, isDelete = false) {
+    // Sync to Firestore
+    await window.syncToFirestore(collection, docId, data, isDelete);
+    
+    // Sync to RTDB
+    const path = collection + "/" + docId;
+    await window.syncToRTDB(path, data, isDelete);
+    
+    // Sync to legacy Firebase if available
+    if (!isDelete && window.saveProductToFirebase && collection === 'products') {
+        await window.saveProductToFirebase(products);
+    }
+    if (!isDelete && window.saveCategoriesToFirebase && collection === 'categories') {
+        await window.saveCategoriesToFirebase(mainCategories);
+    }
+    if (!isDelete && window.saveBannersToFirebase && collection === 'banners') {
+        await window.saveBannersToFirebase(homeBanners);
     }
 };
 // ------------------------------------------
@@ -63,7 +237,6 @@ OneSignalDeferred.push(async function(OneSignal) {
 // --- CUSTOM PREMIUM CSS FOR ONESIGNAL ---
 const osStyle = document.createElement('style');
 osStyle.innerHTML = `
-  /* Position exact at top right parallel to logo */
   .onesignal-bell-launcher,
   #onesignal-bell-container {
     top: 18px !important;
@@ -73,37 +246,31 @@ osStyle.innerHTML = `
     z-index: 999999 !important;
   }
   
-  /* FORCE Dark Premium Background & Gold Border */
   .onesignal-bell-launcher .onesignal-bell-launcher-button {
     background-color: #121212 !important;
     border: 2px solid #D4AF37 !important; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.6) !important;
   }
 
-  /* FORCE Premium Gold Icon Color */
   .onesignal-bell-launcher .onesignal-bell-launcher-button svg {
     fill: #D4AF37 !important;
   }
 
-  /* FORCE Premium Badge Color (Unread count) */
   .onesignal-bell-launcher .onesignal-bell-launcher-badge {
     background-color: #D4AF37 !important;
     color: #121212 !important;
     border: 1px solid #121212 !important;
   }
 
-  /* Remove pulsing ring */
   .onesignal-bell-launcher-button-pulse {
     display: none !important; 
   }
   
-  /* Menu box positioning */
   .onesignal-bell-launcher-dialog {
     top: 75px !important;
     bottom: auto !important;
   }
 
-  /* Hide when splash is active */
   body:has(#splash:not(.hidden)) #onesignal-bell-container {
     display: none !important;
   }
@@ -159,7 +326,6 @@ function getProfileKey() {
 
 const genId = () => { return "cat_" + Date.now() + Math.floor(Math.random() * 1000); };
 
-// BUG FIX: Crash-proof finalPrice so broken products don't stop rendering
 const finalPrice = (p) => { return Math.round((p.price || 0) - ((p.price || 0) * (p.discount || 0)) / 100 + (p.extra || 0)); };
 
 const getCat = (id) => { return mainCategories.find((c) => c.id === id); };
@@ -221,8 +387,14 @@ window.addEventListener("DOMContentLoaded", () => {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
         $("authScreen").classList.add("hidden");
-        if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
-        else { 
+        if (!isAppInitialized) { 
+          showSplashAndStart(); 
+          isAppInitialized = true;
+          // Initialize Firestore listeners after splash
+          setTimeout(() => {
+            window.initFirestoreListeners();
+          }, 3000);
+        } else { 
             $("app").classList.remove("hidden"); 
             renderProfile(); 
         }
@@ -241,7 +413,7 @@ window.addEventListener("DOMContentLoaded", () => {
           const newId = genId();
           const newCat = { id: newId, name: n, shopId: sId };
           mainCategories.push(newCat);
-          window.syncToRTDB("categories/" + newId, newCat); // Sync to RTDB
+          window.universalSync("categories", newId, newCat);
           saveCategories(); $("newCatName").value = ""; renderAdmin(); renderMainCats();
       };
   }
@@ -665,7 +837,6 @@ $("searchClear").addEventListener("click", () => {
   renderMainCats(); renderProducts(); $("searchInput").focus();
 });
 
-// BUG FIX: Helper function for solid time parsing
 const getProdTime = (obj) => {
     let t = obj.timestamp || obj.createdAt || obj.savedAt;
     if (!t) return 0;
@@ -684,7 +855,6 @@ function renderProducts() {
       if (activeMainCatId) {
           const cat = getCat(activeMainCatId);
           title.textContent = cat ? cat.name : "PREMIUM COLLECTIONS";
-          // BUG FIX: Super solid Category Filter Match (ignores spaces and capitals)
           const targetCat = String(activeMainCatId).trim().toLowerCase();
           list = list.filter(p => {
               const c1 = p.mainCategoryId ? String(p.mainCategoryId).trim().toLowerCase() : "";
@@ -705,7 +875,6 @@ function renderProducts() {
   if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
   grid.innerHTML = "";
 
-  // BUG FIX: Guaranteed Newest First Sorting
   if(!activeShopId && !searchQuery) { 
       list = [...list].sort((a, b) => getProdTime(b) - getProdTime(a));
       if (list.length > 0 && getProdTime(list[0]) === 0) list.reverse();
@@ -746,7 +915,6 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    // BUG FIX: Guaranteed Newest First Sorting
     const sorted = [...products].sort((a, b) => getProdTime(b) - getProdTime(a));
     if (sorted.length > 0 && getProdTime(sorted[0]) === 0) sorted.reverse();
 
@@ -1313,7 +1481,7 @@ if ($("addBannerBtn")) {
         if(!i) return alert("Banner Image URL zaroori hai!");
         $("addBannerBtn").textContent = "Adding...";
         const newBanner = { id: genId(), image: i, link: l }; homeBanners.push(newBanner);
-        window.syncToRTDB("banners/" + newBanner.id, newBanner); // Sync to RTDB
+        window.universalSync("banners", newBanner.id, newBanner);
         if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners);
         $("newBannerImg").value = ""; $("newBannerLink").value = "";
         renderAdmin(); renderHomeBanners(); alert("Banner Add Ho Gaya!"); $("addBannerBtn").textContent = "+ Add Banner";
@@ -1334,13 +1502,13 @@ if ($("addShopBtn")) {
                 const shopData = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 const idx = shops.findIndex(s => s.id === editingShopId);
                 if(idx > -1) shops[idx] = shopData;
-                window.syncToRTDB("shops/" + editingShopId, shopData); // Sync to RTDB
+                window.universalSync("shops", editingShopId, shopData);
                 alert("Dukaan Update Ho Gayi!");
             } else if(window.fbAddDoc && window.fbCollection && window.fbDb) {
                 const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat, timestamp: new Date() });
                 const shopData = { id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 shops.push(shopData);
-                window.syncToRTDB("shops/" + docRef.id, shopData); // Sync to RTDB
+                window.universalSync("shops", docRef.id, shopData);
                 alert("Nai Dukaan Add Ho Gayi!");
             }
             $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true; if($("newShopFullCodStatus")) $("newShopFullCodStatus").checked = false;
@@ -1364,7 +1532,7 @@ if ($("saveEditShopBtn")) {
                 const shopData = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
                 const idx = shops.findIndex(s => s.id === editingShopId);
                 if(idx > -1) shops[idx] = shopData;
-                window.syncToRTDB("shops/" + editingShopId, shopData); // Sync to RTDB
+                window.universalSync("shops", editingShopId, shopData);
                 renderAdmin(); renderShopsPage();
             }
         } catch(e) {}
@@ -1397,7 +1565,7 @@ function renderCatMgmt() {
     card.querySelector(".del-cat-btn").onclick = () => {
         if(confirm(`Are you sure you want to permanently delete the category "${cat.name}"?`)) {
             mainCategories = mainCategories.filter(c => c.id !== cat.id); 
-            window.syncToRTDB("categories/" + cat.id, null, true); // Sync Delete to RTDB
+            window.universalSync("categories", cat.id, null, true);
             saveCategories(); renderAdmin(); renderMainCats(); renderProducts();
         }
     };
@@ -1461,8 +1629,8 @@ function renderAdminProducts() {
         if (!confirm("Delete this product?")) return; 
         products = products.filter(x => x.id !== p.id); 
         renderProducts(); renderAdmin(); 
+        window.universalSync("products", p.id, null, true);
         if (window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); } 
-        window.syncToRTDB("products/" + p.id, null, true); // Sync Delete to RTDB
     };
     list.appendChild(el);
   });
@@ -1472,9 +1640,9 @@ window.renderAdmin = function () {
   renderCatMgmt(); syncAddProductDropdowns();
   if ($("adminFilterCat")) { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
   const blist = $("adminBannersList");
-  if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); window.syncToRTDB("banners/" + b.id, null, true); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
+  if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); window.universalSync("banners", b.id, null, true); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
   const slist = $("adminShopsList");
-  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); window.syncToRTDB("shops/" + s.id, null, true); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
+  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); window.universalSync("shops", s.id, null, true); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
   renderAdminProducts();
   if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { alert("PIN change option is securely hardcoded to 0000 for elite security."); }; }
   if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
@@ -1505,16 +1673,16 @@ if ($("saveEditBtn")) {
     
     if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
     
-    const updatedData = { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid };
+    const updatedData = { image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid };
     
     const idx = products.findIndex(p => p.id === editingProductId);
     if (idx > -1) { 
-        products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; 
+        products[idx] = { ...products[idx], ...updatedData }; 
         renderProducts(); renderAdmin(); 
     }
     
+    window.universalSync("products", editingProductId, updatedData);
     if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, updatedData); }
-    window.syncToRTDB("products/" + editingProductId, updatedData); // Sync to RTDB
     
     $("editModal").classList.add("hidden"); editingProductId = null;
   };
@@ -1525,7 +1693,6 @@ $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.targe
 preventZoom(); renderLikesCount();
 
 // --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
-
 if ($("sendNotifBtn")) {
     if ($("fcmServerKey")) {
         $("fcmServerKey").style.display = 'none';
@@ -1555,7 +1722,6 @@ if ($("sendNotifBtn")) {
         }
 
         try {
-            // CORS FIX 2: Using ThingProxy instead
             const targetUrl = "https://onesignal.com/api/v1/notifications";
             const proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl;
 
@@ -1587,3 +1753,20 @@ if ($("sendNotifBtn")) {
         $("sendNotifBtn").textContent = "Send Notification";
     };
 }
+
+// --- Initialize Firestore when Firebase SDK is ready ---
+window.addEventListener('firebase-ready', () => {
+    console.log('🔥 Firebase ready - initializing Firestore listeners');
+    setTimeout(() => {
+        window.initFirestoreListeners();
+    }, 1000);
+});
+
+// If Firebase already loaded before this script
+if (window.firebase && window.firebase.firestore) {
+    setTimeout(() => {
+        window.initFirestoreListeners();
+    }, 2000);
+}
+
+console.log('✅ Gen-Z Store app.js loaded successfully with Firestore integration!');
