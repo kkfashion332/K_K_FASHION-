@@ -1,8 +1,8 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL - ALL PREMIUM FEATURES ADDED)
+   GEN-Z STORE — app.js (FINAL FIRESTORE VERSION)
 ═══════════════════════════════════════════════════════ */
 
-// कासिफ भाई, आपकी सर्विस अकाउंट JSON फाइल यहाँ इंटीग्रेट कर दी गई है।
+// Service Account Details
 const FIREBASE_SERVICE_ACCOUNT = {
   "type": "service_account",
   "project_id": "kkfashion-f51ff",
@@ -26,56 +26,10 @@ const TELEGRAM_CHAT_ID = "7503426190";
 const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
 const ONESIGNAL_APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
 
-// --- OneSignal Initialization ---
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: ONESIGNAL_APP_ID,
-    notifyButton: {
-      enable: true,
-      colors: {
-        'circle.background': '#000000', // Premium Black
-        'circle.foreground': '#FFD700', // Premium Gold
-        'badge.background': '#FFD700',  
-        'badge.foreground': '#000000',
-        'pulse.color': 'transparent' 
-      }
-    }
-  });
-});
-
-// --- PREMIUM CSS FIX FOR POSITION AND LOOK ---
-const osStyle = document.createElement('style');
-osStyle.innerHTML = `
-  #onesignal-bell-container {
-    top: 70px !important;  
-    right: 20px !important;
-    bottom: auto !important;
-    left: auto !important;
-    z-index: 99999 !important;
-  }
-  .onesignal-bell-launcher-button {
-    background-color: #000 !important;
-    border: 1px solid #FFD700 !important;
-    border-radius: 50% !important;
-  }
-  .onesignal-bell-launcher-button svg {
-    fill: #FFD700 !important;
-  }
-  .onesignal-bell-launcher-button-pulse {
-    display: none !important; 
-  }
-  body:has(#splash:not(.hidden)) #onesignal-bell-container {
-    display: none !important;
-  }
-`;
-document.head.appendChild(osStyle);
-// --------------------------------
-
+// Helper Functions
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
-
 const delay = (ms) => new Promise(r => setTimeout(r, ms));
 const addClass = (id, cls) => { const el = $(id); if(el) el.classList.add(cls); };
 const removeClass = (id, cls) => { const el = $(id); if(el) el.classList.remove(cls); };
@@ -1065,7 +1019,6 @@ $("step2PayBtn").onclick = () => {
 
 async function sendTelegramAlert(orderData) {
     if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === "YOUR_TELEGRAM_BOT_TOKEN_HERE") return;
-    
     let itemsList = "";
     if (orderData.items && orderData.items.length > 0) {
         itemsList = orderData.items.map(i => `${i.product.name} (x${i.qty}) ${i.size && i.size !== 'Default' ? '['+i.size+']' : ''}`).join(', ');
@@ -1076,12 +1029,10 @@ async function sendTelegramAlert(orderData) {
     let text = `🛍️ *NEW ELITE ORDER ALERT!* 🛍️\n\n`;
     text += `👤 *Name:* ${orderData.name}\n`;
     text += `📱 *Mobile:* ${orderData.mobile}\n\n`;
-    
     text += `🏠 *FULL DELIVERY ADDRESS:*\n`;
     text += `${orderData.address}\n`;
     if(orderData.landmark) text += `📌 Landmark: ${orderData.landmark}\n`;
     text += `📍 ${orderData.state} - ${orderData.pincode}\n\n`;
-    
     text += `📦 *Items Ordered:* ${itemsList}\n`;
     text += `🛒 *Store:* ${orderData.shopName}\n`;
     text += `💰 *Total Amount:* ₹${orderData.totalAmount}\n`;
@@ -1109,7 +1060,6 @@ $("confirmOrderBtn").onclick = () => {
   if(payMethod === "COD") {
       let shopCodAdvance = 0; let shopFullCodEnabled = false;
       if (currentCheckoutItem.product.shopId) { const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId); if (sp) { shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } }
-      
       if (shopFullCodEnabled) {
           amountPaid = 0;
       } else {
@@ -1182,10 +1132,7 @@ function tryUnlock() {
 }
 
 function openSuperAdminPin() {
-    $("superPinInput").value = "";
-    $("superPinError").classList.add("hidden");
-    $("superAdminPinModal").classList.remove("hidden");
-    setTimeout(() => $("superPinInput").focus(), 100);
+    $("superPinInput").value = ""; $("superPinError").classList.add("hidden"); $("superAdminPinModal").classList.remove("hidden"); setTimeout(() => $("superPinInput").focus(), 100);
 }
 
 $("superPinClose").onclick = () => { history.back(); };
@@ -1199,9 +1146,7 @@ function trySuperUnlock() {
         $("tabOrdersBtn").classList.remove("hidden");
         $("tabCatsBtn").classList.remove("hidden");
         $("tabSettingsBtn").classList.remove("hidden");
-        if ($("adminProducts") && $("adminProducts").parentElement) {
-            $("adminProducts").parentElement.classList.remove("hidden");
-        }
+        if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.remove("hidden"); }
     } else {
         $("superPinError").classList.remove("hidden");
     }
@@ -1215,9 +1160,7 @@ function openAdminAsVendor() {
   $("tabOrdersBtn").classList.add("hidden");
   $("tabCatsBtn").classList.add("hidden");
   $("tabSettingsBtn").classList.add("hidden");
-  if ($("adminProducts") && $("adminProducts").parentElement) {
-      $("adminProducts").parentElement.classList.add("hidden");
-  }
+  if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
   document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
   $("tabProdsBtn").classList.add('active');
@@ -1231,9 +1174,7 @@ $("adminClose").onclick = () => {
     $("tabOrdersBtn").classList.add("hidden");
     $("tabCatsBtn").classList.add("hidden");
     $("tabSettingsBtn").classList.add("hidden");
-    if ($("adminProducts") && $("adminProducts").parentElement) {
-        $("adminProducts").parentElement.classList.add("hidden");
-    }
+    if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
 };
 
 function saveCategories() { if (window.saveCategoriesToFirebase) { window.saveCategoriesToFirebase(mainCategories); } }
@@ -1253,8 +1194,7 @@ if ($("addBannerBtn")) {
 if ($("addShopBtn")) {
     $("addShopBtn").onclick = async () => {
         const n = $("newShopName").value.trim(); const c = $("newShopCity").value.trim(); const t = $("newShopType").value.trim(); const l = $("newShopImage").value.trim(); const u = $("newShopUPI").value.trim(); const q = $("newShopQR").value.trim();
-        const codAmt = Number($("newShopCodAmt").value) || 0; const codStat = $("newShopCodStatus").checked;
-        const fCodStat = $("newShopFullCodStatus") ? $("newShopFullCodStatus").checked : false;
+        const codAmt = Number($("newShopCodAmt").value) || 0; const codStat = $("newShopCodStatus").checked; const fCodStat = $("newShopFullCodStatus") ? $("newShopFullCodStatus").checked : false;
 
         if(!n || !c || !l || !u) return alert("Shop Name, City, Logo URL, aur UPI ID sab zaroori hain!");
         $("addShopBtn").textContent = "Adding/Updating...";
@@ -1279,8 +1219,7 @@ if ($("saveEditShopBtn")) {
     $("saveEditShopBtn").onclick = async () => {
         if(!editingShopId) return;
         const n = $("editSName").value.trim(); const c = $("editSCity").value.trim(); const t = $("editSType").value.trim(); const l = $("editSImage").value.trim(); const u = $("editSUPI").value.trim(); const q = $("editSQR").value.trim();
-        const codAmt = Number($("editSCodAmt").value) || 0; const codStat = $("editSCodStatus").checked;
-        const fCodStat = $("editSFullCodStatus") ? $("editSFullCodStatus").checked : false;
+        const codAmt = Number($("editSCodAmt").value) || 0; const codStat = $("editSCodStatus").checked; const fCodStat = $("editSFullCodStatus") ? $("editSFullCodStatus").checked : false;
 
         if(!n || !c || !l || !u) return alert("Name, City, Logo, UPI required!");
         $("saveEditShopBtn").textContent = "Saving...";
@@ -1432,7 +1371,6 @@ $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.targe
 preventZoom(); renderLikesCount();
 
 // --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
-
 if ($("sendNotifBtn")) {
     if ($("fcmServerKey")) {
         $("fcmServerKey").style.display = 'none';
@@ -1462,7 +1400,6 @@ if ($("sendNotifBtn")) {
         }
 
         try {
-            // CORS FIX 2: Using ThingProxy instead
             const targetUrl = "https://onesignal.com/api/v1/notifications";
             const proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl;
 
