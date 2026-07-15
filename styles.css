@@ -474,3 +474,32 @@ body.theme-light .pd-back-enhanced { background: #fff; color: #111; box-shadow: 
 
 .p-link-btn { display: block; width: 100%; text-align: left; background: var(--bg2); border: 1px solid var(--border); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; color: var(--fg); font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s; }
 .p-link-btn:active { transform: scale(0.98); border-color: var(--primary); }
+
+/* =========================================
+   APP DOWNLOAD BUTTON (PREMIUM LOOK)
+========================================= */
+.app-download-btn {
+  background: linear-gradient(135deg, #e8d08a, #C9A84C, #a87f28);
+  color: #000;
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(201,168,76,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.app-download-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 6px rgba(201,168,76,0.3);
+}
+
+body.theme-light .app-download-btn {
+  color: #fff;
+}
