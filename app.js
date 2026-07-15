@@ -53,7 +53,6 @@ let searchQuery = "";
 let currentDetailProduct = null;
 let currentSelectedSize = null; 
 let isAppInitialized = false;
-let runtimeSkipped = false;
 let activeAdminOrderTab = "Recent";
 let bannerScrollInterval = null;
 
@@ -98,15 +97,6 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
-function requireLogin(callback) {
-  if (window.fbAuth && window.fbAuth.currentUser) { callback(); } 
-  else {
-    alert("Order aage badhane ke liye kripya Login ya Register karein!");
-    runtimeSkipped = false;
-    $("app").classList.add("hidden"); $("prodDetail").classList.add("hidden"); $("authScreen").classList.remove("hidden");
-  }
-}
-
 window.updateBannersFromFirebase = function (fetchedBanners) {
     homeBanners = fetchedBanners || [];
     renderHomeBanners();
@@ -129,19 +119,19 @@ window.updateProductsFromFirebase = function (fbProducts) {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
+  // Directly start the app without login screen
+  if (!isAppInitialized) { 
+      showSplashAndStart(); 
+      isAppInitialized = true; 
+  }
+
+  // Handle auto-login session persistence silently
   if (window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
-        $("authScreen").classList.add("hidden");
-        if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
-        else { 
-            $("app").classList.remove("hidden"); 
-            renderProfile(); 
-        }
-      } else {
-        if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
+        renderProfile();
+        if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
       }
-      if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
     });
   }
 
@@ -235,28 +225,8 @@ async function showSplashAndStart() {
   }, 400);
 }
 
-if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
-
-if ($("authSubmitBtn")) {
-  $("authSubmitBtn").onclick = async () => {
-    const mob = $("authMobile").value.trim(); const pwd = $("authPassword").value.trim();
-    if (!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) return alert("Kripya sahi 10-digit mobile number dalein!");
-    if (!pwd || pwd.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
-    const fakeEmail = mob + "@genzstore.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
-    btn.textContent = "Please wait..."; btn.disabled = true;
-    try { await window.signInWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
-    catch (err) {
-      try { await window.createUserWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
-      catch (regErr) {
-        if (regErr.code === 'auth/email-already-in-use') alert("Galat Password! Kripya is number ka sahi password dalein."); else alert("Error: " + regErr.message);
-      }
-    } finally { if ($("authSubmitBtn")) { $("authSubmitBtn").textContent = originalText; $("authSubmitBtn").disabled = false; } }
-  };
-}
-
-if ($("authMobile")) { $("authMobile").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10); }; }
 if ($("googleLoginBtn")) { $("googleLoginBtn").onclick = () => { const provider = new window.GoogleAuthProvider(); window.signInWithPopup(window.fbAuth, provider).catch((error) => { alert("Login failed: " + error.message); }); }; }
-if ($("profileLogoutBtn")) { $("profileLogoutBtn").onclick = () => { if (confirm("Are you sure you want to logout?")) { runtimeSkipped = false; window.signOut(window.fbAuth).then(() => { window.location.reload(); }); } }; }
+if ($("profileLogoutBtn")) { $("profileLogoutBtn").onclick = () => { if (confirm("Are you sure you want to logout?")) { window.signOut(window.fbAuth).then(() => { window.location.reload(); }); } }; }
 
 window.switchNav = function (tab) {
   document.querySelectorAll('.nav-item').forEach((el) => { el.classList.remove('active'); });
@@ -498,7 +468,7 @@ function renderProfile() {
 
 if ($("editProfileBtn")) {
   $("editProfileBtn").onclick = async () => {
-    const user = window.fbAuth ? window.fbAuth.currentUser : null; if (!user) return alert("Please login to edit profile!");
+    const user = window.fbAuth ? window.fbAuth.currentUser : null; if (!user) return alert("Please buy a product or wait to edit profile!");
     const newName = prompt("Enter your Name:", user.displayName || "");
     if (newName !== null && newName.trim() !== "") {
       const btn = $("editProfileBtn"); const originalHtml = btn.innerHTML; btn.textContent = "Saving..."; btn.disabled = true;
@@ -634,7 +604,9 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    const sorted = [...products].reverse(); 
+    // 🔥 TIMELINE SORTING (Newest products at the top)
+    const sorted = [...products].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+    
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
@@ -840,14 +812,14 @@ if ($("copyUpiBtn")) {
 }
 
 function directBuyCheckout(p, size) { 
-    requireLogin(() => { 
-        preventZoom(); 
-        const s = size || "Default"; 
-        currentCheckoutItem = { product: p, qty: 1, size: s }; 
-        $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); 
-        currentDetailProduct = null; 
-        pushModalState(); openCheckout(); 
-    }); 
+    preventZoom(); 
+    const s = size || "Default"; 
+    currentCheckoutItem = { product: p, qty: 1, size: s }; 
+    $("prodDetail").classList.add("hidden"); 
+    $("prodDetail").classList.remove("closing"); 
+    currentDetailProduct = null; 
+    pushModalState(); 
+    openCheckout(); 
 }
 
 function resetCheckoutUI() {
@@ -1049,7 +1021,7 @@ async function sendTelegramAlert(orderData) {
     try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
 }
 
-$("confirmOrderBtn").onclick = () => {
+$("confirmOrderBtn").onclick = async () => {
   let utrValue = $("chkUtr").value.trim();
   if(!currentCheckoutItem) return;
   
@@ -1075,21 +1047,44 @@ $("confirmOrderBtn").onclick = () => {
   }
 
   let balanceDue = finalTotal - amountPaid;
+  const btn = $("confirmOrderBtn"); 
+  btn.textContent = "Placing Order...";
+  btn.disabled = true;
 
-  const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
+  if (window.paymentInterval) clearInterval(window.paymentInterval);
+
+  // --- AUTOMATIC BACKGROUND AUTHENTICATION ---
+  const chkMobile = $("chkMobile").value.trim();
+  const autoEmail = chkMobile + "@genzstore.com";
+  const autoPass = "genzstore" + chkMobile;
+
+  try {
+      await window.signInWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
+  } catch(e) {
+      try {
+          await window.createUserWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
+          if(window.fbAuth.currentUser) {
+              await window.updateProfile(window.fbAuth.currentUser, { displayName: $("chkName").value.trim() });
+          }
+      } catch(err2) {
+          console.log("Auto auth creation failed", err2);
+      }
+  }
+  
+  const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : autoEmail;
+  // -------------------------------------------
+
   let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
   if (currentCheckoutItem.product.shopId) {
       const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId);
       if (sp) { orderShopName = sp.name; orderShopLogo = sp.logo || "placeholder.jpg"; }
   }
 
-  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: [currentCheckoutItem], totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
-
-  const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
-  if (window.paymentInterval) clearInterval(window.paymentInterval);
+  const orderData = { name: $("chkName").value.trim(), mobile: chkMobile, address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: [currentCheckoutItem], totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
 
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
+      btn.disabled = false;
       if (success) {
         let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
         sendTelegramAlert(orderData); 
@@ -1098,6 +1093,7 @@ $("confirmOrderBtn").onclick = () => {
       } else { alert("Server error. Please try again."); btn.textContent = "Verify Payment & Confirm"; }
     });
   } else {
+    btn.disabled = false;
     let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
     sendTelegramAlert(orderData); 
     showStep3Success(payMethod, amountPaid, balanceDue);
