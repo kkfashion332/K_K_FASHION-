@@ -72,21 +72,6 @@
     Loading Gen-Z Store...
   </div>
 
-  <div id="authScreen" class="auth-screen hidden">
-    <div class="auth-card">
-      <h1 class="auth-brand">GEN-Z STORE</h1>
-      <p class="auth-sub">Unlock Elite Access. Sign in to continue.</p>
-      
-      <div class="auth-form">
-        <input type="tel" id="authMobile" class="auth-input" placeholder="10-Digit Mobile No." maxlength="10" autocomplete="off" />
-        <input type="password" id="authPassword" class="auth-input" placeholder="Password (Min 6 chars)" />
-        <button id="authSubmitBtn" class="btn-primary full auth-submit" style="padding: 12px; font-size: 15px; border-radius: 12px; margin-bottom: 5px;">Login / Register</button>
-      </div>
-
-      <button id="skipLoginBtn" style="background:none; border:none; color:var(--muted2); font-family:var(--font-body); margin-top:20px; font-size:14px; text-decoration:underline; cursor:pointer; letter-spacing:0.03em;">Skip & Explore</button>
-    </div>
-  </div>
-
   <div id="splash" class="splash hidden">
     <div id="stage">
       <div id="bg-glow"></div>
@@ -116,6 +101,7 @@
     </div>
     <audio id="bg-audio" src="bg_music.mp3" loop style="display:none"></audio>
   </div>
+
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
@@ -962,7 +948,7 @@
 
     window.updateProductInFirebase = async function(id, data) { try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); } };
 
-    // --- FIRESTORE PRODUCT ADD LOGIC (FIXED) ---
+    // --- FIRESTORE PRODUCT ADD LOGIC ---
     document.getElementById("addProductBtn").addEventListener("click", async () => {
       const pName = document.getElementById("pName").value.trim();
       const rawImage = document.getElementById("pImage").value.trim();
@@ -991,14 +977,14 @@
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
           mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
           sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
-          timestamp: new Date() // Firestore Format
+          timestamp: new Date() // Firestore Format (Crucial for timeline sorting)
       };
 
       try {
-        await addDoc(collection(db, "products"), newProductData); // Save to Firestore
+        await addDoc(collection(db, "products"), newProductData);
         alert("Product listed successfully! 🎉");
         ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
-        fetchProducts(); // Refresh list
+        fetchProducts(); 
       } catch(e) {
           console.error("Error adding product to Firestore: ", e);
           alert("Error adding product! Check console.");
