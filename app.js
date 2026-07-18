@@ -2,7 +2,6 @@
    GEN-Z STORE — app.js (FINAL FIRESTORE VERSION)
 ═══════════════════════════════════════════════════════ */
 
-// Service Account Details
 const FIREBASE_SERVICE_ACCOUNT = {
   "type": "service_account",
   "project_id": "kkfashion-f51ff",
@@ -119,13 +118,11 @@ window.updateProductsFromFirebase = function (fbProducts) {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
-  // Directly start the app without login screen
   if (!isAppInitialized) { 
       showSplashAndStart(); 
       isAppInitialized = true; 
   }
 
-  // Handle auto-login session persistence silently
   if (window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
@@ -251,26 +248,32 @@ window.switchNav = function (tab) {
   window.scrollTo(0, 0);
 };
 
+// 🔥 NEW: ADMIN PANEL TAP LOGIC ON REELS NAV OPTION
+let reelTapCount = 0;
+let reelTapTimer = null;
+const reelNavBtn = $("navProfile"); // navProfile is the ID of Reels button
+if (reelNavBtn) {
+  reelNavBtn.addEventListener("click", () => {
+    reelTapCount++;
+    if (reelTapTimer) clearTimeout(reelTapTimer);
+    if (reelTapCount >= 5) {
+      reelTapCount = 0;
+      pushModalState();
+      openPin(); // Opens Admin PIN modal
+    } else {
+      reelTapTimer = setTimeout(() => { reelTapCount = 0; }, 3000);
+    }
+  });
+}
+
 window.clearShopFilterAndGoHome = function() {
     activeShopId = null; activeMainCatId = null; searchQuery = "";
     if($("searchInput")) $("searchInput").value = "";
     switchNav('Home'); 
 }
 
-function renderHomeBanners() {
-    const wrap = $("homeBannersWrap"); const slider = $("homeBannersSlider");
-    if(!wrap || !slider) return;
-    if (homeBanners.length === 0) { wrap.classList.add("hidden"); return; }
-    
-    wrap.classList.remove("hidden"); slider.innerHTML = "";
-    homeBanners.forEach(b => {
-        const div = document.createElement("div"); div.className = "banner-slide";
-        div.innerHTML = `<img src="${b.image}" alt="Banner" loading="lazy" />`;
-        if (b.link) div.onclick = () => window.open(b.link, '_blank');
-        slider.appendChild(div);
-    });
-    initBannerAutoScroll();
-}
+// Fixed normal home tap on Logo
+$("logoBtn").onclick = () => { clearShopFilterAndGoHome(); };
 
 function renderHomeBanners() {
     const wrap = $("homeBannersWrap"); const slider = $("homeBannersSlider");
@@ -459,12 +462,10 @@ function renderLikesPageTab() {
   });
 }
 
-// 🔥 NEW DYNAMIC REELS TAB RENDERING FUNCTION
 function renderReelsPageTab() {
   const container = $("reelsPageItems");
   if (!container) return;
   
-  // Filter only those items which have a valid videoUrl configured via admin panel
   const videoProducts = products.filter(p => p.videoUrl && p.videoUrl.trim() !== "");
   
   if (videoProducts.length === 0) {
@@ -474,7 +475,6 @@ function renderReelsPageTab() {
   
   container.innerHTML = "";
   videoProducts.forEach(p => {
-    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
     const price = finalPrice(p);
     const div = document.createElement("div");
     div.className = "product";
@@ -489,7 +489,6 @@ function renderReelsPageTab() {
         </div>
       </div>
     `;
-    // Click on a reel seamlessly routes user directly into the full product configuration detail modal
     div.onclick = () => openProductDetail(p);
     container.appendChild(div);
   });
@@ -505,16 +504,6 @@ function renderProfile() {
     nameObj.textContent = user.displayName || "Elite Member"; imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
   } else {
     displayObj.textContent = "Guest Access"; nameObj.textContent = "Welcome Guest"; imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
-  }
-
-  if (imgObj && !imgObj.dataset.listenerAttached) {
-    imgObj.dataset.listenerAttached = "true"; let profileTapCount = 0; let profileTapTimer = null;
-    imgObj.addEventListener("click", (e) => {
-      e.stopPropagation(); profileTapCount++;
-      if (profileTapTimer) clearTimeout(profileTapTimer);
-      if (profileTapCount >= 10) { profileTapCount = 0; pushModalState(); openPin(); return; }
-      profileTapTimer = setTimeout(() => { profileTapCount = 0; }, 3000);
-    });
   }
 }
 
@@ -551,8 +540,6 @@ if ($("profilePicInput")) {
     }; reader.readAsDataURL(file);
   };
 }
-
-$("logoBtn").onclick = () => { clearShopFilterAndGoHome(); };
 
 function renderMainCats() {
   const wrapDiv = $("mainCatsWrap"); const wrap = $("mainCats"); 
@@ -656,7 +643,6 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    // 🔥 TIMELINE SORTING (Newest products at the top)
     const sorted = [...products].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
     
     sorted.forEach(p => {
@@ -741,7 +727,6 @@ function openProductDetail(p) {
       $("pdName").parentNode.insertBefore(d, $("pdColorsWrap"));
   }
 
-  // 🔥 EMBED PRODUCT CONFIGURATION REEL INSIDE THE PRODUCT DETAIL SCROLL IF INSTANCE SET
   const videoWrap = $("pdVideoContainer");
   if (videoWrap) {
     if (p.videoUrl && p.videoUrl.trim() !== "") {
@@ -1117,7 +1102,6 @@ $("confirmOrderBtn").onclick = async () => {
 
   if (window.paymentInterval) clearInterval(window.paymentInterval);
 
-  // --- AUTOMATIC BACKGROUND AUTHENTICATION ---
   const chkMobile = $("chkMobile").value.trim();
   const autoEmail = chkMobile + "@genzstore.com";
   const autoPass = "genzstore" + chkMobile;
@@ -1136,7 +1120,6 @@ $("confirmOrderBtn").onclick = async () => {
   }
   
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : autoEmail;
-  // -------------------------------------------
 
   let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
   if (currentCheckoutItem.product.shopId) {
@@ -1398,10 +1381,7 @@ window.renderAdmin = function () {
 function openEditModal(p) {
   editingProductId = p.id; $("editPName").textContent = p.name;
   let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", ");
-  
-  // 🔥 EXTRACT VIDEO URL TO INVENTORY FIELDS
   if ($("editPVideoUrl")) $("editPVideoUrl").value = p.videoUrl || "";
-
   $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
   
@@ -1421,8 +1401,6 @@ if ($("saveEditBtn")) {
     const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
     const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
     const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
-    
-    // 🔥 SYNC DYNAMIC VIDEO EXTRACTION TO PRODUCTS STATE
     const newVideoUrl = $("editPVideoUrl") ? $("editPVideoUrl").value.trim() : "";
     
     if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
@@ -1437,12 +1415,8 @@ $("closeViewerBtn").onclick = () => { history.back(); };
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
 preventZoom(); renderLikesCount();
 
-// --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
 if ($("sendNotifBtn")) {
-    if ($("fcmServerKey")) {
-        $("fcmServerKey").style.display = 'none';
-    }
-
+    if ($("fcmServerKey")) { $("fcmServerKey").style.display = 'none'; }
     $("sendNotifBtn").onclick = async () => {
         const t = $("notifTitle").value.trim(); 
         const b = $("notifBody").value.trim(); 
@@ -1454,46 +1428,19 @@ if ($("sendNotifBtn")) {
         const ONESIGNAL_REST_API_KEY = "Os_v2_app_qdouupm7nzgedeh6zj7rp2k6izhafxu7gxfeeufqk4tjinp6wji5xgazkbefoksqizklpsrdkp4aro634o7rbj4iierkcx5wtz42aha";
         const APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
 
-        const payload = {
-            app_id: APP_ID,
-            included_segments: ["Subscribed Users"], 
-            headings: { "en": t },
-            contents: { "en": b }
-        };
-
-        if (i) {
-            payload.big_picture = i; 
-            payload.chrome_web_image = i; 
-        }
+        const payload = { app_id: APP_ID, included_segments: ["Subscribed Users"], headings: { "en": t }, contents: { "en": b } };
+        if (i) { payload.big_picture = i; payload.chrome_web_image = i; }
 
         try {
             const targetUrl = "https://onesignal.com/api/v1/notifications";
             const proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl;
-
-            const response = await fetch(proxyUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Basic " + ONESIGNAL_REST_API_KEY
-                },
-                body: JSON.stringify(payload)
-            });
-
+            const response = await fetch(proxyUrl, { method: "POST", headers: { "Content-Type": "application/json", "Authorization": "Basic " + ONESIGNAL_REST_API_KEY }, body: JSON.stringify(payload) });
             const data = await response.json();
-
             if (response.ok && data.id) {
                 alert("OneSignal Notification Sent Successfully! 🚀");
-                $("notifTitle").value = ""; 
-                $("notifBody").value = ""; 
-                $("notifImage").value = "";
-            } else {
-                console.error("OneSignal Error:", data);
-                alert("Error: " + JSON.stringify(data));
-            }
-        } catch(e) { 
-            console.error(e); 
-            alert("Proxy Error: " + e.message + "\n\nBhai free proxy block kar raha hai. Abhi ke liye OneSignal Dashboard se bhej lo."); 
-        }
+                $("notifTitle").value = ""; $("notifBody").value = ""; $("notifImage").value = "";
+            } else { alert("Error: " + JSON.stringify(data)); }
+        } catch(e) { alert("Proxy Error: " + e.message + "\n\nBhai free proxy block kar raha hai."); }
         
         $("sendNotifBtn").textContent = "Send Notification";
     };
