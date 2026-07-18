@@ -233,7 +233,7 @@ window.switchNav = function (tab) {
   if ($("nav" + tab)) $("nav" + tab).classList.add("active"); else if (tab === 'Contact' || tab === 'ReturnPolicy' || tab === 'HowToReturn' || tab === 'PrivacyPolicy') $("navProfile").classList.add("active"); 
   if (tab === 'Order') $("navOrderWrap").classList.add("active"); else $("navOrderWrap").classList.remove("active");
 
-  ["homeContent", "newPage", "shopsPage", "contactPage", "orderPage", "likesPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage"].forEach(id => {
+  ["homeContent", "newPage", "shopsPage", "contactPage", "orderPage", "likesPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage", "reelsPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
@@ -247,6 +247,7 @@ window.switchNav = function (tab) {
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
   if (tab === 'Likes') { $("likesPage").classList.remove("hidden"); renderLikesPageTab(); }
   if (tab === 'Profile') { $("profilePage").classList.remove("hidden"); renderProfile(); }
+  if (tab === 'Reels') { if($("reelsPage")) $("reelsPage").classList.remove("hidden"); renderReelsPageTab(); }
   window.scrollTo(0, 0);
 };
 
@@ -254,6 +255,21 @@ window.clearShopFilterAndGoHome = function() {
     activeShopId = null; activeMainCatId = null; searchQuery = "";
     if($("searchInput")) $("searchInput").value = "";
     switchNav('Home'); 
+}
+
+function renderHomeBanners() {
+    const wrap = $("homeBannersWrap"); const slider = $("homeBannersSlider");
+    if(!wrap || !slider) return;
+    if (homeBanners.length === 0) { wrap.classList.add("hidden"); return; }
+    
+    wrap.classList.remove("hidden"); slider.innerHTML = "";
+    homeBanners.forEach(b => {
+        const div = document.createElement("div"); div.className = "banner-slide";
+        div.innerHTML = `<img src="${b.image}" alt="Banner" loading="lazy" />`;
+        if (b.link) div.onclick = () => window.open(b.link, '_blank');
+        slider.appendChild(div);
+    });
+    initBannerAutoScroll();
 }
 
 function renderHomeBanners() {
@@ -440,6 +456,42 @@ function renderLikesPageTab() {
     `;
     el.onclick = () => { openProductDetail(p); }; 
     body.appendChild(el);
+  });
+}
+
+// 🔥 NEW DYNAMIC REELS TAB RENDERING FUNCTION
+function renderReelsPageTab() {
+  const container = $("reelsPageItems");
+  if (!container) return;
+  
+  // Filter only those items which have a valid videoUrl configured via admin panel
+  const videoProducts = products.filter(p => p.videoUrl && p.videoUrl.trim() !== "");
+  
+  if (videoProducts.length === 0) {
+    container.innerHTML = '<p class="empty" style="grid-column: 1 / -1; padding: 40px 0;">Abhi tak koi product reel available nahi hai.</p>';
+    return;
+  }
+  
+  container.innerHTML = "";
+  videoProducts.forEach(p => {
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const price = finalPrice(p);
+    const div = document.createElement("div");
+    div.className = "product";
+    div.style.animation = "fadeUp 0.4s ease both";
+    
+    div.innerHTML = `
+      <div style="position:relative; width:100%; aspect-ratio:9/16; background:#000; border-radius:12px; overflow:hidden;">
+        <video src="${p.videoUrl}" style="width:100%; height:100%; object-fit:cover;" autoplay loop muted playsinline></video>
+        <div style="position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent, rgba(0,0,0,0.8)); padding:10px; display:flex; flex-direction:column; gap:4px; z-index:2;">
+          <span style="font-size:12px; font-weight:600; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</span>
+          <span style="font-size:13px; font-weight:700; color:var(--primary);">₹${price}</span>
+        </div>
+      </div>
+    `;
+    // Click on a reel seamlessly routes user directly into the full product configuration detail modal
+    div.onclick = () => openProductDetail(p);
+    container.appendChild(div);
   });
 }
 
@@ -687,6 +739,18 @@ function openProductDetail(p) {
   if(p.freeDelivery !== false) {
       const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj;
       $("pdName").parentNode.insertBefore(d, $("pdColorsWrap"));
+  }
+
+  // 🔥 EMBED PRODUCT CONFIGURATION REEL INSIDE THE PRODUCT DETAIL SCROLL IF INSTANCE SET
+  const videoWrap = $("pdVideoContainer");
+  if (videoWrap) {
+    if (p.videoUrl && p.videoUrl.trim() !== "") {
+      videoWrap.innerHTML = `<video src="${p.videoUrl}" style="width:100%; height:auto; display:block; max-height:300px; object-fit:cover;" controls autoplay loop muted playsinline></video>`;
+      videoWrap.classList.remove("hidden");
+    } else {
+      videoWrap.innerHTML = "";
+      videoWrap.classList.add("hidden");
+    }
   }
 
   if(p.groupId) {
@@ -1334,6 +1398,10 @@ window.renderAdmin = function () {
 function openEditModal(p) {
   editingProductId = p.id; $("editPName").textContent = p.name;
   let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", ");
+  
+  // 🔥 EXTRACT VIDEO URL TO INVENTORY FIELDS
+  if ($("editPVideoUrl")) $("editPVideoUrl").value = p.videoUrl || "";
+
   $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
   
@@ -1354,10 +1422,13 @@ if ($("saveEditBtn")) {
     const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
     const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
     
+    // 🔥 SYNC DYNAMIC VIDEO EXTRACTION TO PRODUCTS STATE
+    const newVideoUrl = $("editPVideoUrl") ? $("editPVideoUrl").value.trim() : "";
+    
     if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
     const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
+    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, videoUrl: newVideoUrl, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
+    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, videoUrl: newVideoUrl, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
     $("editModal").classList.add("hidden"); editingProductId = null;
   };
 }
