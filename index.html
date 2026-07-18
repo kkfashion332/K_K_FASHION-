@@ -16,7 +16,7 @@
     gtag('config', 'G-08325P1W4G');
   </script>
 
-  <!-- PREMIUM ONESIGNAL NOTIFICATION SETUP (FIXED POSITION & LOOK) -->
+  <!-- PREMIUM ONESIGNAL NOTIFICATION SETUP -->
   <style>
     #onesignal-bell-container {
       top: 15px !important;  
@@ -230,7 +230,7 @@
         <div id="likesPageItems" class="drawer-body-page" style="padding-bottom: 100px;"></div>
       </div>
 
-      <!-- DYNAMIC REELS PAGE SECTION -->
+      <!-- REELS PAGE SECTION -->
       <div id="reelsPage" class="nav-page hidden" style="display:flex; flex-direction:column; min-height:80vh;">
         <h2 class="page-heading">Product Reels</h2>
         <p class="page-sub">Watch latest style video drops.</p>
@@ -363,7 +363,6 @@
         <span class="nav-text">Likes</span>
       </button>
       
-      <!-- CHANGED INTERFACE: PROFILE REPLACED BY WORKING DYNAMIC REELS OPTION WHEN VIDEO ACTIVE -->
       <button class="nav-item" id="navProfile" onclick="switchNav('Reels')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -411,7 +410,6 @@
           <span id="pdOff" class="pd-off hidden"></span>
         </div>
         
-        <!-- VIDEO ELEMENT INSIDE PRODUCT INFO IF DETECTED -->
         <div id="pdVideoContainer" class="hidden" style="margin-top:15px; width:100%; max-height:300px; border-radius:8px; overflow:hidden;"></div>
         
         <div id="pdColorsWrap" class="hidden" style="margin-top:15px;"></div>
@@ -649,7 +647,6 @@
         <input id="editPImage" class="field" type="text" placeholder="URL 1, URL 2..." />
       </div>
 
-      <!-- VIDEO URL INPUT FIELD ADDED IN EDIT DIALOG -->
       <div class="field-group" style="width: 100%; margin-bottom: 12px;">
         <label class="field-label">Product Video URL (Optional)</label>
         <input id="editPVideoUrl" class="field" type="text" placeholder="https://example.com/video.mp4" />
@@ -793,7 +790,6 @@
             <input id="pName" class="field" placeholder="Product name" />
             <input id="pImage" class="field" placeholder="Image URLs (Comma Separated for Multiple)" />
             
-            <!-- EXPLICIT VIDEO URL INPUT FIELD ADDED TO ADMIN INVENTORY SETUP -->
             <input id="pVideoUrl" class="field" placeholder="Product Video URL (Optional, e.g. for Reels)" />
 
             <div class="field-group" style="margin-bottom:12px;">
@@ -970,12 +966,10 @@
     window.saveBannersToFirebase = async function(bData) { try { await setDoc(doc(db, "settings", "storeData"), { banners: bData }, { merge: true }); } catch(e) {} };
     window.deleteProductFromFirebase = async function(id) { try { await deleteDoc(doc(db, "products", id)); } catch(e) {} };
 
-    // Set Global Variables
     window.fbAddDoc = addDoc; window.fbCollection = collection; window.fbDb = db; window.fbDeleteDoc = deleteDoc; window.fbDoc = doc; window.fbUpdateDoc = updateDoc; window.fbGetDocs = getDocs;
 
     window.updateProductInFirebase = async function(id, data) { try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); } };
 
-    // --- FIRESTORE PRODUCT ADD LOGIC WITH VIDEO INTEGRATION ---
     document.getElementById("addProductBtn").addEventListener("click", async () => {
       const pName = document.getElementById("pName").value.trim();
       const rawImage = document.getElementById("pImage").value.trim();
@@ -1005,7 +999,7 @@
           name: pName, imageUrl: imgArray, videoUrl: pVideoUrl, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
           mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
           sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
-          timestamp: new Date() // Firestore Format
+          timestamp: new Date()
       };
 
       try {
