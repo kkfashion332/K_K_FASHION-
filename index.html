@@ -171,6 +171,11 @@
         <div id="shopsGrid" class="shops-grid"></div>
       </div>
 
+      <!-- NEW SHORTS (REELS) PAGE -->
+      <div id="shortsPage" class="nav-page hidden shorts-page-wrap">
+        <div id="shortsContainer" class="shorts-container"></div>
+      </div>
+
       <div id="contactPage" class="nav-page hidden">
         <div class="premium-page-header">
           <h2 class="page-heading Premium">Contact Us</h2>
@@ -228,48 +233,6 @@
         <h2 class="page-heading">Your Likes</h2>
         <p class="page-sub">Products you have loved.</p>
         <div id="likesPageItems" class="drawer-body-page" style="padding-bottom: 100px;"></div>
-      </div>
-
-      <div id="profilePage" class="nav-page hidden">
-        <h2 class="page-heading">Elite Profile</h2>
-        <div class="profile-card premium-glass">
-          
-          <div class="p-avatar-wrap premium-border" style="border-color: var(--primary);">
-            <img id="profileImg" src="https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png" alt="Profile" style="object-fit:cover; border-radius:50%; cursor:pointer;" />
-            <div class="p-avatar-edit unique-premium-edit" onclick="document.getElementById('profilePicInput').click()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            </div>
-            <input type="file" id="profilePicInput" accept="image/*" class="hidden" />
-          </div>
-          
-          <div class="p-status">Gen-Z Store Elite Member</div>
-          <div id="profileDisplayName" class="p-name">Loading...</div>
-          <div id="profileDisplayId" class="p-id">Loading...</div>
-          
-          <button id="editProfileBtn" class="btn-outline sm-btn premium-edit-btn" style="margin-top:14px; display:inline-flex; align-items:center; gap:6px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-            Edit Name
-          </button>
-
-          <div class="premium-about-container" style="margin-top:30px;">
-            <div class="about-logo-mark" style="font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--primary);">GZ</div>
-            <h3 style="color:var(--fg); font-size:16px; margin: 8px 0; font-family: var(--font-display);">The Gen-Z Legacy</h3>
-            <p style="font-size:13px; line-height:1.6; color:var(--muted2);">
-              Gen-Z Store is your ultimate destination for premium, trend-setting apparel. We believe in delivering top-notch quality with an unmatched aesthetic. Join the revolution of style with us.
-            </p>
-          </div>
-          
-          <div class="profile-links" style="margin-top:25px; border-top:1px solid var(--border2); padding-top:20px; text-align:left;">
-            <button onclick="switchNav('ReturnPolicy')" class="p-link-btn premium-p-link">📜 Return Policy <span>→</span></button>
-            <button onclick="switchNav('HowToReturn')" class="p-link-btn premium-p-link">↩️ How to Return <span>→</span></button>
-            <button onclick="switchNav('PrivacyPolicy')" class="p-link-btn premium-p-link">🛡️ Privacy Policy <span>→</span></button>
-            <button onclick="switchNav('Contact')" class="p-link-btn premium-p-link">📞 Contact Us <span>→</span></button>
-          </div>
-
-          <button id="profileLogoutBtn" class="btn-outline full premium-logout" style="margin-top: 25px;">
-            🚪 Logout Elite Access
-          </button>
-        </div>
       </div>
 
       <div id="returnPolicyPage" class="nav-page hidden">
@@ -354,9 +317,12 @@
         <span class="nav-text">Likes</span>
       </button>
       
-      <button class="nav-item" id="navProfile" onclick="switchNav('Profile')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        <span class="nav-text">Profile</span>
+      <!-- REPLACED PROFILE WITH SHORTS -->
+      <button class="nav-item" id="navShorts" onclick="switchNav('Shorts')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+        </svg>
+        <span class="nav-text">Shorts</span>
       </button>
     </nav>
   </div>
@@ -699,6 +665,7 @@
           <button id="tabOrdersBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amOrders')">Orders</button>
           <button id="tabCatsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCats')">Categories</button>
           <button id="tabProdsBtn" class="am-tab active" onclick="switchAdminTab(event, 'amProds')">Products</button>
+          <button id="tabShortsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amShorts')">Shorts Videos</button>
           <button id="tabSettingsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
       </div>
 
@@ -846,6 +813,24 @@
           </section>
       </div>
 
+      <!-- NEW ADMIN SHORTS SECTION -->
+      <div id="amShorts" class="admin-section hidden">
+          <section class="card">
+            <h3>Add New Shorts/Reel</h3>
+            <p class="section-hint">Instagram Reel ya YouTube Short ka URL daalein aur Product link karein.</p>
+            <div class="field-group" style="margin-top:8px;">
+              <input id="newShortUrl" class="field" placeholder="Paste IG Reel or YT Shorts URL here" />
+              <label class="field-label">Link This Video to a Product:</label>
+              <select id="newShortProduct" class="field"></select>
+              <button id="addShortBtn" class="btn-primary sm-btn auth-submit" style="margin-top: 10px;">Add Video</button>
+            </div>
+          </section>
+          <section class="card">
+            <h3>Uploaded Shorts</h3>
+            <div id="adminShortsList"></div>
+          </section>
+      </div>
+
       <div id="amSettings" class="admin-section hidden">
           <section class="card">
             <h3>Push Notifications 🔔</h3>
@@ -934,12 +919,15 @@
     async function fetchSettings() { try { const snap = await getDoc(doc(db, "settings", "storeData")); let cats, bannersData; if (snap.exists()) { cats = snap.data().mainCategories || []; bannersData = snap.data().banners || []; } else { cats = [{ id: "cat_genz", name: "GEN-Z PREMIUM", shopId: "GLOBAL" }]; bannersData = []; await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData }, { merge: true }); } if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats); if (window.updateBannersFromFirebase) window.updateBannersFromFirebase(bannersData); } catch(e) {} }
     async function fetchProducts() { try { const snap = await getDocs(collection(db, "products")); const list = []; snap.forEach(d => { const data = d.data(); let imgData = Array.isArray(data.imageUrl) ? data.imageUrl : (data.imageUrl ? [data.imageUrl] : []); list.push({ id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0, mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false, sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || "", freeDelivery: data.freeDelivery !== false, timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0 }); }); if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list); } catch(e) {} }
     
+    // NEW: Fetch Shorts
+    async function fetchShorts() { try { const snap = await getDocs(collection(db, "shorts")); const list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() })); if (window.updateShortsFromFirebase) window.updateShortsFromFirebase(list); } catch(e) {} }
+
     window.saveOrderToFirebase = async function(orderData) { try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { return false; } };
     window.fetchOrdersFromFirebase = async function() { try { const snap = await getDocs(collection(db, "orders")); const list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() })); list.sort((a,b) => b.timestamp - a.timestamp); window.allFirebaseOrders = list; if (window.renderAdminOrders) window.renderAdminOrders(list); if (typeof window.renderMyOrders === "function") window.renderMyOrders(); } catch (e) {} };
     window.updateOrderStatusInFirebase = async function(id, status) { try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) {} };
     window.deleteOrderFromFirebase = async function(id) { try { await deleteDoc(doc(db, "orders", id)); } catch(e) {} };
 
-    fetchShops(); fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
+    fetchShops(); fetchSettings(); fetchProducts(); fetchShorts(); window.fetchOrdersFromFirebase();
 
     window.saveCategoriesToFirebase = async function(cats) { try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {} };
     window.saveBannersToFirebase = async function(bData) { try { await setDoc(doc(db, "settings", "storeData"), { banners: bData }, { merge: true }); } catch(e) {} };
@@ -979,7 +967,7 @@
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
           mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
           sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
-          timestamp: new Date() // Firestore Format (Crucial for timeline sorting)
+          timestamp: new Date() // Firestore Format
       };
 
       try {
