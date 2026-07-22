@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH SHORTS/REELS & LOGO ADMIN TRIGGER)
+   GEN-Z STORE — app.js (FINAL WITH UNIQUE ID, SHORTS FIX & LOGO TRIGGER)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -30,7 +30,7 @@ let mainCategories = [];
 let products = [];
 let shops = [];
 let homeBanners = [];
-let shortsData = []; // NEW: Array for shorts/reels
+let shortsData = []; 
 let likes = load("knk_likes", []); 
 let currentCheckoutItem = null;    
 let activeMainCatId = null;
@@ -84,11 +84,32 @@ window.addEventListener('popstate', (e) => {
 window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fetchedBanners || []; renderHomeBanners(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); }
 window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; renderShopsPage(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
+
+// ADDED UNIQUE ID PARSING
 window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
+  
+  // 🔥 DYNAMICALLY INJECT "UNIQUE ID" FIELDS IN HTML (No HTML editing needed)
+  const pNameInput = $("pName");
+  if (pNameInput && !$("pUniqueId")) {
+      const uidInput = document.createElement("input");
+      uidInput.id = "pUniqueId";
+      uidInput.className = "field";
+      uidInput.placeholder = "Product Unique ID (e.g. 101, 102)";
+      pNameInput.parentNode.insertBefore(uidInput, pNameInput.nextSibling);
+  }
+  const editPName = $("editPName");
+  if (editPName && !$("editPUniqueId")) {
+      const eUidInput = document.createElement("input");
+      eUidInput.id = "editPUniqueId";
+      eUidInput.className = "field";
+      eUidInput.style.marginBottom = "12px";
+      eUidInput.placeholder = "Product Unique ID (e.g. 101, 102)";
+      editPName.parentNode.insertBefore(eUidInput, editPName.nextSibling);
+  }
   
   if ($("addCatBtn")) {
       $("addCatBtn").onclick = () => {
@@ -135,23 +156,14 @@ async function showSplashAndStart() {
   const box = $("particles");
   if (box && box.children.length === 0) {
     for (let i = 0; i < 28; i++) {
-      const p = document.createElement('div');
-      p.className = 'particle';
+      const p = document.createElement('div'); p.className = 'particle';
       const sz = (2 + Math.random() * 3).toFixed(1) + 'px';
-      p.style.cssText = [
-        'left:'   + (Math.random() * 100).toFixed(1) + '%',
-        'bottom:' + (Math.random() * 8).toFixed(1)   + '%',
-        'width:'  + sz,
-        'height:' + sz,
-        'animation-duration:' + (2 + Math.random() * 3).toFixed(2) + 's',
-        'animation-delay:'    + (Math.random() * 3).toFixed(2)     + 's',
-      ].join(';');
+      p.style.cssText = ['left:'+(Math.random()*100).toFixed(1)+'%','bottom:'+(Math.random()*8).toFixed(1)+'%','width:'+sz,'height:'+sz,'animation-duration:'+(2+Math.random()*3).toFixed(2)+'s','animation-delay:'+(Math.random()*3).toFixed(2)+'s'].join(';');
       box.appendChild(p);
     }
   }
 
-  const audio = $("bg-audio");
-  if (audio) audio.play().catch(() => {});
+  const audio = $("bg-audio"); if (audio) audio.play().catch(() => {});
 
   await delay(100); addClass('coin-scene', 'appear');
   await delay(200); addClass('coin-scene', 'spinning');
@@ -163,8 +175,7 @@ async function showSplashAndStart() {
   await delay(150); addClass('welcome', 'show'); addClass('welcome-line', 'show');
   await delay(1000); addClass('welcome', 'hide'); removeClass('welcome-line', 'show');
   await delay(400); removeClass('welcome', 'show');
-  if($('welcome')) $('welcome').style.display = 'none';
-  if($('welcome-line')) $('welcome-line').style.display = 'none';
+  if($('welcome')) $('welcome').style.display = 'none'; if($('welcome-line')) $('welcome-line').style.display = 'none';
   await delay(100); addClass('shield-glow', 'show'); addClass('trusted', 'show');
   await delay(1000); addClass('outro-overlay', 'show'); addClass('trusted', 'hide'); removeClass('shield-glow', 'show');
   await delay(600); addClass('outro-overlay', 'fadeout');
@@ -172,17 +183,9 @@ async function showSplashAndStart() {
 
   splash.style.transition = "opacity 0.4s ease"; 
   splash.style.opacity = "0";
-  setTimeout(() => {
-    splash.classList.add("hidden"); 
-    $("app").classList.remove("hidden"); 
-    renderLikesCount(); 
-    initBannerAutoScroll();
-  }, 400);
+  setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); renderLikesCount(); initBannerAutoScroll(); }, 400);
 }
 
-// ----------------------------------------------------
-// NEW: NAVIGATION SWITCH (Includes Shorts logic)
-// ----------------------------------------------------
 window.switchNav = function (tab) {
   document.querySelectorAll('.nav-item').forEach((el) => { el.classList.remove('active'); });
   if ($("nav" + tab)) $("nav" + tab).classList.add("active"); 
@@ -192,10 +195,7 @@ window.switchNav = function (tab) {
       if($(id)) $(id).classList.add("hidden");
   });
 
-  // Humesha Shorts ke video roko jab dusre tab me jao
-  if(tab !== 'Shorts' && $("shortsContainer")) {
-      $("shortsContainer").innerHTML = ""; 
-  }
+  if(tab !== 'Shorts' && $("shortsContainer")) { $("shortsContainer").innerHTML = ""; }
 
   if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
@@ -213,7 +213,7 @@ window.clearShopFilterAndGoHome = function() {
 }
 
 // ----------------------------------------------------
-// NEW: SHORTS PAGE RENDERING LOGIC
+// 🔥 SUPER SMART SHORTS & REELS LOGIC
 // ----------------------------------------------------
 function renderShortsPage() {
     const container = $("shortsContainer");
@@ -226,25 +226,34 @@ function renderShortsPage() {
     }
 
     shortsData.forEach(s => {
-        const p = products.find(x => x.id === s.productId);
-        if(!p) return; // Skip if linked product is deleted
+        // 🔥 SMART PRODUCT FINDER (Matches Unique ID, Name, or Firebase ID)
+        const searchInput = s.productId ? s.productId.toString().toLowerCase().trim() : "";
+        const p = products.find(x => 
+            (x.uniqueId && x.uniqueId.toString().toLowerCase() === searchInput) || 
+            (x.name && x.name.toLowerCase().includes(searchInput)) ||
+            (x.id === s.productId)
+        );
+        
+        if(!p) return; // Product exists nahi karta toh video mat dikhao
 
         let embedUrl = s.url.trim();
+        let finalIframeSrc = "";
 
-        // Auto-Convert YouTube URL to Embed format
-        if(embedUrl.includes("youtube.com/shorts/")) {
-            embedUrl = embedUrl.replace("youtube.com/shorts/", "youtube.com/embed/") + "?autoplay=0&loop=1&controls=0";
-        } else if(embedUrl.includes("youtu.be/")) {
-            embedUrl = embedUrl.replace("youtu.be/", "youtube.com/embed/") + "?autoplay=0&loop=1&controls=0";
-        } else if(embedUrl.includes("youtube.com/watch?v=")) {
-            embedUrl = embedUrl.replace("watch?v=", "embed/") + "?autoplay=0&loop=1&controls=0";
-        }
-
-        // Auto-Convert Instagram URL to Embed format
-        if(embedUrl.includes("instagram.com/reel/") || embedUrl.includes("instagram.com/p/")) {
-            embedUrl = embedUrl.split("?")[0]; // Remove extra tracking params
-            if(!embedUrl.endsWith("/")) embedUrl += "/";
-            embedUrl += "embed";
+        // 🔥 YOUTUBE & INSTA FIXER
+        if (embedUrl.includes("instagram.com")) {
+            const match = embedUrl.match(/(reel|p|reels)\/([A-Za-z0-9_-]+)/);
+            if (match) { finalIframeSrc = `https://www.instagram.com/p/${match[2]}/embed/`; } 
+            else { finalIframeSrc = embedUrl; }
+        } else if (embedUrl.includes("youtube.com") || embedUrl.includes("youtu.be")) {
+            let videoId = "";
+            if (embedUrl.includes("youtu.be/")) videoId = embedUrl.split("youtu.be/")[1].split("?")[0];
+            else if (embedUrl.includes("shorts/")) videoId = embedUrl.split("shorts/")[1].split("?")[0];
+            else if (embedUrl.includes("watch?v=")) videoId = embedUrl.split("watch?v=")[1].split("&")[0];
+            
+            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+            else finalIframeSrc = embedUrl;
+        } else {
+            finalIframeSrc = embedUrl;
         }
 
         const price = finalPrice(p);
@@ -253,7 +262,7 @@ function renderShortsPage() {
         const wrapper = document.createElement("div");
         wrapper.className = "short-video-wrapper";
         wrapper.innerHTML = `
-            <iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="${finalIframeSrc}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             
             <div class="short-buy-card">
                 <img src="${mainImg}" class="short-buy-img" alt="${p.name}">
@@ -270,32 +279,25 @@ function renderShortsPage() {
 }
 
 // ----------------------------------------------------
-// LOGO TAP ADMIN TRIGGER LOGIC (10 TAPS)
+// 🔥 LOGO 10-TAP ADMIN TRIGGER
 // ----------------------------------------------------
 let logoTapCount = 0;
 let logoTapTimer = null;
-
 if ($("logoBtn")) {
   $("logoBtn").onclick = () => {
     logoTapCount++;
     if (logoTapTimer) clearTimeout(logoTapTimer);
-    
-    // 10 Taps hone par Secret Admin PIN Modal open hoga
     if (logoTapCount >= 10) {
       logoTapCount = 0;
       pushModalState();
       openPin(); 
       return;
     }
-    
     logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2000);
     clearShopFilterAndGoHome();
   };
 }
 
-// ----------------------------------------------------
-// BANNERS, PRODUCTS, CATS (Standard logic)
-// ----------------------------------------------------
 function renderHomeBanners() {
     const wrap = $("homeBannersWrap"); const slider = $("homeBannersSlider");
     if(!wrap || !slider) return;
@@ -1277,10 +1279,12 @@ function renderAdminProducts() {
   filtered.forEach(p => {
     const price = finalPrice(p); const inStock = p.inStock !== false; const cat = getCat(p.mainCategoryId); const catName = cat ? cat.name : "—";
     const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const uidDisplay = p.uniqueId ? `<span style="color:var(--primary); font-weight:bold;">[ID: ${p.uniqueId}]</span> ` : "";
+    
     const el = document.createElement("div"); el.className = "admin-prod";
     el.innerHTML = `
       <img src="${mainImg}" alt="${p.name}" />
-      <div class="ap-info"><div class="ap-name">${p.name}</div><div class="ap-sub">${catName}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div>
+      <div class="ap-info"><div class="ap-name">${uidDisplay}${p.name}</div><div class="ap-sub">${catName}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div>
       <div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
     el.querySelector(".edit-btn").onclick = () => openEditModal(p);
     el.querySelector(".trash").onclick = () => { if (!confirm("Delete this product?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); } };
@@ -1327,11 +1331,70 @@ window.renderAdmin = function () {
   if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
 };
 
+// ADD PRODUCT (Modified for Unique ID)
+document.getElementById("addProductBtn").addEventListener("click", async () => {
+    const pName = document.getElementById("pName").value.trim();
+    const rawImage = document.getElementById("pImage").value.trim();
+    const pPrice = document.getElementById("pPrice").value;
+    const pDisc = document.getElementById("pDiscount").value;
+    const pExtra = document.getElementById("pExtra").value;
+    const pCatId = document.getElementById("pMainCat").value;
+    const pShopId = document.getElementById("pShop").value || "";
+    const pInStock = document.getElementById("pInStock").checked;
+    const pFreeDelivery = document.getElementById("pFreeDelivery").checked;
+    const pSizesIn = document.getElementById("pSizesIn").value.trim();
+    const pSizesOut = document.getElementById("pSizesOut").value.trim();
+    const pColor = document.getElementById("pColor").value.trim();
+    const pGroupId = document.getElementById("pGroupId").value.trim();
+    
+    // Capturing dynamically added Unique ID
+    const pUniqueId = document.getElementById("pUniqueId") ? document.getElementById("pUniqueId").value.trim() : "";
+
+    const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+
+    if (!pName || imgArray.length === 0 || !pPrice) { 
+        alert("Naam, Image URL(s) aur Price zaroori hain!"); return; 
+    }
+    
+    const btn = document.getElementById("addProductBtn"); 
+    btn.textContent = "Listing...";
+    
+    const newProductData = {
+        name: pName, uniqueId: pUniqueId, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
+        mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
+        sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
+        timestamp: new Date()
+    };
+
+    try {
+      await window.fbAddDoc(window.fbCollection(window.fbDb, "products"), newProductData);
+      alert("Product listed successfully! 🎉");
+      ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
+      if(document.getElementById("pUniqueId")) document.getElementById("pUniqueId").value = "";
+      // Re-fetch products from DB
+      const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "products"));
+      const list = [];
+      snap.forEach(d => {
+          const data = d.data();
+          let imgData = Array.isArray(data.imageUrl) ? data.imageUrl : (data.imageUrl ? [data.imageUrl] : []);
+          list.push({ id: d.id, uniqueId: data.uniqueId || "", name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0, mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false, sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || "", freeDelivery: data.freeDelivery !== false, timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0 });
+      });
+      if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
+    } catch(e) {
+        console.error("Error adding product to Firestore: ", e);
+        alert("Error adding product! Check console.");
+    } finally { 
+        btn.textContent = "Add Product to Collection"; 
+    }
+});
+
 function openEditModal(p) {
   editingProductId = p.id; $("editPName").textContent = p.name;
   let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", ");
   $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
+  
+  if($("editPUniqueId")) $("editPUniqueId").value = p.uniqueId || "";
   
   const inStock = p.inStock !== false; $("editInStock").checked = inStock;
   const freeDel = p.freeDelivery !== false; if($("editPFreeDelivery")) $("editPFreeDelivery").checked = freeDel;
@@ -1349,11 +1412,12 @@ if ($("saveEditBtn")) {
     const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
     const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
     const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
+    const pUniqueId = $("editPUniqueId") ? $("editPUniqueId").value.trim() : "";
     
     if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
     const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
+    if (idx > -1) { products[idx] = { ...products[idx], uniqueId: pUniqueId, image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
+    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { uniqueId: pUniqueId, imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
     $("editModal").classList.add("hidden"); editingProductId = null;
   };
 }
