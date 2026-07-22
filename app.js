@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH SHORTS/REELS)
+   GEN-Z STORE — app.js (FINAL WITH SHORTS/REELS & LOGO ADMIN TRIGGER)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -199,7 +199,7 @@ window.switchNav = function (tab) {
 
   if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
-  if (tab === 'Shorts') { $("shortsPage").classList.remove("hidden"); renderShortsPage(); } // Call Shorts render
+  if (tab === 'Shorts') { $("shortsPage").classList.remove("hidden"); renderShortsPage(); } 
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
   if (tab === 'Likes') { $("likesPage").classList.remove("hidden"); renderLikesPageTab(); }
   
@@ -270,6 +270,30 @@ function renderShortsPage() {
 }
 
 // ----------------------------------------------------
+// LOGO TAP ADMIN TRIGGER LOGIC (10 TAPS)
+// ----------------------------------------------------
+let logoTapCount = 0;
+let logoTapTimer = null;
+
+if ($("logoBtn")) {
+  $("logoBtn").onclick = () => {
+    logoTapCount++;
+    if (logoTapTimer) clearTimeout(logoTapTimer);
+    
+    // 10 Taps hone par Secret Admin PIN Modal open hoga
+    if (logoTapCount >= 10) {
+      logoTapCount = 0;
+      pushModalState();
+      openPin(); 
+      return;
+    }
+    
+    logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2000);
+    clearShopFilterAndGoHome();
+  };
+}
+
+// ----------------------------------------------------
 // BANNERS, PRODUCTS, CATS (Standard logic)
 // ----------------------------------------------------
 function renderHomeBanners() {
@@ -296,8 +320,6 @@ function initBannerAutoScroll() {
         else { slider.scrollBy({ left: scrollAmt, behavior: 'smooth' }); }
     }, 3000);
 }
-
-$("logoBtn").onclick = () => { clearShopFilterAndGoHome(); };
 
 function renderMainCats() {
   const wrapDiv = $("mainCatsWrap"); const wrap = $("mainCats"); 
@@ -1107,7 +1129,7 @@ $("adminClose").onclick = () => {
 
 function saveCategories() { if (window.saveCategoriesToFirebase) { window.saveCategoriesToFirebase(mainCategories); } }
 
-// NEW: ADD SHORT LOGIC
+// ADD SHORT LOGIC
 if ($("addShortBtn")) {
     $("addShortBtn").onclick = async () => {
         const url = $("newShortUrl").value.trim(); 
