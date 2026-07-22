@@ -1,32 +1,19 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL FIRESTORE VERSION)
+   GEN-Z STORE — app.js (FINAL WITH SHORTS/REELS)
 ═══════════════════════════════════════════════════════ */
 
-// Service Account Details
 const FIREBASE_SERVICE_ACCOUNT = {
   "type": "service_account",
   "project_id": "kkfashion-f51ff",
   "private_key_id": "88311c4aac96bede55f051fe8e4fe9079bb30052",
   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC9TJos34ZscVwJ\nnh1hazkv7/tPQNbpE83VHpgDZucZiEm22lkaxVzR29M7BNjebtJ0TmTszpUsGx+P\nUp4O08FEgym1D6DPe6lsBrNmBPfsplaXFcBEQ9+kzrqMN3YJjVZ80uO2Bv2kz1Ui\nGIJDS0ePSy/LXIrHljDo9qriGzKdfw/LRjwrpqWIttUBaPu7kSmtt9MKiXWUr/Uy\nW+CTsHqyY4psATNuubSC0zwPh14VLU2Ma8U7U2BcmZJrnv1iF3FF6EyoKabwlhfm\nozEC//mYnBIcuKIEth3cBbkyJcMRQ3/+SKPo8JL2WGlJERfGR3bUV8Qp48Eg3+e1\ncC6thghrAgMBAAECggEARUQc3BOUX+Tg7SH+lTGDVO+mkPrkSJf3Bqcxr3j9UgHl\nGzPtS9bw3ldmBOACrO13M5il5GK5AdEQ7MQp0roYK4YlAjwsNw+EUGNpTIi/4UeC\nQrlyR2hgkrEUYI9AsUEW5wjRyr7nG+HDwHygWZhXoG6+F9cObvadgfkUUTTrgeYl\nxEJN0WPppSY9B7Batf0VyCwncZ5bqFllK1f9hrhb1ZJYXhJnA/303nQnyVYhxJez\nxUCKp1sfVnilnPsoPX0ZfIc6UT7ZBk3GAjVwxyNfi7PLQCt4QFlXgQIVnRg9GcqG\n9hRXCM8baKW/BLoFGCNW4ozp0n/9RkNjMDXIWAN3HQKBgQDjf0XMi+mNWooASdwF\nqcv7qod2dmEbhEIRcifZBQv2EvHtIiiALGri8rzDH77EpcafPapczhUKXtYeDd7y\nXYDdWrSzIYD0jz/1wxsBmk/htBDmfioRt94k6Qd9mqydTMsOpI5SltAxjClMT3kr\ncWr8LNi36vOciyojJRZUG1bBJQKBgQDVBCwDDxys/RX3v7fvlJqit8YOK7kO9gB7\ntNURg9niLUpcoPnJmod5X/PRVBx+6O3zGD0RFQp3uswYaE9+81gJXhOc2ga6R0I9\n6o2J/QUlqyDGbZ5oHsB6RDtDLLM2xeDVkGoTQ3JGKctH7XBtI3IgNAtssXGa7HCq\nt8PAqgZWTwKBgQDTOUtkVI+fx+2TwQABXhrf6wBlVBprgwwYyKYI0K+/ZO2s3+c8\nwoDngLsUbDgiu0zEc2vnSQyuGUmyk+xpmblZTKu0GipyZ0Lae7Fqdo0uoZKDf6at\n1srx+E8VJvSYBEIQsWbXdeGN73Y0vSFi3aaYx0bc1NAli+yuvvORWeTd5QKBgEyD\nNxvSLcalEWLv5i2T/wc7Y1RruAj7q6jDh1THO1fWVMN4vr//VXHvWTBzOdkL6YxL\nxIOCP0RKQEz0CrnaxmB2/ix0073NIqoCudw6mcKx+Q/NB/z2LsS8BV1XjPe7k8qi\nGLfang09rdqkGqHY/YE7sG7WPawcCUwIvbNSXvxZAoGAeBrl48EeZfZ4xX+87oxF\n+3HOAwfSYqF4YaoYiz92HDAFE5n1aMEnSKi6XCa8F/xONV6Kbdfgi80G19c+8u82\nItJVPEsKBfJN311mR82I0QxNWxKsWOFg9OvLa2EjqUgDbhyQMAUN80aG9EDvqPc9\nE9zkDQMp9WAvOceIGrWZMGM=\n-----END PRIVATE KEY-----\n",
   "client_email": "firebase-adminsdk-fbsvc@kkfashion-f51ff.iam.gserviceaccount.com",
-  "client_id": "113003982145951280521",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40kkfashion-f51ff.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
+  "client_id": "113003982145951280521"
 };
-
-const QIKINK_CLIENT_ID = "838713226730904";
-const QIKINK_CLIENT_SECRET = "3266203b361fc45dd134292b6ce3ab07c41473b3ba0395df9ea5cf833ed39f62";
 
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
 const TELEGRAM_CHAT_ID = "7503426190";
 
-const FCM_VAPID_KEY = "BA7poRJir-3cFNAcjMBz14aheIqPR1zEaa1FHIVz2d-nPPPHviwAFrvyZNBqJRyX31a9UCODEVDDHu1nh0Lffdc";
-const ONESIGNAL_APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
-
-// Helper Functions
 const load = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb; } catch { return fb; } };
 const save = (k, v) => { localStorage.setItem(k, JSON.stringify(v)); };
 const $ = (id) => { return document.getElementById(id); };
@@ -43,6 +30,7 @@ let mainCategories = [];
 let products = [];
 let shops = [];
 let homeBanners = [];
+let shortsData = []; // NEW: Array for shorts/reels
 let likes = load("knk_likes", []); 
 let currentCheckoutItem = null;    
 let activeMainCatId = null;
@@ -66,12 +54,7 @@ window.setAppTheme = function(t) {
 }
 setAppTheme(currentTheme);
 
-function getProfileKey() {
-  const user = window.fbAuth ? window.fbAuth.currentUser : null;
-  return user ? "knk_profile_pic_" + user.uid : "knk_profile_pic_guest";
-}
-
-const genId = () => { return "cat_" + Date.now() + Math.floor(Math.random() * 1000); };
+const genId = () => { return "id_" + Date.now() + Math.floor(Math.random() * 1000); };
 const finalPrice = (p) => { return Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0)); };
 const getCat = (id) => { return mainCategories.find((c) => c.id === id); };
 
@@ -97,44 +80,16 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
-window.updateBannersFromFirebase = function (fetchedBanners) {
-    homeBanners = fetchedBanners || [];
-    renderHomeBanners();
-    if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
-}
-window.updateShopsFromFirebase = function (fetchedShops) {
-  shops = fetchedShops || [];
-  renderShopsPage();
-  if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
-};
-window.updateCategoriesFromFirebase = function (cats) {
-  mainCategories = cats || [];
-  renderMainCats(); renderProducts();
-  if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
-};
-window.updateProductsFromFirebase = function (fbProducts) {
-  products = fbProducts;
-  renderProducts();
-  if (!$("adminPanel").classList.contains("hidden")) renderAdmin();
-};
+// Update data from Firebase
+window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fetchedBanners || []; renderHomeBanners(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); }
+window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; renderShopsPage(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
+window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
+window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
+window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 
 window.addEventListener("DOMContentLoaded", () => {
-  // Directly start the app without login screen
-  if (!isAppInitialized) { 
-      showSplashAndStart(); 
-      isAppInitialized = true; 
-  }
-
-  // Handle auto-login session persistence silently
-  if (window.onAuthStateChanged && window.fbAuth) {
-    window.onAuthStateChanged(window.fbAuth, (user) => {
-      if (user) {
-        renderProfile();
-        if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
-      }
-    });
-  }
-
+  if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
+  
   if ($("addCatBtn")) {
       $("addCatBtn").onclick = () => {
           const n = $("newCatName").value.trim().toUpperCase();
@@ -225,28 +180,29 @@ async function showSplashAndStart() {
   }, 400);
 }
 
-if ($("googleLoginBtn")) { $("googleLoginBtn").onclick = () => { const provider = new window.GoogleAuthProvider(); window.signInWithPopup(window.fbAuth, provider).catch((error) => { alert("Login failed: " + error.message); }); }; }
-if ($("profileLogoutBtn")) { $("profileLogoutBtn").onclick = () => { if (confirm("Are you sure you want to logout?")) { window.signOut(window.fbAuth).then(() => { window.location.reload(); }); } }; }
-
+// ----------------------------------------------------
+// NEW: NAVIGATION SWITCH (Includes Shorts logic)
+// ----------------------------------------------------
 window.switchNav = function (tab) {
   document.querySelectorAll('.nav-item').forEach((el) => { el.classList.remove('active'); });
-  if ($("nav" + tab)) $("nav" + tab).classList.add("active"); else if (tab === 'Contact' || tab === 'ReturnPolicy' || tab === 'HowToReturn' || tab === 'PrivacyPolicy') $("navProfile").classList.add("active"); 
+  if ($("nav" + tab)) $("nav" + tab).classList.add("active"); 
   if (tab === 'Order') $("navOrderWrap").classList.add("active"); else $("navOrderWrap").classList.remove("active");
 
-  ["homeContent", "newPage", "shopsPage", "contactPage", "orderPage", "likesPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage"].forEach(id => {
+  ["homeContent", "newPage", "shortsPage", "orderPage", "likesPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
+  // Humesha Shorts ke video roko jab dusre tab me jao
+  if(tab !== 'Shorts' && $("shortsContainer")) {
+      $("shortsContainer").innerHTML = ""; 
+  }
+
   if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
-  if (tab === 'Shops') { if($("shopsPage")) $("shopsPage").classList.remove("hidden"); }
-  if (tab === 'Contact') { $("contactPage").classList.remove("hidden"); }
-  if (tab === 'ReturnPolicy') { $("returnPolicyPage").classList.remove("hidden"); }
-  if (tab === 'HowToReturn') { $("howToReturnPage").classList.remove("hidden"); }
-  if (tab === 'PrivacyPolicy') { $("privacyPolicyPage").classList.remove("hidden"); }
+  if (tab === 'Shorts') { $("shortsPage").classList.remove("hidden"); renderShortsPage(); } // Call Shorts render
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
   if (tab === 'Likes') { $("likesPage").classList.remove("hidden"); renderLikesPageTab(); }
-  if (tab === 'Profile') { $("profilePage").classList.remove("hidden"); renderProfile(); }
+  
   window.scrollTo(0, 0);
 };
 
@@ -256,6 +212,66 @@ window.clearShopFilterAndGoHome = function() {
     switchNav('Home'); 
 }
 
+// ----------------------------------------------------
+// NEW: SHORTS PAGE RENDERING LOGIC
+// ----------------------------------------------------
+function renderShortsPage() {
+    const container = $("shortsContainer");
+    if(!container) return;
+    
+    container.innerHTML = "";
+    if(shortsData.length === 0) {
+        container.innerHTML = "<p class='empty' style='color:#fff; text-align:center; margin-top:50px;'>No reels or shorts added yet.</p>";
+        return;
+    }
+
+    shortsData.forEach(s => {
+        const p = products.find(x => x.id === s.productId);
+        if(!p) return; // Skip if linked product is deleted
+
+        let embedUrl = s.url.trim();
+
+        // Auto-Convert YouTube URL to Embed format
+        if(embedUrl.includes("youtube.com/shorts/")) {
+            embedUrl = embedUrl.replace("youtube.com/shorts/", "youtube.com/embed/") + "?autoplay=0&loop=1&controls=0";
+        } else if(embedUrl.includes("youtu.be/")) {
+            embedUrl = embedUrl.replace("youtu.be/", "youtube.com/embed/") + "?autoplay=0&loop=1&controls=0";
+        } else if(embedUrl.includes("youtube.com/watch?v=")) {
+            embedUrl = embedUrl.replace("watch?v=", "embed/") + "?autoplay=0&loop=1&controls=0";
+        }
+
+        // Auto-Convert Instagram URL to Embed format
+        if(embedUrl.includes("instagram.com/reel/") || embedUrl.includes("instagram.com/p/")) {
+            embedUrl = embedUrl.split("?")[0]; // Remove extra tracking params
+            if(!embedUrl.endsWith("/")) embedUrl += "/";
+            embedUrl += "embed";
+        }
+
+        const price = finalPrice(p);
+        const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "short-video-wrapper";
+        wrapper.innerHTML = `
+            <iframe src="${embedUrl}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            
+            <div class="short-buy-card">
+                <img src="${mainImg}" class="short-buy-img" alt="${p.name}">
+                <div class="short-buy-info">
+                    <div class="short-buy-title">${p.name}</div>
+                    <div class="short-buy-price">₹${price}</div>
+                </div>
+                <!-- DIRECTLY OPENS PRODUCT PAGE -->
+                <button class="short-buy-btn" onclick="openProductDetailById('${p.id}')">Buy Now</button>
+            </div>
+        `;
+        container.appendChild(wrapper);
+    });
+}
+
+// ----------------------------------------------------
+// BANNERS, PRODUCTS, CATS (Standard logic)
+// ----------------------------------------------------
 function renderHomeBanners() {
     const wrap = $("homeBannersWrap"); const slider = $("homeBannersSlider");
     if(!wrap || !slider) return;
@@ -281,232 +297,12 @@ function initBannerAutoScroll() {
     }, 3000);
 }
 
-function renderShopsGrid() {
-    const grid = $("shopsGrid"); const cityFilterEl = $("shopCityFilter"); const typeFilterEl = $("shopTypeFilter");
-    if(!grid || !cityFilterEl || !typeFilterEl) return;
-    grid.innerHTML = ""; const cityVal = cityFilterEl.value; const typeVal = typeFilterEl.value; let list = shops;
-    
-    if(cityVal !== "ALL") list = list.filter(s => s.city === cityVal);
-    if(typeVal !== "ALL") list = list.filter(s => s.type === typeVal);
-    
-    if(list.length === 0) { grid.innerHTML = "<p class='empty' style='grid-column:1/-1;'>No shops found for this selection.</p>"; return; }
-
-    list.forEach(s => {
-        const div = document.createElement("div"); div.className = "shop-card";
-        div.innerHTML = `<img src="${s.logo || 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png'}" alt="${s.name}" loading="lazy"><h3>${s.name}</h3>`;
-        div.onclick = () => {
-            activeShopId = s.id; activeMainCatId = null;
-            switchNav('Home'); renderMainCats(); renderProducts();
-        };
-        grid.appendChild(div);
-    });
-}
-
-function renderShopsPage() {
-    const cityFilterEl = $("shopCityFilter"); const typeFilterEl = $("shopTypeFilter");
-    if(!cityFilterEl || !typeFilterEl) return;
-    
-    const currentCity = cityFilterEl.value || "ALL"; const currentType = typeFilterEl.value || "ALL";
-    const uniqueCities = [...new Set(shops.map(s => s.city).filter(Boolean))]; const uniqueTypes = [...new Set(shops.map(s => s.type).filter(Boolean))];
-    
-    cityFilterEl.innerHTML = '<option value="ALL">All Cities</option>';
-    uniqueCities.forEach(c => { const opt = document.createElement("option"); opt.value = c; opt.textContent = c; if(c === currentCity) opt.selected = true; cityFilterEl.appendChild(opt); });
-    
-    typeFilterEl.innerHTML = '<option value="ALL">All Types</option>';
-    uniqueTypes.forEach(t => { const opt = document.createElement("option"); opt.value = t; opt.textContent = t; if(t === currentType) opt.selected = true; typeFilterEl.appendChild(opt); });
-    
-    cityFilterEl.onchange = () => { renderShopsGrid(); }; typeFilterEl.onchange = () => { renderShopsGrid(); };
-    renderShopsGrid();
-}
-
-window.renderMyOrders = function() {
-  const list = $("myOrdersList"); const user = window.fbAuth ? window.fbAuth.currentUser : null;
-  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@genzstore.com", "");
-  let displayOrders = [];
-  if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) { displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile); } 
-  else { displayOrders = load("knk_my_orders_" + userEmail, []); }
-  
-  if (!displayOrders || displayOrders.length === 0) { list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted); font-size:13px;">Aapne abhi tak koi order place nahi kiya hai.</div>`; return; }
-
-  let html = "";
-  displayOrders.forEach((o) => {
-    const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleDateString() : new Date(o.savedAt || Date.now()).toLocaleDateString();
-    let thumb = "placeholder.jpg";
-    if (o.items && o.items.length > 0) { const pImg = o.items[0].product.image; thumb = Array.isArray(pImg) ? pImg[0] : pImg; }
-    let statusDisplay = o.status || 'Recent';
-
-    html += `
-    <div class="mo-card" onclick="pushModalState(); openMyOrderModal('${o.id || o.savedAt}')">
-      <div class="mo-head">
-        <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
-        <span class="mo-status">${statusDisplay}</span>
-      </div>
-      <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
-         <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
-         <div style="flex:1;">
-           <strong style="color:var(--fg); font-size:13px;">Date: ${dateStr}</strong><br>
-           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Tap to view details</span>
-         </div>
-      </div>
-    </div>`;
-  });
-  list.innerHTML = html;
-}
-
-window.openMyOrderModal = function (idStr) {
-  let allSrc = window.allFirebaseOrders || []; const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
-  if(allSrc.length === 0) allSrc = load("knk_my_orders_" + userEmail, []);
-  const o = allSrc.find((x) => (x.id && x.id === idStr) || (x.savedAt && x.savedAt.toString() === idStr.toString()));
-  if (!o) return;
-
-  let itemsHtml = o.items.map((i) => {
-    const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
-    const actual = i.product.price * i.qty; const finalP = finalPrice(i.product) * i.qty;
-    const sizeDisplay = i.size && i.size !== "Default" ? `<div style="font-size:11px; color:var(--primary); font-weight:700;">Size: ${i.size}</div>` : '';
-    return `
-    <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border2); padding-bottom:12px;">
-       <img src="${img}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
-       <div>
-          <div style="font-weight:600; font-size:13px; color:var(--fg);">${i.product.name}</div>
-          <div style="font-size:12px; color:var(--muted2);">Qty: ${i.qty} Unit(s)</div>
-          ${sizeDisplay}
-          <div style="font-size:13px; margin-top:4px;">
-            <span style="text-decoration:line-through; color:var(--muted); font-size:11px;">₹${actual}</span>
-            <strong style="color:var(--primary); margin-left:6px;">₹${finalP}</strong>
-          </div>
-       </div>
-    </div>`;
-  }).join("");
-
-  const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : new Date(o.savedAt || Date.now()).toLocaleString();
-  const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
-
-  $("myOrderDetailBody").innerHTML = `
-    <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
-       <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Order Status: ${o.status || 'Recent'}</div>
-       <div style="font-size:12px; color:var(--muted2);">Order Date: ${dateStr}</div>
-       <div style="font-size:12px; color:var(--muted2); margin-top:4px;">Payment: ${payMode}</div>
-    </div>
-    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Items Details</h3>
-    ${itemsHtml}
-    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Delivery Address</h3>
-    <div style="font-size:13px; color:var(--muted); line-height:1.5; background:var(--bg2); padding:10px; border-radius:8px;">
-       <strong style="color:var(--fg);">${o.name}</strong> (${o.mobile})<br>
-       ${o.address}<br>
-       ${o.landmark ? o.landmark + '<br>' : ''}
-       ${o.state} - ${o.pincode}
-    </div>
-    <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
-       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
-       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Balance Due (COD):</span> <span style="color:var(--destructive);">₹${o.balanceDue}</span></div>
-       <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:16px; font-weight:700; color:var(--primary);"><span>Total Amount:</span> <span>₹${o.totalAmount}</span></div>
-    </div>
-  `;
-  $("myOrderDetailModal").classList.remove("hidden"); lockScroll();
-};
-
-window.toggleLike = function(pid) {
-    const p = products.find(x => x.id === pid);
-    if(!p) return;
-    const idx = likes.findIndex(l => l.id === pid);
-    if(idx > -1) { likes.splice(idx, 1); } 
-    else { likes.push(p); }
-    save("knk_likes", likes);
-    renderLikesCount();
-    renderProducts(); 
-    if($("newPage") && !$("newPage").classList.contains("hidden")) renderNewCollection();
-    if($("likesPage") && !$("likesPage").classList.contains("hidden")) renderLikesPageTab();
-}
-
-function renderLikesCount() {
-  const b = $("navLikesCount");
-  if (b) { b.textContent = likes.length; b.classList.toggle("hidden", likes.length === 0); }
-}
-
-function renderLikesPageTab() {
-  const body = $("likesPageItems");
-  if(!body) return;
-  if (!likes.length) { body.innerHTML = '<p class="empty" style="padding:40px 0;">Aapne abhi tak koi product Like nahi kiya hai.</p>'; return; }
-  body.innerHTML = "";
-  likes.forEach((p) => {
-    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
-    const el = document.createElement("div"); 
-    el.className = "cart-item"; 
-    el.style.cursor = "pointer";
-    el.innerHTML = `
-      <img src="${mainImg}" alt="${p.name}" />
-      <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
-      <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
-    `;
-    el.onclick = () => { openProductDetail(p); }; 
-    body.appendChild(el);
-  });
-}
-
-function renderProfile() {
-  const user = window.fbAuth ? window.fbAuth.currentUser : null;
-  const displayObj = $("profileDisplayId"); const nameObj = $("profileDisplayName"); const imgObj = $("profileImg");
-  const savedPic = localStorage.getItem(getProfileKey());
-
-  if (user) {
-    let email = user.email || ""; displayObj.textContent = email.includes("@genzstore.com") ? "+91 " + email.replace("@genzstore.com", "") : email;
-    nameObj.textContent = user.displayName || "Elite Member"; imgObj.src = savedPic ? savedPic : (user.photoURL || "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png");
-  } else {
-    displayObj.textContent = "Guest Access"; nameObj.textContent = "Welcome Guest"; imgObj.src = savedPic ? savedPic : "https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png";
-  }
-
-  if (imgObj && !imgObj.dataset.listenerAttached) {
-    imgObj.dataset.listenerAttached = "true"; let profileTapCount = 0; let profileTapTimer = null;
-    imgObj.addEventListener("click", (e) => {
-      e.stopPropagation(); profileTapCount++;
-      if (profileTapTimer) clearTimeout(profileTapTimer);
-      if (profileTapCount >= 10) { profileTapCount = 0; pushModalState(); openPin(); return; }
-      profileTapTimer = setTimeout(() => { profileTapCount = 0; }, 3000);
-    });
-  }
-}
-
-if ($("editProfileBtn")) {
-  $("editProfileBtn").onclick = async () => {
-    const user = window.fbAuth ? window.fbAuth.currentUser : null; if (!user) return alert("Please buy a product or wait to edit profile!");
-    const newName = prompt("Enter your Name:", user.displayName || "");
-    if (newName !== null && newName.trim() !== "") {
-      const btn = $("editProfileBtn"); const originalHtml = btn.innerHTML; btn.textContent = "Saving..."; btn.disabled = true;
-      await window.updateProfile(user, { displayName: newName.trim() });
-      btn.innerHTML = originalHtml; btn.disabled = false; renderProfile();
-    }
-  };
-}
-
-if ($("profilePicInput")) {
-  $("profilePicInput").onchange = function (e) {
-    const file = e.target.files[0]; if (!file) return;
-    $("profileImg").style.opacity = "0.5"; const reader = new FileReader();
-    reader.onload = function (event) {
-      const img = new Image();
-      img.onload = function () {
-        const canvas = document.createElement("canvas"); let width = img.width; let height = img.height; const MAX_SIZE = 250;
-        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
-        else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext("2d"); ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
-        try { localStorage.setItem(getProfileKey(), dataUrl); $("profileImg").src = dataUrl; $("profileImg").style.opacity = "1";
-          const user = window.fbAuth ? window.fbAuth.currentUser : null;
-          if (user && !user.email.includes("@genzstore.com")) window.updateProfile(user, { photoURL: dataUrl });
-        } catch (err) { alert("Quota full!"); $("profileImg").style.opacity = "1"; }
-      }; img.src = event.target.result;
-    }; reader.readAsDataURL(file);
-  };
-}
-
 $("logoBtn").onclick = () => { clearShopFilterAndGoHome(); };
 
 function renderMainCats() {
   const wrapDiv = $("mainCatsWrap"); const wrap = $("mainCats"); 
   if(!wrapDiv || !wrap) return;
   wrap.innerHTML = "";
-  
   let visibleCats = mainCategories;
   if(visibleCats.length === 0) { wrapDiv.classList.add("hidden"); return; }
   
@@ -533,16 +329,20 @@ function searchMatches(p, q) {
 }
 
 let searchDebounce = null;
-$("searchInput").addEventListener("input", function () {
-  const v = this.value.trim(); $("searchClear").classList.toggle("hidden", !v);
-  clearTimeout(searchDebounce);
-  searchDebounce = setTimeout(() => { searchQuery = v; renderMainCats(); renderProducts(); }, 120);
-});
+if($("searchInput")) {
+  $("searchInput").addEventListener("input", function () {
+    const v = this.value.trim(); $("searchClear").classList.toggle("hidden", !v);
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => { searchQuery = v; renderMainCats(); renderProducts(); }, 120);
+  });
+}
 
-$("searchClear").addEventListener("click", () => {
-  $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = "";
-  renderMainCats(); renderProducts(); $("searchInput").focus();
-});
+if($("searchClear")) {
+  $("searchClear").addEventListener("click", () => {
+    $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = "";
+    renderMainCats(); renderProducts(); $("searchInput").focus();
+  });
+}
 
 function renderProducts() {
   const title = $("activeTitle"); let list = products;
@@ -564,6 +364,7 @@ function renderProducts() {
   if (activeShopId) $("activeShopBanner").classList.add("hidden"); else $("activeShopBanner").classList.add("hidden");
 
   const grid = $("products");
+  if(!grid) return;
   if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
   grid.innerHTML = "";
 
@@ -604,7 +405,6 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    // 🔥 TIMELINE SORTING (Newest products at the top)
     const sorted = [...products].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
     
     sorted.forEach(p => {
@@ -799,6 +599,9 @@ function buildHorizSection(title, list) {
   section.appendChild(row); return section;
 }
 
+// ----------------------------------------------------
+// CHECKOUT & PAYMENTS
+// ----------------------------------------------------
 let currentDynamicUpi = "genzstore@nyes";
 
 if ($("chkUtr")) { $("chkUtr").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12); }; }
@@ -1053,26 +856,22 @@ $("confirmOrderBtn").onclick = async () => {
 
   if (window.paymentInterval) clearInterval(window.paymentInterval);
 
-  // --- AUTOMATIC BACKGROUND AUTHENTICATION ---
   const chkMobile = $("chkMobile").value.trim();
   const autoEmail = chkMobile + "@genzstore.com";
   const autoPass = "genzstore" + chkMobile;
 
   try {
-      await window.signInWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
+      if(window.signInWithEmailAndPassword && window.fbAuth) { await window.signInWithEmailAndPassword(window.fbAuth, autoEmail, autoPass); }
   } catch(e) {
       try {
-          await window.createUserWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
-          if(window.fbAuth.currentUser) {
-              await window.updateProfile(window.fbAuth.currentUser, { displayName: $("chkName").value.trim() });
+          if(window.createUserWithEmailAndPassword && window.fbAuth) {
+             await window.createUserWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
+             if(window.fbAuth.currentUser) { await window.updateProfile(window.fbAuth.currentUser, { displayName: $("chkName").value.trim() }); }
           }
-      } catch(err2) {
-          console.log("Auto auth creation failed", err2);
-      }
+      } catch(err2) { console.log("Auto auth creation failed", err2); }
   }
   
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : autoEmail;
-  // -------------------------------------------
 
   let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
   if (currentCheckoutItem.product.shopId) {
@@ -1113,6 +912,136 @@ function showStep3Success(payMethod, paid, due) {
 
 $("successCloseBtn").onclick = () => { history.back(); };
 
+// ----------------------------------------------------
+// MY ORDERS & LIKES
+// ----------------------------------------------------
+window.renderMyOrders = function() {
+  const list = $("myOrdersList"); const user = window.fbAuth ? window.fbAuth.currentUser : null;
+  const userEmail = user ? user.email : "guest"; const userMobile = userEmail.replace("@genzstore.com", "");
+  let displayOrders = [];
+  if (window.allFirebaseOrders && window.allFirebaseOrders.length > 0) { displayOrders = window.allFirebaseOrders.filter(o => o.userEmail === userEmail || o.mobile === userMobile); } 
+  else { displayOrders = load("knk_my_orders_" + userEmail, []); }
+  
+  if (!displayOrders || displayOrders.length === 0) { list.innerHTML = `<div style="text-align:center; padding:40px 10px; color:var(--muted); font-size:13px;">Aapne abhi tak koi order place nahi kiya hai.</div>`; return; }
+
+  let html = "";
+  displayOrders.forEach((o) => {
+    const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleDateString() : new Date(o.savedAt || Date.now()).toLocaleDateString();
+    let thumb = "placeholder.jpg";
+    if (o.items && o.items.length > 0) { const pImg = o.items[0].product.image; thumb = Array.isArray(pImg) ? pImg[0] : pImg; }
+    let statusDisplay = o.status || 'Recent';
+
+    html += `
+    <div class="mo-card" onclick="pushModalState(); openMyOrderModal('${o.id || o.savedAt}')">
+      <div class="mo-head">
+        <span style="font-weight:700; color:var(--primary); font-size:15px;">₹${o.totalAmount}</span>
+        <span class="mo-status">${statusDisplay}</span>
+      </div>
+      <div class="mo-body" style="display:flex; gap:12px; align-items:center;">
+         <img src="${thumb}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
+         <div style="flex:1;">
+           <strong style="color:var(--fg); font-size:13px;">Date: ${dateStr}</strong><br>
+           <span style="color:var(--primary); font-size:12px; font-weight:600;">${o.items.length} Item(s) • Tap to view details</span>
+         </div>
+      </div>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+window.openMyOrderModal = function (idStr) {
+  let allSrc = window.allFirebaseOrders || []; const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
+  if(allSrc.length === 0) allSrc = load("knk_my_orders_" + userEmail, []);
+  const o = allSrc.find((x) => (x.id && x.id === idStr) || (x.savedAt && x.savedAt.toString() === idStr.toString()));
+  if (!o) return;
+
+  let itemsHtml = o.items.map((i) => {
+    const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
+    const actual = i.product.price * i.qty; const finalP = finalPrice(i.product) * i.qty;
+    const sizeDisplay = i.size && i.size !== "Default" ? `<div style="font-size:11px; color:var(--primary); font-weight:700;">Size: ${i.size}</div>` : '';
+    return `
+    <div style="display:flex; gap:10px; margin-bottom:12px; border-bottom:1px solid var(--border2); padding-bottom:12px;">
+       <img src="${img}" style="width:60px; height:60px; border-radius:8px; object-fit:cover;">
+       <div>
+          <div style="font-weight:600; font-size:13px; color:var(--fg);">${i.product.name}</div>
+          <div style="font-size:12px; color:var(--muted2);">Qty: ${i.qty} Unit(s)</div>
+          ${sizeDisplay}
+          <div style="font-size:13px; margin-top:4px;">
+            <span style="text-decoration:line-through; color:var(--muted); font-size:11px;">₹${actual}</span>
+            <strong style="color:var(--primary); margin-left:6px;">₹${finalP}</strong>
+          </div>
+       </div>
+    </div>`;
+  }).join("");
+
+  const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : new Date(o.savedAt || Date.now()).toLocaleString();
+  const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
+
+  $("myOrderDetailBody").innerHTML = `
+    <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
+       <div style="color:var(--primary); font-weight:700; margin-bottom:6px; font-size:14px;">Order Status: ${o.status || 'Recent'}</div>
+       <div style="font-size:12px; color:var(--muted2);">Order Date: ${dateStr}</div>
+       <div style="font-size:12px; color:var(--muted2); margin-top:4px;">Payment: ${payMode}</div>
+    </div>
+    <h3 style="font-size:14px; margin-bottom:10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Items Details</h3>
+    ${itemsHtml}
+    <h3 style="font-size:14px; margin:15px 0 10px; color:var(--fg); font-family:var(--font-body); font-weight:600;">Delivery Address</h3>
+    <div style="font-size:13px; color:var(--muted); line-height:1.5; background:var(--bg2); padding:10px; border-radius:8px;">
+       <strong style="color:var(--fg);">${o.name}</strong> (${o.mobile})<br>
+       ${o.address}<br>
+       ${o.landmark ? o.landmark + '<br>' : ''}
+       ${o.state} - ${o.pincode}
+    </div>
+    <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
+       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
+       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Balance Due (COD):</span> <span style="color:var(--destructive);">₹${o.balanceDue}</span></div>
+       <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:16px; font-weight:700; color:var(--primary);"><span>Total Amount:</span> <span>₹${o.totalAmount}</span></div>
+    </div>
+  `;
+  $("myOrderDetailModal").classList.remove("hidden"); lockScroll();
+};
+
+window.toggleLike = function(pid) {
+    const p = products.find(x => x.id === pid);
+    if(!p) return;
+    const idx = likes.findIndex(l => l.id === pid);
+    if(idx > -1) { likes.splice(idx, 1); } 
+    else { likes.push(p); }
+    save("knk_likes", likes);
+    renderLikesCount();
+    renderProducts(); 
+    if($("newPage") && !$("newPage").classList.contains("hidden")) renderNewCollection();
+    if($("likesPage") && !$("likesPage").classList.contains("hidden")) renderLikesPageTab();
+}
+
+function renderLikesCount() {
+  const b = $("navLikesCount");
+  if (b) { b.textContent = likes.length; b.classList.toggle("hidden", likes.length === 0); }
+}
+
+function renderLikesPageTab() {
+  const body = $("likesPageItems");
+  if(!body) return;
+  if (!likes.length) { body.innerHTML = '<p class="empty" style="padding:40px 0;">Aapne abhi tak koi product Like nahi kiya hai.</p>'; return; }
+  body.innerHTML = "";
+  likes.forEach((p) => {
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+    const el = document.createElement("div"); 
+    el.className = "cart-item"; 
+    el.style.cursor = "pointer";
+    el.innerHTML = `
+      <img src="${mainImg}" alt="${p.name}" />
+      <div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div>
+      <button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>
+    `;
+    el.onclick = () => { openProductDetail(p); }; 
+    body.appendChild(el);
+  });
+}
+
+// ----------------------------------------------------
+// ADMIN PANELS
+// ----------------------------------------------------
 function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); setTimeout(() => $("pinInput").focus(), 100); }
 $("pinClose").onclick = () => { history.back(); };
 $("pinUnlock").onclick = tryUnlock;
@@ -1141,6 +1070,7 @@ function trySuperUnlock() {
         $("tabShopsBtn").classList.remove("hidden");
         $("tabOrdersBtn").classList.remove("hidden");
         $("tabCatsBtn").classList.remove("hidden");
+        $("tabShortsBtn").classList.remove("hidden");
         $("tabSettingsBtn").classList.remove("hidden");
         if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.remove("hidden"); }
     } else {
@@ -1155,6 +1085,7 @@ function openAdminAsVendor() {
   $("tabShopsBtn").classList.add("hidden");
   $("tabOrdersBtn").classList.add("hidden");
   $("tabCatsBtn").classList.add("hidden");
+  $("tabShortsBtn").classList.add("hidden");
   $("tabSettingsBtn").classList.add("hidden");
   if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
   document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
@@ -1169,11 +1100,27 @@ $("adminClose").onclick = () => {
     $("tabShopsBtn").classList.add("hidden");
     $("tabOrdersBtn").classList.add("hidden");
     $("tabCatsBtn").classList.add("hidden");
+    $("tabShortsBtn").classList.add("hidden");
     $("tabSettingsBtn").classList.add("hidden");
     if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
 };
 
 function saveCategories() { if (window.saveCategoriesToFirebase) { window.saveCategoriesToFirebase(mainCategories); } }
+
+// NEW: ADD SHORT LOGIC
+if ($("addShortBtn")) {
+    $("addShortBtn").onclick = async () => {
+        const url = $("newShortUrl").value.trim(); 
+        const pid = $("newShortProductId").value.trim();
+        if(!url || !pid) return alert("Video URL aur Product ID dono zaroori hain!");
+        $("addShortBtn").textContent = "Adding...";
+        const newShort = { id: genId(), url: url, productId: pid }; 
+        shortsData.push(newShort);
+        if(window.saveShortsToFirebase) await window.saveShortsToFirebase(shortsData);
+        $("newShortUrl").value = ""; $("newShortProductId").value = "";
+        renderAdmin(); alert("Short Video Add Ho Gaya!"); $("addShortBtn").textContent = "+ Add Short Video";
+    };
+}
 
 if ($("addBannerBtn")) {
     $("addBannerBtn").onclick = async () => {
@@ -1206,7 +1153,7 @@ if ($("addShopBtn")) {
                 alert("Nai Dukaan Add Ho Gayi!");
             }
             $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true; if($("newShopFullCodStatus")) $("newShopFullCodStatus").checked = false;
-            editingShopId = null; $("addShopBtn").textContent = "+ Add Shop"; renderAdmin(); renderShopsPage();
+            editingShopId = null; $("addShopBtn").textContent = "+ Add Shop"; renderAdmin(); 
         } catch(e) { console.error(e); alert("Error in shop operation!"); $("addShopBtn").textContent = "+ Add Shop"; }
     };
 }
@@ -1224,7 +1171,7 @@ if ($("saveEditShopBtn")) {
                 await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
                 const idx = shops.findIndex(s => s.id === editingShopId);
                 if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
-                renderAdmin(); renderShopsPage();
+                renderAdmin(); 
             }
         } catch(e) {}
         $("editShopModal").classList.add("hidden"); editingShopId = null; $("saveEditShopBtn").textContent = "Save Shop";
@@ -1325,7 +1272,34 @@ window.renderAdmin = function () {
   const blist = $("adminBannersList");
   if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
   const slist = $("adminShopsList");
-  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
+  if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); renderAdmin(); } } }; slist.appendChild(d); }); }
+  
+  // Render Shorts in Admin
+  const shortList = $("adminShortsList");
+  if(shortList) { 
+      shortList.innerHTML = ""; 
+      shortsData.forEach(sh => { 
+          const d = document.createElement("div"); 
+          d.className = "admin-prod"; 
+          d.innerHTML = `
+              <div class="ap-info">
+                  <div class="ap-name" style="font-size:12px;">URL: ${sh.url}</div>
+                  <div class="ap-sub" style="color:var(--primary); font-size:10px;">Linked Product: ${sh.productId}</div>
+              </div>
+              <div class="ap-actions">
+                  <button class="trash del-short" data-id="${sh.id}">🗑️</button>
+              </div>`; 
+          d.querySelector('.del-short').onclick = async () => { 
+              if(confirm("Delete this Short?")) { 
+                  shortsData = shortsData.filter(x => x.id !== sh.id); 
+                  if(window.saveShortsToFirebase) await window.saveShortsToFirebase(shortsData); 
+                  renderAdmin(); 
+              } 
+          }; 
+          shortList.appendChild(d); 
+      }); 
+  }
+
   renderAdminProducts();
   if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { alert("PIN change option is securely hardcoded to 0000 for elite security."); }; }
   if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
@@ -1365,65 +1339,3 @@ if ($("saveEditBtn")) {
 $("closeViewerBtn").onclick = () => { history.back(); };
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
 preventZoom(); renderLikesCount();
-
-// --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
-if ($("sendNotifBtn")) {
-    if ($("fcmServerKey")) {
-        $("fcmServerKey").style.display = 'none';
-    }
-
-    $("sendNotifBtn").onclick = async () => {
-        const t = $("notifTitle").value.trim(); 
-        const b = $("notifBody").value.trim(); 
-        const i = $("notifImage").value.trim();
-        
-        if (!t || !b) return alert("Title aur Message zaroori hai!");
-        $("sendNotifBtn").textContent = "Sending...";
-
-        const ONESIGNAL_REST_API_KEY = "Os_v2_app_qdouupm7nzgedeh6zj7rp2k6izhafxu7gxfeeufqk4tjinp6wji5xgazkbefoksqizklpsrdkp4aro634o7rbj4iierkcx5wtz42aha";
-        const APP_ID = "80dd4a3d-9f6e-4c41-90fe-ca7f17e95e46";
-
-        const payload = {
-            app_id: APP_ID,
-            included_segments: ["Subscribed Users"], 
-            headings: { "en": t },
-            contents: { "en": b }
-        };
-
-        if (i) {
-            payload.big_picture = i; 
-            payload.chrome_web_image = i; 
-        }
-
-        try {
-            const targetUrl = "https://onesignal.com/api/v1/notifications";
-            const proxyUrl = "https://thingproxy.freeboard.io/fetch/" + targetUrl;
-
-            const response = await fetch(proxyUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Basic " + ONESIGNAL_REST_API_KEY
-                },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.id) {
-                alert("OneSignal Notification Sent Successfully! 🚀");
-                $("notifTitle").value = ""; 
-                $("notifBody").value = ""; 
-                $("notifImage").value = "";
-            } else {
-                console.error("OneSignal Error:", data);
-                alert("Error: " + JSON.stringify(data));
-            }
-        } catch(e) { 
-            console.error(e); 
-            alert("Proxy Error: " + e.message + "\n\nBhai free proxy block kar raha hai. Abhi ke liye OneSignal Dashboard se bhej lo."); 
-        }
-        
-        $("sendNotifBtn").textContent = "Send Notification";
-    };
-}
