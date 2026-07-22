@@ -43,7 +43,6 @@ let mainCategories = [];
 let products = [];
 let shops = [];
 let homeBanners = [];
-let reelsList = []; // Array for storing Reels
 let likes = load("knk_likes", []); 
 let currentCheckoutItem = null;    
 let activeMainCatId = null;
@@ -54,7 +53,6 @@ let searchQuery = "";
 let currentDetailProduct = null;
 let currentSelectedSize = null; 
 let isAppInitialized = false;
-let runtimeSkipped = false;
 let activeAdminOrderTab = "Recent";
 let bannerScrollInterval = null;
 
@@ -99,15 +97,6 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
-function requireLogin(callback) {
-  if (window.fbAuth && window.fbAuth.currentUser) { callback(); } 
-  else {
-    alert("Order aage badhane ke liye kripya Login ya Register karein!");
-    runtimeSkipped = false;
-    $("app").classList.add("hidden"); $("prodDetail").classList.add("hidden"); $("authScreen").classList.remove("hidden");
-  }
-}
-
 window.updateBannersFromFirebase = function (fetchedBanners) {
     homeBanners = fetchedBanners || [];
     renderHomeBanners();
@@ -130,83 +119,19 @@ window.updateProductsFromFirebase = function (fbProducts) {
 };
 
 window.addEventListener("DOMContentLoaded", () => {
-  // --- DYNAMIC REELS UI INJECTION (Starts Here) ---
-  // Ye block bina HTML file ko change kiye Reels ki puri UI create kar dega
-  if (!$("reelsPage")) {
-      const reelsHtml = `<div id="reelsPage" class="nav-page hidden" style="padding:0; height:calc(100vh - 65px); background:#000; overflow:hidden;">
-          <div id="reelsContainer" style="height:100%; width:100%; overflow-y:scroll; scroll-snap-type:y mandatory; scrollbar-width:none;"></div>
-      </div>`;
-      if($("mainAppContent")) $("mainAppContent").insertAdjacentHTML('beforeend', reelsHtml);
-
-      const navReelsHtml = `<button class="nav-item" id="navReels" onclick="switchNav('Reels')">
-          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
-              <line x1="7" y1="2" x2="7" y2="22"></line>
-              <line x1="17" y1="2" x2="17" y2="22"></line>
-              <line x1="2" y1="12" x2="22" y2="12"></line>
-              <line x1="2" y1="7" x2="7" y2="7"></line>
-              <line x1="2" y1="17" x2="7" y2="17"></line>
-              <line x1="17" y1="17" x2="22" y2="17"></line>
-              <line x1="17" y1="7" x2="22" y2="7"></line>
-          </svg>
-          <span class="nav-text">Reels</span>
-      </button>`;
-      const navProfile = $("navProfile");
-      const bottomNav = document.querySelector(".bottom-nav");
-      if(navProfile && bottomNav) {
-         bottomNav.insertBefore(document.createRange().createContextualFragment(navReelsHtml), navProfile);
-      }
+  // Directly start the app without login screen
+  if (!isAppInitialized) { 
+      showSplashAndStart(); 
+      isAppInitialized = true; 
   }
 
-  // Admin section for Reels
-  if (!$("amReels")) {
-      const tabReelsBtnHtml = `<button id="tabReelsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amReels')">Reels 🎥</button>`;
-      if($("tabProdsBtn")) $("tabProdsBtn").insertAdjacentHTML('afterend', tabReelsBtnHtml);
-
-      const amReelsHtml = `<div id="amReels" class="admin-section hidden">
-          <section class="card">
-              <h3>Manage Reels & Shorts</h3>
-              <p class="section-hint">Instagram Reel ya YouTube Short ka URL paste karein. (Note: Account Public hona chahiye)</p>
-              <div id="adminReelsList" style="margin-bottom:10px;"></div>
-              <div class="field-group" style="border-top:1px dashed var(--border); padding-top:10px;">
-                  <input id="newReelUrl" class="field" placeholder="Paste URL here (Insta/YouTube)" />
-                  <button id="addReelBtn" class="btn-primary sm-btn auth-submit">+ Add Video</button>
-              </div>
-          </section>
-      </div>`;
-      if($("amProds")) $("amProds").insertAdjacentHTML('afterend', amReelsHtml);
-
-      if($("addReelBtn")) {
-        $("addReelBtn").onclick = async () => {
-            const url = $("newReelUrl").value.trim();
-            if(!url) return alert("Pehle video ka URL daalein!");
-            $("addReelBtn").textContent = "Adding...";
-            try {
-                const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "reels"), { url: url, timestamp: Date.now() });
-                reelsList.unshift({ id: docRef.id, url: url, timestamp: Date.now() });
-                $("newReelUrl").value = "";
-                window.renderAdminReels();
-                alert("Video add ho gaya! 🎉");
-            } catch(e) { alert("Error adding video: " + e.message); }
-            $("addReelBtn").textContent = "+ Add Video";
-        };
-      }
-  }
-  // --- DYNAMIC REELS UI INJECTION (Ends Here) ---
-
+  // Handle auto-login session persistence silently
   if (window.onAuthStateChanged && window.fbAuth) {
     window.onAuthStateChanged(window.fbAuth, (user) => {
       if (user) {
-        $("authScreen").classList.add("hidden");
-        if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; } 
-        else { 
-            $("app").classList.remove("hidden"); 
-            renderProfile(); 
-        }
-      } else {
-        if (!runtimeSkipped) { $("authScreen").classList.remove("hidden"); $("app").classList.add("hidden"); $("splash").classList.add("hidden"); }
+        renderProfile();
+        if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
       }
-      if ($("orderPage") && !$("orderPage").classList.contains("hidden")) window.renderMyOrders();
     });
   }
 
@@ -300,42 +225,20 @@ async function showSplashAndStart() {
   }, 400);
 }
 
-if ($("skipLoginBtn")) { $("skipLoginBtn").onclick = () => { runtimeSkipped = true; $("authScreen").classList.add("hidden"); showSplashAndStart(); }; }
-
-if ($("authSubmitBtn")) {
-  $("authSubmitBtn").onclick = async () => {
-    const mob = $("authMobile").value.trim(); const pwd = $("authPassword").value.trim();
-    if (!mob || mob.length !== 10 || !/^[6-9]\d{9}$/.test(mob)) return alert("Kripya sahi 10-digit mobile number dalein!");
-    if (!pwd || pwd.length < 6) return alert("Password kam se kam 6 characters ka hona chahiye!");
-    const fakeEmail = mob + "@genzstore.com"; const btn = $("authSubmitBtn"); const originalText = btn.textContent;
-    btn.textContent = "Please wait..."; btn.disabled = true;
-    try { await window.signInWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
-    catch (err) {
-      try { await window.createUserWithEmailAndPassword(window.fbAuth, fakeEmail, pwd); } 
-      catch (regErr) {
-        if (regErr.code === 'auth/email-already-in-use') alert("Galat Password! Kripya is number ka sahi password dalein."); else alert("Error: " + regErr.message);
-      }
-    } finally { if ($("authSubmitBtn")) { $("authSubmitBtn").textContent = originalText; $("authSubmitBtn").disabled = false; } }
-  };
-}
-
-if ($("authMobile")) { $("authMobile").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10); }; }
 if ($("googleLoginBtn")) { $("googleLoginBtn").onclick = () => { const provider = new window.GoogleAuthProvider(); window.signInWithPopup(window.fbAuth, provider).catch((error) => { alert("Login failed: " + error.message); }); }; }
-if ($("profileLogoutBtn")) { $("profileLogoutBtn").onclick = () => { if (confirm("Are you sure you want to logout?")) { runtimeSkipped = false; window.signOut(window.fbAuth).then(() => { window.location.reload(); }); } }; }
+if ($("profileLogoutBtn")) { $("profileLogoutBtn").onclick = () => { if (confirm("Are you sure you want to logout?")) { window.signOut(window.fbAuth).then(() => { window.location.reload(); }); } }; }
 
-// Modified switchNav to handle Reels
 window.switchNav = function (tab) {
   document.querySelectorAll('.nav-item').forEach((el) => { el.classList.remove('active'); });
   if ($("nav" + tab)) $("nav" + tab).classList.add("active"); else if (tab === 'Contact' || tab === 'ReturnPolicy' || tab === 'HowToReturn' || tab === 'PrivacyPolicy') $("navProfile").classList.add("active"); 
   if (tab === 'Order') $("navOrderWrap").classList.add("active"); else $("navOrderWrap").classList.remove("active");
 
-  ["homeContent", "newPage", "shopsPage", "contactPage", "orderPage", "likesPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage", "reelsPage"].forEach(id => {
+  ["homeContent", "newPage", "shopsPage", "contactPage", "orderPage", "likesPage", "profilePage", "returnPolicyPage", "howToReturnPage", "privacyPolicyPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
   if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
-  if (tab === 'Reels') { $("reelsPage").classList.remove("hidden"); window.renderReels(); }
   if (tab === 'Shops') { if($("shopsPage")) $("shopsPage").classList.remove("hidden"); }
   if (tab === 'Contact') { $("contactPage").classList.remove("hidden"); }
   if (tab === 'ReturnPolicy') { $("returnPolicyPage").classList.remove("hidden"); }
@@ -565,7 +468,7 @@ function renderProfile() {
 
 if ($("editProfileBtn")) {
   $("editProfileBtn").onclick = async () => {
-    const user = window.fbAuth ? window.fbAuth.currentUser : null; if (!user) return alert("Please login to edit profile!");
+    const user = window.fbAuth ? window.fbAuth.currentUser : null; if (!user) return alert("Please buy a product or wait to edit profile!");
     const newName = prompt("Enter your Name:", user.displayName || "");
     if (newName !== null && newName.trim() !== "") {
       const btn = $("editProfileBtn"); const originalHtml = btn.innerHTML; btn.textContent = "Saving..."; btn.disabled = true;
@@ -701,7 +604,9 @@ function renderNewCollection() {
     list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
 
-    const sorted = [...products].reverse(); 
+    // 🔥 TIMELINE SORTING (Newest products at the top)
+    const sorted = [...products].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+    
     sorted.forEach(p => {
         const price = finalPrice(p);
         const inStock = p.inStock !== false;
@@ -907,14 +812,14 @@ if ($("copyUpiBtn")) {
 }
 
 function directBuyCheckout(p, size) { 
-    requireLogin(() => { 
-        preventZoom(); 
-        const s = size || "Default"; 
-        currentCheckoutItem = { product: p, qty: 1, size: s }; 
-        $("prodDetail").classList.add("hidden"); $("prodDetail").classList.remove("closing"); 
-        currentDetailProduct = null; 
-        pushModalState(); openCheckout(); 
-    }); 
+    preventZoom(); 
+    const s = size || "Default"; 
+    currentCheckoutItem = { product: p, qty: 1, size: s }; 
+    $("prodDetail").classList.add("hidden"); 
+    $("prodDetail").classList.remove("closing"); 
+    currentDetailProduct = null; 
+    pushModalState(); 
+    openCheckout(); 
 }
 
 function resetCheckoutUI() {
@@ -1116,7 +1021,7 @@ async function sendTelegramAlert(orderData) {
     try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
 }
 
-$("confirmOrderBtn").onclick = () => {
+$("confirmOrderBtn").onclick = async () => {
   let utrValue = $("chkUtr").value.trim();
   if(!currentCheckoutItem) return;
   
@@ -1142,21 +1047,44 @@ $("confirmOrderBtn").onclick = () => {
   }
 
   let balanceDue = finalTotal - amountPaid;
+  const btn = $("confirmOrderBtn"); 
+  btn.textContent = "Placing Order...";
+  btn.disabled = true;
 
-  const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : "guest";
+  if (window.paymentInterval) clearInterval(window.paymentInterval);
+
+  // --- AUTOMATIC BACKGROUND AUTHENTICATION ---
+  const chkMobile = $("chkMobile").value.trim();
+  const autoEmail = chkMobile + "@genzstore.com";
+  const autoPass = "genzstore" + chkMobile;
+
+  try {
+      await window.signInWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
+  } catch(e) {
+      try {
+          await window.createUserWithEmailAndPassword(window.fbAuth, autoEmail, autoPass);
+          if(window.fbAuth.currentUser) {
+              await window.updateProfile(window.fbAuth.currentUser, { displayName: $("chkName").value.trim() });
+          }
+      } catch(err2) {
+          console.log("Auto auth creation failed", err2);
+      }
+  }
+  
+  const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : autoEmail;
+  // -------------------------------------------
+
   let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
   if (currentCheckoutItem.product.shopId) {
       const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId);
       if (sp) { orderShopName = sp.name; orderShopLogo = sp.logo || "placeholder.jpg"; }
   }
 
-  const orderData = { name: $("chkName").value.trim(), mobile: $("chkMobile").value.trim(), address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: [currentCheckoutItem], totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
-
-  const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order...";
-  if (window.paymentInterval) clearInterval(window.paymentInterval);
+  const orderData = { name: $("chkName").value.trim(), mobile: chkMobile, address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: [currentCheckoutItem], totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
 
   if (window.saveOrderToFirebase) {
     window.saveOrderToFirebase(orderData).then(success => {
+      btn.disabled = false;
       if (success) {
         let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
         sendTelegramAlert(orderData); 
@@ -1165,6 +1093,7 @@ $("confirmOrderBtn").onclick = () => {
       } else { alert("Server error. Please try again."); btn.textContent = "Verify Payment & Confirm"; }
     });
   } else {
+    btn.disabled = false;
     let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
     sendTelegramAlert(orderData); 
     showStep3Success(payMethod, amountPaid, balanceDue);
@@ -1213,7 +1142,6 @@ function trySuperUnlock() {
         $("tabOrdersBtn").classList.remove("hidden");
         $("tabCatsBtn").classList.remove("hidden");
         $("tabSettingsBtn").classList.remove("hidden");
-        if($("tabReelsBtn")) $("tabReelsBtn").classList.remove("hidden"); 
         if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.remove("hidden"); }
     } else {
         $("superPinError").classList.remove("hidden");
@@ -1228,7 +1156,6 @@ function openAdminAsVendor() {
   $("tabOrdersBtn").classList.add("hidden");
   $("tabCatsBtn").classList.add("hidden");
   $("tabSettingsBtn").classList.add("hidden");
-  if($("tabReelsBtn")) $("tabReelsBtn").classList.add("hidden"); 
   if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
   document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
@@ -1243,7 +1170,6 @@ $("adminClose").onclick = () => {
     $("tabOrdersBtn").classList.add("hidden");
     $("tabCatsBtn").classList.add("hidden");
     $("tabSettingsBtn").classList.add("hidden");
-    if($("tabReelsBtn")) $("tabReelsBtn").classList.add("hidden"); 
     if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
 };
 
@@ -1393,29 +1319,6 @@ function renderAdminProducts() {
   });
 }
 
-// Global Reel Render Function for Admin
-window.renderAdminReels = function() {
-    const list = $("adminReelsList");
-    if (!list) return;
-    list.innerHTML = "";
-    reelsList.forEach(r => {
-        const d = document.createElement("div");
-        d.className = "admin-prod";
-        d.innerHTML = `<div class="ap-info"><div class="ap-name" style="font-size:12px; color:var(--primary); word-break:break-all;">${r.url}</div></div>
-        <div class="ap-actions"><button class="trash del-reel" data-id="${r.id}">🗑️</button></div>`;
-        d.querySelector('.del-reel').onclick = async () => {
-            if (confirm("Delete this video?")) {
-                try {
-                    await window.fbDeleteDoc(window.fbDoc(window.fbDb, "reels", r.id));
-                    reelsList = reelsList.filter(x => x.id !== r.id);
-                    window.renderAdminReels();
-                } catch(e) { alert("Error deleting video."); }
-            }
-        };
-        list.appendChild(d);
-    });
-}
-
 window.renderAdmin = function () {
   renderCatMgmt(); syncAddProductDropdowns();
   if ($("adminFilterCat")) { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
@@ -1424,7 +1327,6 @@ window.renderAdmin = function () {
   const slist = $("adminShopsList");
   if(slist) { slist.innerHTML = ""; shops.forEach(s => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${s.logo || 'placeholder.jpg'}" alt="${s.name}" /><div class="ap-info"><div class="ap-name">${s.name} <span style="color:var(--muted);font-size:11px;">(${s.city || 'N/A'} - ${s.type || 'N/A'})</span></div><div class="ap-sub" style="color:var(--primary); font-size:10px;">UPI: ${s.upi} | COD: ${s.codEnabled !== false ? 'ON' : 'OFF'}</div></div><div class="ap-actions"><button class="edit-btn edit-shop" data-id="${s.id}">✏️</button><button class="trash del-shop" data-id="${s.id}">🗑️</button></div>`; d.querySelector('.edit-shop').onclick = () => { openEditShopModal(s); }; d.querySelector('.del-shop').onclick = async () => { if(confirm("Delete this Shop completely?")) { if(window.fbDeleteDoc && window.fbDoc && window.fbDb) { await window.fbDeleteDoc(window.fbDoc(window.fbDb, "shops", s.id)); shops = shops.filter(x => x.id !== s.id); renderAdmin(); renderShopsPage(); } } }; slist.appendChild(d); }); }
   renderAdminProducts();
-  if (window.renderAdminReels) window.renderAdminReels();
   if ($("updatePinBtn")) { $("updatePinBtn").onclick = () => { alert("PIN change option is securely hardcoded to 0000 for elite security."); }; }
   if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
 };
@@ -1463,58 +1365,6 @@ if ($("saveEditBtn")) {
 $("closeViewerBtn").onclick = () => { history.back(); };
 $("imageViewer").onclick = (e) => { if (e.target === $("imageViewer") || e.target === $("fullImage")) { history.back(); } };
 preventZoom(); renderLikesCount();
-
-// --- NEW REELS/SHORTS LOGIC ---
-
-// Polling interval to wait for Firebase setup from HTML script
-let fbCheckInterval = setInterval(() => {
-    if(window.fbDb && window.fbGetDocs && window.fbCollection) {
-        clearInterval(fbCheckInterval);
-        fetchReels();
-    }
-}, 500);
-
-async function fetchReels() {
-    try {
-        const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "reels"));
-        reelsList = [];
-        snap.forEach(d => reelsList.push({ id: d.id, ...d.data() }));
-        reelsList.sort((a,b) => b.timestamp - a.timestamp);
-        if (window.renderAdminReels) window.renderAdminReels();
-    } catch(e) {}
-}
-
-window.getEmbedUrl = function(url) {
-    if (url.includes('instagram.com/reel') || url.includes('instagram.com/p/')) {
-        const urlObj = new URL(url);
-        return urlObj.origin + urlObj.pathname + "embed";
-    } else if (url.includes('youtube.com/shorts/')) {
-        const videoId = url.split('shorts/')[1].split('?')[0];
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&rel=0`;
-    } else if (url.includes('youtu.be/')) {
-        const videoId = url.split('youtu.be/')[1].split('?')[0];
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=0&rel=0`;
-    }
-    return url;
-}
-
-window.renderReels = function() {
-    const container = $("reelsContainer");
-    if (!container) return;
-    container.innerHTML = "";
-    if (reelsList.length === 0) {
-        container.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; color:var(--muted); font-size:14px;">Abhi tak koi Reels add nahi ki gayi hain.</div>`;
-        return;
-    }
-
-    reelsList.forEach(reel => {
-        const embedUrl = window.getEmbedUrl(reel.url);
-        const div = document.createElement("div");
-        div.style.cssText = "height:100%; width:100%; scroll-snap-align:start; position:relative; display:flex; align-items:center; justify-content:center; background:#000;";
-        div.innerHTML = `<iframe src="${embedUrl}" style="width:100%; height:100%; max-width:400px; border:none; background:#000;" allow="autoplay; fullscreen" frameborder="0"></iframe>`;
-        container.appendChild(div);
-    });
-}
 
 // --- PUSH NOTIFICATION SYSTEM (ONESIGNAL REST API) ---
 if ($("sendNotifBtn")) {
@@ -1577,3 +1427,4 @@ if ($("sendNotifBtn")) {
         $("sendNotifBtn").textContent = "Send Notification";
     };
 }
+App.js
