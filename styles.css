@@ -57,9 +57,8 @@ body.no-scroll { overflow: hidden !important; }
 .splash { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; animation: splashFadeIn 0.6s ease; }
 #stage { position: absolute; inset: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; perspective: 1200px; }
 
-/* FIXED: Removed the blur animation background that was causing the brown/golden glow on screen */
 #bg-glow { display: none !important; } 
-.splash-glow, .splash-oval { display: none !important; } /* Backup check to hide old glows */
+.splash-glow, .splash-oval { display: none !important; } 
 
 #particles { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .particle { position: absolute; border-radius: 50%; background: #facc15; opacity: 0; animation: floatUp linear infinite; }
@@ -183,7 +182,7 @@ body.no-scroll { overflow: hidden !important; }
 .link { background: none; border: none; color: var(--muted); font-size: 12px; cursor: pointer; width: 100%; margin-top: 8px; }
 .auther-submit, .auth-submit { font-weight: 700; font-family: var(--font-body); letter-spacing: 0.03em; }
 
-/* 🌟 NEW: FLIPKART/MEESHO STYLE SIZES */
+/* 🌟 FLIPKART/MEESHO STYLE SIZES */
 .size-box { 
   display: inline-flex; justify-content: center; align-items: center; 
   min-width: 44px; height: 44px; padding: 0 12px; border-radius: 8px; 
@@ -195,11 +194,10 @@ body.no-scroll { overflow: hidden !important; }
 .size-box.in.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); transform: scale(1.05); }
 .size-box.out { 
   opacity: 0.5; cursor: not-allowed; background: transparent; color: var(--muted);
-  /* Meesho style cross line for out of stock */
   background-image: linear-gradient(to top right, transparent calc(50% - 1px), var(--border), transparent calc(50% + 1px));
 }
 
-/* 🌟 NEW: ENHANCED BACK BUTTON */
+/* 🌟 ENHANCED BACK BUTTON */
 .pd-back-enhanced { 
   display: flex; align-items: center; gap: 6px; background: var(--card2); 
   border: 1px solid var(--border); color: var(--fg); font-size: 14px; 
@@ -463,14 +461,6 @@ body.theme-light .pd-back-enhanced { background: #fff; color: #111; box-shadow: 
 .mo-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
 .premium-about-container { text-align: center; padding: 25px 15px; background: var(--card2); border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
-.profile-card { text-align: center; padding: 30px 20px; background: var(--card); border-radius: 16px; border: 1px solid var(--border); }
-.p-avatar-wrap { position: relative; width: 85px; height: 85px; margin: 0 auto 15px; }
-.p-avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary); transition: opacity 0.2s; }
-.p-avatar-edit { position: absolute; bottom: 0; right: 0; background: var(--card2); border: 1px solid var(--border); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s; }
-.p-avatar-edit:active { transform: scale(0.9); }
-.p-name { font-size: 18px; font-weight: 600; color: var(--fg); margin-bottom: 4px; }
-.p-status { font-size: 12px; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; cursor: pointer; }
-.p-id { font-size: 20px; font-weight: 700; color: var(--primary); letter-spacing: 1px; }
 
 .p-link-btn { display: block; width: 100%; text-align: left; background: var(--bg2); border: 1px solid var(--border); padding: 14px 16px; border-radius: 12px; margin-bottom: 10px; color: var(--fg); font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.2s; }
 .p-link-btn:active { transform: scale(0.98); border-color: var(--primary); }
@@ -502,4 +492,71 @@ body.theme-light .pd-back-enhanced { background: #fff; color: #111; box-shadow: 
 
 body.theme-light .app-download-btn {
   color: #fff;
+}
+
+/* =========================================
+   SHORTS / REELS CSS
+========================================= */
+.shorts-page-wrap {
+  padding: 0 !important;
+  margin: 0 !important;
+  height: calc(100vh - 65px);
+  background: #000;
+}
+.shorts-container {
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+}
+.shorts-container::-webkit-scrollbar {
+  display: none;
+}
+.short-wrapper {
+  height: 100%;
+  width: 100%;
+  scroll-snap-align: start;
+  position: relative;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.short-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: auto;
+}
+.short-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+}
+.short-buy-btn {
+  pointer-events: auto;
+  background: var(--primary);
+  color: #000;
+  font-family: var(--font-body);
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 999px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  border: 2px solid #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  animation: pulseGlow 2s infinite;
+}
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(201,168,76, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(201,168,76, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201,168,76, 0); }
 }
