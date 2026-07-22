@@ -239,10 +239,10 @@ function renderShortsPage() {
         let embedUrl = s.url.trim();
         let finalIframeSrc = "";
 
-        // 🔥 YOUTUBE & INSTA FIXER
+        // 🔥 YOUTUBE & INSTA FIXER (SOUND FIXED!)
         if (embedUrl.includes("instagram.com")) {
             const match = embedUrl.match(/(reel|p|reels)\/([A-Za-z0-9_-]+)/);
-            if (match) { finalIframeSrc = `https://www.instagram.com/p/${match[2]}/embed/`; } 
+            if (match) { finalIframeSrc = `https://www.instagram.com/p/${match[2]}/embed/?hidecaption=true`; } 
             else { finalIframeSrc = embedUrl; }
         } else if (embedUrl.includes("youtube.com") || embedUrl.includes("youtu.be")) {
             let videoId = "";
@@ -250,7 +250,8 @@ function renderShortsPage() {
             else if (embedUrl.includes("shorts/")) videoId = embedUrl.split("shorts/")[1].split("?")[0];
             else if (embedUrl.includes("watch?v=")) videoId = embedUrl.split("watch?v=")[1].split("&")[0];
             
-            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+            // 🔥 UPDATE HERE: mute=0 & playsinline=1 to fix sound issue
+            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
             else finalIframeSrc = embedUrl;
         } else {
             finalIframeSrc = embedUrl;
