@@ -1427,4 +1427,3 @@ if ($("sendNotifBtn")) {
         $("sendNotifBtn").textContent = "Send Notification";
     };
 }
-App.js
