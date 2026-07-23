@@ -188,11 +188,15 @@
         <span class="nav-text">New</span>
       </button>
       
-      <div class="nav-fab-wrap" id="navOrderWrap" onclick="switchNav('Order')">
-        <div class="nav-fab">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+      <!-- SHORTS BUTTON MOVED TO CENTER (FAB) -->
+      <div class="nav-fab-wrap" id="navOrderWrap" onclick="switchNav('Shorts')">
+        <div class="nav-fab" style="border: 2px solid #000; box-shadow: 0px 4px 15px rgba(255,255,255,0.2);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px;">
+            <polygon points="23 7 16 12 23 17 23 7"></polygon>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
         </div>
-        <span class="nav-text fab-text">Orders</span>
+        <span class="nav-text fab-text">Shorts</span>
       </div>
       
       <button class="nav-item" id="navLikes" onclick="switchNav('Likes')">
@@ -205,13 +209,14 @@
         <span class="nav-text">Likes</span>
       </button>
       
-      <!-- NEW SHORTS BUTTON IN BOTTOM NAV (Replaced Profile) -->
-      <button class="nav-item" id="navShorts" onclick="switchNav('Shorts')">
+      <!-- ORDERS BUTTON MOVED TO SIDE -->
+      <button class="nav-item" id="navShorts" onclick="switchNav('Order')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polygon points="23 7 16 12 23 17 23 7"></polygon>
-          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
         </svg>
-        <span class="nav-text">Shorts</span>
+        <span class="nav-text">Orders</span>
       </button>
     </nav>
   </div>
