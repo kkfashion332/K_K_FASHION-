@@ -85,7 +85,6 @@ window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fet
 window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; renderShopsPage(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 
-// ADDED UNIQUE ID PARSING
 window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 
@@ -187,14 +186,12 @@ async function showSplashAndStart() {
 
 // 🔥 BUTTON SWAP AND AUDIO KILL FIX
 window.switchNav = function (tab) {
-  // Remove active from all nav items
   document.querySelectorAll('.nav-item, .nav-fab-wrap').forEach((el) => { el.classList.remove('active'); });
   
-  // Custom mapping based on swapped HTML IDs
   if (tab === 'Shorts') {
-      if ($("navOrderWrap")) $("navOrderWrap").classList.add("active"); // Shorts is now FAB
+      if ($("navOrderWrap")) $("navOrderWrap").classList.add("active"); 
   } else if (tab === 'Order') {
-      if ($("navShorts")) $("navShorts").classList.add("active"); // Orders is now Side Button
+      if ($("navShorts")) $("navShorts").classList.add("active"); 
   } else {
       if ($("nav" + tab)) $("nav" + tab).classList.add("active");
   }
@@ -227,7 +224,7 @@ window.clearShopFilterAndGoHome = function() {
 }
 
 // ----------------------------------------------------
-// 🔥 SUPER SMART SHORTS & REELS LOGIC (AUDIO FIX INCLUDED)
+// 🔥 SUPER SMART SHORTS & REELS LOGIC (FIRST REEL PLAY BTN, REST AUTO-PLAY WITH SOUND)
 // ----------------------------------------------------
 function renderShortsPage() {
     const container = $("shortsContainer");
@@ -239,7 +236,7 @@ function renderShortsPage() {
         return;
     }
 
-    shortsData.forEach(s => {
+    shortsData.forEach((s, index) => {
         const searchInput = s.productId ? s.productId.toString().toLowerCase().trim() : "";
         const p = products.find(x => 
             (x.uniqueId && x.uniqueId.toString().toLowerCase() === searchInput) || 
@@ -262,7 +259,8 @@ function renderShortsPage() {
             else if (embedUrl.includes("shorts/")) videoId = embedUrl.split("shorts/")[1].split("?")[0];
             else if (embedUrl.includes("watch?v=")) videoId = embedUrl.split("watch?v=")[1].split("&")[0];
             
-            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&playsinline=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0`;
+            // 🔥 Sabhi me autoplay=0 aur mute=0 rakha hai, control JS se hoga (enablejsapi=1 zaroori hai)
+            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&playsinline=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
             else finalIframeSrc = embedUrl;
         } else {
             finalIframeSrc = embedUrl;
@@ -273,8 +271,9 @@ function renderShortsPage() {
 
         const wrapper = document.createElement("div");
         wrapper.className = "short-video-wrapper";
+        wrapper.id = "short-wrap-" + index; 
         wrapper.innerHTML = `
-            <iframe src="${finalIframeSrc}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <iframe id="iframe-${index}" class="short-iframe" src="${finalIframeSrc}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             
             <div class="short-buy-card">
                 <img src="${mainImg}" class="short-buy-img" alt="${p.name}">
@@ -282,28 +281,36 @@ function renderShortsPage() {
                     <div class="short-buy-title">${p.name}</div>
                     <div class="short-buy-price">₹${price}</div>
                 </div>
-                <!-- DIRECTLY OPENS PRODUCT PAGE -->
                 <button class="short-buy-btn" onclick="openProductDetailById('${p.id}')">Buy Now</button>
             </div>
         `;
         container.appendChild(wrapper);
     });
 
-    // 🔥 SMART OBSERVER: KILLS AUDIO WHEN VIDEO SWIPED OUT OF VIEW
+    // 🔥 SMART OBSERVER: Jo video screen par aayega usko PLAY aur baaki ko PAUSE karega
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (!entry.isIntersecting) {
-                const iframe = entry.target.querySelector('iframe');
-                if (iframe) {
-                    // Reload the iframe silently to stop playing
-                    const currentSrc = iframe.src;
-                    iframe.src = currentSrc;
+            const iframe = entry.target.querySelector('iframe');
+            if (iframe && iframe.src.includes('youtube.com')) {
+                if (!entry.isIntersecting) {
+                    // Video screen se 50% bahar gaya -> PAUSE (Aawaz turant band)
+                    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+                } else {
+                    // Video screen ke center me aaya -> AUTO-PLAY (Aawaz ke sath)
+                    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+                }
+            } else if (iframe && iframe.src.includes('instagram.com')) {
+                if (!entry.isIntersecting) {
+                    // Insta reel ko background me rokne ka tareeqa
+                    let currentSrc = iframe.src;
+                    iframe.src = '';
+                    setTimeout(() => { iframe.src = currentSrc; }, 50);
                 }
             }
         });
     }, {
         root: container,
-        threshold: 0.2 // Jab 80% video bahar chali jaye tab aawaz band hogi
+        threshold: 0.5 // Jab 50% video screen par aayega tabhi kaam karega
     });
 
     document.querySelectorAll('.short-video-wrapper').forEach(wrapper => {
