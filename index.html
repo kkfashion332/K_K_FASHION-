@@ -506,7 +506,7 @@
         </div>
         <div class="field-group">
           <label class="field-label">Variant Group ID</label>
-          <input id="editPGroupId" class="field" type="text" placeholder="Same for all colors" />
+          <input id="editPGroupId" class="field" type="text" placeholder="Same ID for all colors" />
         </div>
       </div>
 
@@ -572,7 +572,7 @@
               <label class="field-label">Video URL (YouTube/Insta Embed)</label>
               <input id="newShortUrl" class="field" placeholder="e.g. https://www.youtube.com/embed/XXXXX" />
               <label class="field-label">Link with Product (Paste Product ID)</label>
-              <input id="newShortProductId" class="field" placeholder="Product ID (e.g. Jds3kL9...)" />
+              <input id="newShortProductId" class="field" placeholder="Product ID (e.g. 101, 102)" />
               <button id="addShortBtn" class="btn-primary sm-btn auth-submit">+ Add Short Video</button>
             </div>
           </section>
@@ -645,6 +645,7 @@
       <div id="amProds" class="admin-section">
           <section class="card">
             <h3>Add Product</h3>
+            <input id="pUniqueId" class="field" placeholder="Product Unique ID (e.g. 101, 102)" style="margin-bottom: 12px;" /> <!-- ADDED UNIQUE ID HERE -->
             <input id="pName" class="field" placeholder="Product name" />
             <input id="pImage" class="field" placeholder="Image URLs (Comma Separated for Multiple)" />
             
@@ -830,7 +831,36 @@
       } catch(e) {} 
     }
     
-    async function fetchProducts() { try { const snap = await getDocs(collection(db, "products")); const list = []; snap.forEach(d => { const data = d.data(); let imgData = Array.isArray(data.imageUrl) ? data.imageUrl : (data.imageUrl ? [data.imageUrl] : []); list.push({ id: d.id, name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0, mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false, sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || "", freeDelivery: data.freeDelivery !== false, timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0 }); }); if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list); } catch(e) {} }
+    // 🔥 FIXED: uniqueId is now fetched from Firebase correctly
+    async function fetchProducts() { 
+      try { 
+        const snap = await getDocs(collection(db, "products")); 
+        const list = []; 
+        snap.forEach(d => { 
+          const data = d.data(); 
+          let imgData = Array.isArray(data.imageUrl) ? data.imageUrl : (data.imageUrl ? [data.imageUrl] : []); 
+          list.push({ 
+            id: d.id, 
+            uniqueId: data.uniqueId || "", // <-- This is the fix!
+            name: data.name, 
+            image: imgData, 
+            price: data.price, 
+            discount: data.discount || 0, 
+            extra: data.extra || 0, 
+            mainCategoryId: data.mainCategoryId || "", 
+            shopId: data.shopId || "", 
+            inStock: data.inStock !== false, 
+            sizesIn: data.sizesIn || "", 
+            sizesOut: data.sizesOut || "", 
+            color: data.color || "", 
+            groupId: data.groupId || "", 
+            freeDelivery: data.freeDelivery !== false, 
+            timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0 
+          }); 
+        }); 
+        if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list); 
+      } catch(e) {} 
+    }
     
     window.saveOrderToFirebase = async function(orderData) { try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { return false; } };
     window.fetchOrdersFromFirebase = async function() { try { const snap = await getDocs(collection(db, "orders")); const list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() })); list.sort((a,b) => b.timestamp - a.timestamp); window.allFirebaseOrders = list; if (window.renderAdminOrders) window.renderAdminOrders(list); if (typeof window.renderMyOrders === "function") window.renderMyOrders(); } catch (e) {} };
@@ -848,7 +878,9 @@
 
     window.updateProductInFirebase = async function(id, data) { try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); } };
 
+    // 🔥 FIXED: Capturing pUniqueId when adding a new product
     document.getElementById("addProductBtn").addEventListener("click", async () => {
+      const pUniqueId = document.getElementById("pUniqueId") ? document.getElementById("pUniqueId").value.trim() : ""; // Added this
       const pName = document.getElementById("pName").value.trim();
       const rawImage = document.getElementById("pImage").value.trim();
       const pPrice = document.getElementById("pPrice").value;
@@ -873,6 +905,7 @@
       btn.textContent = "Listing...";
       
       const newProductData = {
+          uniqueId: pUniqueId, // And this
           name: pName, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
           mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
           sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId,
@@ -882,7 +915,9 @@
       try {
         await addDoc(collection(db, "products"), newProductData);
         alert("Product listed successfully! 🎉");
-        ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
+        ["pUniqueId", "pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).value = "";
+        });
         fetchProducts(); 
       } catch(e) {
           console.error("Error adding product to Firestore: ", e);
