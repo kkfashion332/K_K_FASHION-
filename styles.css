@@ -435,6 +435,7 @@ body.theme-light .app-download-btn {
   width: 100%;
   height: 100%;
   scroll-snap-align: start;
+  scroll-snap-stop: always; /* AUDIO FIX KE LIYE ZAROORI */
   background: #111;
   display: flex;
   justify-content: center;
