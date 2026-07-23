@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH UNIQUE ID, SHORTS FIX & LOGO TRIGGER)
+   GEN-Z STORE — app.js (FINAL WITH UNIQUE ID, SHORTS FIX, FAB SWAP & AUDIO FIX)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -92,7 +92,6 @@ window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts ||
 window.addEventListener("DOMContentLoaded", () => {
   if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
   
-  // 🔥 DYNAMICALLY INJECT "UNIQUE ID" FIELDS IN HTML (No HTML editing needed)
   const pNameInput = $("pName");
   if (pNameInput && !$("pUniqueId")) {
       const uidInput = document.createElement("input");
@@ -186,16 +185,31 @@ async function showSplashAndStart() {
   setTimeout(() => { splash.classList.add("hidden"); $("app").classList.remove("hidden"); renderLikesCount(); initBannerAutoScroll(); }, 400);
 }
 
+// 🔥 BUTTON SWAP AND AUDIO KILL FIX
 window.switchNav = function (tab) {
-  document.querySelectorAll('.nav-item').forEach((el) => { el.classList.remove('active'); });
-  if ($("nav" + tab)) $("nav" + tab).classList.add("active"); 
-  if (tab === 'Order') $("navOrderWrap").classList.add("active"); else $("navOrderWrap").classList.remove("active");
+  // Remove active from all nav items
+  document.querySelectorAll('.nav-item, .nav-fab-wrap').forEach((el) => { el.classList.remove('active'); });
+  
+  // Custom mapping based on swapped HTML IDs
+  if (tab === 'Shorts') {
+      if ($("navOrderWrap")) $("navOrderWrap").classList.add("active"); // Shorts is now FAB
+  } else if (tab === 'Order') {
+      if ($("navShorts")) $("navShorts").classList.add("active"); // Orders is now Side Button
+  } else {
+      if ($("nav" + tab)) $("nav" + tab).classList.add("active");
+  }
 
   ["homeContent", "newPage", "shortsPage", "orderPage", "likesPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
-  if(tab !== 'Shorts' && $("shortsContainer")) { $("shortsContainer").innerHTML = ""; }
+  // IF LEAVING SHORTS PAGE: Stop all playing videos to prevent background audio
+  if(tab !== 'Shorts' && $("shortsContainer")) {
+      document.querySelectorAll('.short-video-wrapper iframe').forEach(iframe => {
+          let src = iframe.src;
+          iframe.src = src; 
+      });
+  }
 
   if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
@@ -213,7 +227,7 @@ window.clearShopFilterAndGoHome = function() {
 }
 
 // ----------------------------------------------------
-// 🔥 SUPER SMART SHORTS & REELS LOGIC
+// 🔥 SUPER SMART SHORTS & REELS LOGIC (AUDIO FIX INCLUDED)
 // ----------------------------------------------------
 function renderShortsPage() {
     const container = $("shortsContainer");
@@ -226,7 +240,6 @@ function renderShortsPage() {
     }
 
     shortsData.forEach(s => {
-        // 🔥 SMART PRODUCT FINDER (Matches Unique ID, Name, or Firebase ID)
         const searchInput = s.productId ? s.productId.toString().toLowerCase().trim() : "";
         const p = products.find(x => 
             (x.uniqueId && x.uniqueId.toString().toLowerCase() === searchInput) || 
@@ -234,12 +247,11 @@ function renderShortsPage() {
             (x.id === s.productId)
         );
         
-        if(!p) return; // Product exists nahi karta toh video mat dikhao
+        if(!p) return; 
 
         let embedUrl = s.url.trim();
         let finalIframeSrc = "";
 
-        // 🔥 YOUTUBE & INSTA FIXER (SOUND FIXED!)
         if (embedUrl.includes("instagram.com")) {
             const match = embedUrl.match(/(reel|p|reels)\/([A-Za-z0-9_-]+)/);
             if (match) { finalIframeSrc = `https://www.instagram.com/p/${match[2]}/embed/?hidecaption=true`; } 
@@ -250,8 +262,7 @@ function renderShortsPage() {
             else if (embedUrl.includes("shorts/")) videoId = embedUrl.split("shorts/")[1].split("?")[0];
             else if (embedUrl.includes("watch?v=")) videoId = embedUrl.split("watch?v=")[1].split("&")[0];
             
-            // 🔥 UPDATE HERE: mute=0 & playsinline=1 to fix sound issue
-            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&playsinline=1&loop=1&playlist=${videoId}&controls=0&modestbranding=1&rel=0`;
+            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&playsinline=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0`;
             else finalIframeSrc = embedUrl;
         } else {
             finalIframeSrc = embedUrl;
@@ -276,6 +287,27 @@ function renderShortsPage() {
             </div>
         `;
         container.appendChild(wrapper);
+    });
+
+    // 🔥 SMART OBSERVER: KILLS AUDIO WHEN VIDEO SWIPED OUT OF VIEW
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                const iframe = entry.target.querySelector('iframe');
+                if (iframe) {
+                    // Reload the iframe silently to stop playing
+                    const currentSrc = iframe.src;
+                    iframe.src = currentSrc;
+                }
+            }
+        });
+    }, {
+        root: container,
+        threshold: 0.2 // Jab 80% video bahar chali jaye tab aawaz band hogi
+    });
+
+    document.querySelectorAll('.short-video-wrapper').forEach(wrapper => {
+        observer.observe(wrapper);
     });
 }
 
@@ -1348,7 +1380,6 @@ document.getElementById("addProductBtn").addEventListener("click", async () => {
     const pColor = document.getElementById("pColor").value.trim();
     const pGroupId = document.getElementById("pGroupId").value.trim();
     
-    // Capturing dynamically added Unique ID
     const pUniqueId = document.getElementById("pUniqueId") ? document.getElementById("pUniqueId").value.trim() : "";
 
     const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
@@ -1372,7 +1403,7 @@ document.getElementById("addProductBtn").addEventListener("click", async () => {
       alert("Product listed successfully! 🎉");
       ["pName","pImage","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => document.getElementById(id).value = "");
       if(document.getElementById("pUniqueId")) document.getElementById("pUniqueId").value = "";
-      // Re-fetch products from DB
+      
       const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "products"));
       const list = [];
       snap.forEach(d => {
