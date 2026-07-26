@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH SPIN, COUPONS, BASE64 UPLOADS FIX)
+   GEN-Z STORE — app.js (FINAL WITH WHATSAPP PAYMENT, SPIN, COUPONS)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -31,10 +31,11 @@ let products = [];
 let shops = [];
 let homeBanners = [];
 let shortsData = []; 
-let couponsData = []; // NEW COUPONS ARRAY
+let couponsData = []; 
+let adminWaNumber = "8976073065"; // Default WhatsApp Number
 let likes = load("knk_likes", []); 
 let currentCheckoutItem = null;    
-let appliedCoupon = null; // CURRENT APPLIED COUPON
+let appliedCoupon = null; 
 
 let activeMainCatId = null;
 let activeShopId = null;
@@ -91,7 +92,8 @@ window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops 
 window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
-window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); }; // NEW
+window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
+window.updateWaNumberFromFirebase = function (waNum) { adminWaNumber = waNum; if($("adminWaNumber")) $("adminWaNumber").value = waNum; };
 
 // ----------------------------------------------------
 // DIRECT GALLERY UPLOAD (BASE64 CONVERTER)
@@ -103,7 +105,7 @@ function bindImageUploader(fileInputId, hiddenInputId) {
         const files = Array.from(e.target.files);
         if(!files.length) return;
         
-        fi.disabled = true; // prevent multiple clicks while processing
+        fi.disabled = true;
         const originalText = fi.previousElementSibling ? fi.previousElementSibling.textContent : "Processing...";
         if(fi.previousElementSibling) fi.previousElementSibling.textContent = "Compressing & Uploading...";
 
@@ -114,13 +116,13 @@ function bindImageUploader(fileInputId, hiddenInputId) {
                     const img = new Image();
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800; // Resize to save DB space
+                        const MAX_WIDTH = 800;
                         const scaleSize = MAX_WIDTH / img.width;
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6)); // Compress
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
                     };
                     img.src = event.target.result;
                 };
@@ -129,7 +131,6 @@ function bindImageUploader(fileInputId, hiddenInputId) {
         });
         
         Promise.all(promises).then(b64s => {
-            // 🔥 FIX: Added ' | ' separator instead of ',' to prevent breaking Base64 strings
             hi.value = hi.value ? hi.value + " | " + b64s.join(" | ") : b64s.join(" | ");
             if(fi.previousElementSibling) fi.previousElementSibling.textContent = originalText;
             fi.disabled = false;
@@ -141,7 +142,6 @@ function bindImageUploader(fileInputId, hiddenInputId) {
 window.addEventListener("DOMContentLoaded", () => {
   if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
   
-  // Bind Base64 File Uploaders
   bindImageUploader("pImageFile", "pImage");
   bindImageUploader("editPImageFile", "editPImage");
   bindImageUploader("newBannerFile", "newBannerImg");
@@ -273,7 +273,7 @@ if($("spinWheelHeaderBtn")) {
 }
 if($("closeSpinModal")) {
     $("closeSpinModal").onclick = () => {
-        $("spinWheelModal").classList.add("hidden");
+        history.back(); // Fixed modal closing via history
     }
 }
 
@@ -283,7 +283,6 @@ function renderSpinWheel() {
     
     spinPrizes = activeSpinCoupons.map(c => ({ label: c.code, type: 'coupon', data: c }));
     
-    // Default slices if empty
     if(spinPrizes.length < 6) {
        spinPrizes.push({ label: 'Better Luck', type: 'empty' }, { label: 'Try Again', type: 'empty' });
     }
@@ -321,9 +320,8 @@ if($("startSpinBtn")) {
         const prizeIndex = Math.floor(Math.random() * spinPrizes.length);
         const sliceDeg = 360 / spinPrizes.length;
         
-        // Pointer is at the Top (270 degrees)
         const targetAngle = 270 - (prizeIndex * sliceDeg) - (sliceDeg / 2);
-        const spinAngle = targetAngle + (360 * 6); // 6 Full Spins
+        const spinAngle = targetAngle + (360 * 6);
 
         wheel.style.transform = `rotate(${spinAngle}deg)`;
 
@@ -348,7 +346,7 @@ if($("startSpinBtn")) {
 window.copyAndApplySpin = function(code) {
     navigator.clipboard.writeText(code).then(() => {
         localStorage.setItem("genz_won_coupon", code);
-        $("spinWheelModal").classList.add("hidden");
+        history.back(); // Fixed modal closing via history
         alert(`Coupon ${code} copied! Ye automatically paste ho jayega jab aap koi product kholenge.`);
     }).catch(err => alert("Copy failed. Please note the code manually: " + code));
 }
@@ -625,7 +623,6 @@ function openProductDetail(p) {
   const existFreeDel = document.getElementById("pdFreeDelText"); if(existFreeDel) existFreeDel.remove();
   if(p.freeDelivery !== false) { const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj; $("pdName").parentNode.insertBefore(d, $("pdColorsWrap")); }
 
-  // RESET COUPON UI
   $("pdCouponMessage").style.display = "none";
   const savedCoupon = localStorage.getItem("genz_won_coupon");
   if(savedCoupon) { $("pdCouponInput").value = savedCoupon; } else { $("pdCouponInput").value = ""; }
@@ -674,7 +671,6 @@ function closeProductDetail() {
   preventZoom(); const detail = $("prodDetail"); detail.classList.add("closing");
   detail.addEventListener("animationend", () => { detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null; unlockScroll(); }, { once: true });
 }
-$("pdBackBtn").onclick = () => { history.back(); }; 
 
 // 🔥 COUPON APPLY LOGIC
 if($("pdApplyCouponBtn")) {
@@ -747,18 +743,46 @@ function buildHorizSection(title, list) {
 }
 
 // ----------------------------------------------------
-// CHECKOUT & PAYMENTS (UPDATED WITH COUPON)
+// CHECKOUT & PAYMENTS
 // ----------------------------------------------------
 let currentDynamicUpi = "genzstore@nyes";
 
-if ($("chkUtr")) { $("chkUtr").oninput = function () { this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12); }; }
 if ($("copyUpiBtn")) {
   $("copyUpiBtn").onclick = function () {
     navigator.clipboard.writeText(currentDynamicUpi).then(() => {
       this.innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
-      setTimeout(() => { this.innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`; }, 2000);
+      setTimeout(() => { this.innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`; }, 2000);
     }).catch(err => alert("Copy nahi ho paya, manually type karein."));
   };
+}
+
+// 🔥 NEW WHATSAPP BUTTON LOGIC
+if ($("waScreenshotBtn")) {
+    $("waScreenshotBtn").onclick = () => {
+        let amountPaid = $("qrAmountDisplay").textContent;
+        let pName = currentCheckoutItem ? currentCheckoutItem.product.name : "Products";
+        let message = `Hello Gen-Z Store! \nHere is my payment screenshot for the order of *${pName}*. \nAmount Paid: *${amountPaid}*`;
+        let waUrl = `https://wa.me/91${adminWaNumber}?text=${encodeURIComponent(message)}`;
+        window.open(waUrl, '_blank');
+    };
+}
+
+// 🔥 ADMIN WHATSAPP SAVE LOGIC
+if ($("saveWaBtn")) {
+    $("saveWaBtn").onclick = async () => {
+        const num = $("adminWaNumber").value.trim();
+        if(num.length < 10) return alert("Kripya sahi 10-digit number dalein!");
+        
+        $("saveWaBtn").textContent = "Saving...";
+        try {
+            if(window.fbSetDoc && window.fbDoc && window.fbDb) {
+                await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { waNumber: num }, { merge: true });
+                adminWaNumber = num;
+                alert("WhatsApp Number Update Ho Gaya!");
+            }
+        } catch(e) { console.log(e); }
+        $("saveWaBtn").textContent = "Save";
+    };
 }
 
 function directBuyCheckout(p, size, coupon) { 
@@ -778,7 +802,6 @@ function resetCheckoutUI() {
   $("step1NextBtn").classList.remove("hidden"); $("step2PayBtn").classList.add("hidden"); $("confirmOrderBtn").classList.add("hidden");
   if ($("paymentOptionsWrap")) $("paymentOptionsWrap").classList.remove("hidden");
   if ($("qrScanSection")) $("qrScanSection").classList.add("hidden");
-  if ($("chkUtr")) $("chkUtr").value = "";
   if (window.paymentInterval) clearInterval(window.paymentInterval);
   $("step1Indicator").className = "step-item active"; $("step1Circle").innerHTML = "1"; $("line1").className = "step-line";
   $("step2Indicator").className = "step-item"; $("step2Circle").innerHTML = "2"; $("line2").className = "step-line";
@@ -798,7 +821,7 @@ function openCheckout() {
       else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
   } else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
   
-  $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#fff; padding:3px 8px; border-radius:4px;">📋 Copy</span>`;
+  $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`;
 
   if(!shopCodEnabled) {
       $("payCODLabel").classList.add("hidden"); $("payPrepaid").checked = true; $("codWarningBox").classList.add("hidden"); 
@@ -811,8 +834,6 @@ function openCheckout() {
       $("step2PayBtn").textContent = "Pay Online (Prepaid)";
   }
 }
-
-$("closeCheckout").onclick = () => { history.back(); }; 
 
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(); const mobile = $("chkMobile").value.trim(); const address = $("chkAddress").value.trim(); const state = $("chkState").value.trim(); const pincode = $("chkPincode").value.trim();
@@ -954,14 +975,16 @@ async function sendTelegramAlert(orderData) {
     text += `📍 ${orderData.state} - ${orderData.pincode}\n\n📦 *Items:* ${itemsList}\n🛒 *Store:* ${orderData.shopName}${couponText}\n💰 *Total Amount:* ₹${orderData.totalAmount}\n💳 *Payment Mode:* ${orderData.paymentMethod}\n`;
     
     if(orderData.paymentMethod === "COD") { text += `💸 *Advance Paid:* ₹${orderData.amountPaid}\n🛑 *Balance Due (COD):* ₹${orderData.balanceDue}\n`; }
-    if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *UTR No:* ${orderData.utrNumber}\n`;
+    
+    // 🔥 UTR checking removed since we use WhatsApp Screenshots now
+    if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *WhatsApp Screenshot Expected*\n`;
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
 }
 
 $("confirmOrderBtn").onclick = async () => {
-  let utrValue = $("chkUtr").value.trim();
+  // 🔥 UTR Check Removed. Directly place the order.
   if(!currentCheckoutItem) return;
   
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
@@ -977,8 +1000,7 @@ $("confirmOrderBtn").onclick = async () => {
       else { amountPaid = shopCodAdvance > 0 ? shopCodAdvance : Math.round(finalTotal * 0.25); if(amountPaid > finalTotal) amountPaid = finalTotal; }
   }
 
-  if (amountPaid > 0) { if (utrValue.length !== 12 || !/^\d+$/.test(utrValue)) return alert("Galat UTR! Kripya exactly 12-digit ka sahi numeric UTR / Reference Number daalein."); } 
-  else { utrValue = "FULL_COD"; }
+  let utrValue = (amountPaid > 0) ? "WA_SCREENSHOT" : "FULL_COD";
 
   let balanceDue = finalTotal - amountPaid;
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order..."; btn.disabled = true;
@@ -1308,7 +1330,7 @@ window.renderAdmin = function () {
 // ADD PRODUCT
 document.getElementById("addProductBtn").addEventListener("click", async () => {
     const pName = document.getElementById("pName").value.trim();
-    const rawImage = document.getElementById("pImage").value.trim(); // Fetched via Base64 uploader
+    const rawImage = document.getElementById("pImage").value.trim(); 
     const pPrice = document.getElementById("pPrice").value;
     const pDisc = document.getElementById("pDiscount").value;
     const pExtra = document.getElementById("pExtra").value;
@@ -1322,7 +1344,6 @@ document.getElementById("addProductBtn").addEventListener("click", async () => {
     const pGroupId = document.getElementById("pGroupId").value.trim();
     const pUniqueId = document.getElementById("pUniqueId") ? document.getElementById("pUniqueId").value.trim() : "";
 
-    // 🔥 FIX: Split by ' | ' for base64 images, or ',' for old URL manual entry
     let imgArray = [];
     if(rawImage.includes("base64,") || rawImage.includes("|")) {
         imgArray = rawImage.split("|").map(s => s.trim()).filter(Boolean);
@@ -1355,10 +1376,9 @@ document.getElementById("addProductBtn").addEventListener("click", async () => {
 function openEditModal(p) {
   editingProductId = p.id; $("editPName").textContent = p.name;
   
-  // 🔥 FIX: Display existing images separated by ' | '
   let imgArray = Array.isArray(p.image) ? p.image : [p.image]; 
   $("editPImage").value = imgArray.join(" | "); 
-  $("editPImageFile").value = ""; // Clear file selector
+  $("editPImageFile").value = ""; 
   
   $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
@@ -1379,7 +1399,6 @@ if ($("saveEditBtn")) {
     if (!editingProductId) return;
     const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); 
     
-    // 🔥 FIX: Safely parse updated images
     let newImgArray = [];
     if(rawImage.includes("base64,") || rawImage.includes("|")) {
         newImgArray = rawImage.split("|").map(s => s.trim()).filter(Boolean);
