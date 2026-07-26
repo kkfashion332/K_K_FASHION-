@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH WHATSAPP PAYMENT, SPIN, COUPONS)
+   GEN-Z STORE — app.js (FINAL WITH ALL FIXES & WHATSAPP PAYMENT)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -68,11 +68,13 @@ const allowZoom = () => { document.querySelector('meta[name="viewport"]').setAtt
 const preventZoom = () => { document.querySelector('meta[name="viewport"]').setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"); };
 
 function pushModalState() { history.pushState({ modal: true }, "", window.location.href); }
+
+// 🔥 FIX: BACK BUTTON LOGIC COMPLETELY FIXED
 window.addEventListener('popstate', (e) => {
   if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
     $("imageViewer").classList.add("hidden"); preventZoom();
   } else if ($("checkoutOverlay") && !$("checkoutOverlay").classList.contains("hidden")) {
-    if($("closeCheckout")) $("closeCheckout").click();
+    $("checkoutOverlay").classList.add("hidden"); unlockScroll(); // Direct hide kiya, click event ka loop hata diya
   } else if ($("prodDetail") && !$("prodDetail").classList.contains("hidden")) {
     closeProductDetail();
   } else if ($("myOrderDetailModal") && !$("myOrderDetailModal").classList.contains("hidden")) {
@@ -83,6 +85,10 @@ window.addEventListener('popstate', (e) => {
     $("adminPin").classList.add("hidden");
   } else if ($("superAdminPinModal") && !$("superAdminPinModal").classList.contains("hidden")) {
     $("superAdminPinModal").classList.add("hidden");
+  } else if ($("editModal") && !$("editModal").classList.contains("hidden")) {
+    $("editModal").classList.add("hidden"); 
+  } else if ($("editShopModal") && !$("editShopModal").classList.contains("hidden")) {
+    $("editShopModal").classList.add("hidden"); 
   }
 });
 
@@ -273,7 +279,7 @@ if($("spinWheelHeaderBtn")) {
 }
 if($("closeSpinModal")) {
     $("closeSpinModal").onclick = () => {
-        history.back(); // Fixed modal closing via history
+        history.back();
     }
 }
 
@@ -346,7 +352,7 @@ if($("startSpinBtn")) {
 window.copyAndApplySpin = function(code) {
     navigator.clipboard.writeText(code).then(() => {
         localStorage.setItem("genz_won_coupon", code);
-        history.back(); // Fixed modal closing via history
+        history.back(); 
         alert(`Coupon ${code} copied! Ye automatically paste ho jayega jab aap koi product kholenge.`);
     }).catch(err => alert("Copy failed. Please note the code manually: " + code));
 }
@@ -672,6 +678,8 @@ function closeProductDetail() {
   detail.addEventListener("animationend", () => { detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null; unlockScroll(); }, { once: true });
 }
 
+$("pdBackBtn").onclick = () => { history.back(); }; 
+
 // 🔥 COUPON APPLY LOGIC
 if($("pdApplyCouponBtn")) {
     $("pdApplyCouponBtn").onclick = () => {
@@ -835,6 +843,8 @@ function openCheckout() {
   }
 }
 
+$("closeCheckout").onclick = () => { history.back(); }; 
+
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(); const mobile = $("chkMobile").value.trim(); const address = $("chkAddress").value.trim(); const state = $("chkState").value.trim(); const pincode = $("chkPincode").value.trim();
   if (!name || !mobile || !address || !state || !pincode) return alert("Kripya sabhi zaroori jankari bharein!");
@@ -984,7 +994,6 @@ async function sendTelegramAlert(orderData) {
 }
 
 $("confirmOrderBtn").onclick = async () => {
-  // 🔥 UTR Check Removed. Directly place the order.
   if(!currentCheckoutItem) return;
   
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
