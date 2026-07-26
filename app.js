@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH SPIN, COUPONS, BASE64 UPLOADS)
+   GEN-Z STORE — app.js (FINAL WITH SPIN, COUPONS, BASE64 UPLOADS FIX)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -129,7 +129,8 @@ function bindImageUploader(fileInputId, hiddenInputId) {
         });
         
         Promise.all(promises).then(b64s => {
-            hi.value = hi.value ? hi.value + "," + b64s.join(",") : b64s.join(",");
+            // 🔥 FIX: Added ' | ' separator instead of ',' to prevent breaking Base64 strings
+            hi.value = hi.value ? hi.value + " | " + b64s.join(" | ") : b64s.join(" | ");
             if(fi.previousElementSibling) fi.previousElementSibling.textContent = originalText;
             fi.disabled = false;
             alert(files.length + " Image(s) Attached from Gallery! ✅");
@@ -1321,7 +1322,13 @@ document.getElementById("addProductBtn").addEventListener("click", async () => {
     const pGroupId = document.getElementById("pGroupId").value.trim();
     const pUniqueId = document.getElementById("pUniqueId") ? document.getElementById("pUniqueId").value.trim() : "";
 
-    const imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+    // 🔥 FIX: Split by ' | ' for base64 images, or ',' for old URL manual entry
+    let imgArray = [];
+    if(rawImage.includes("base64,") || rawImage.includes("|")) {
+        imgArray = rawImage.split("|").map(s => s.trim()).filter(Boolean);
+    } else {
+        imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+    }
 
     if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Photo (Gallery Se) aur Price zaroori hain!"); return; }
     
@@ -1347,7 +1354,12 @@ document.getElementById("addProductBtn").addEventListener("click", async () => {
 
 function openEditModal(p) {
   editingProductId = p.id; $("editPName").textContent = p.name;
-  let imgArray = Array.isArray(p.image) ? p.image : [p.image]; $("editPImage").value = imgArray.join(", "); $("editPImageFile").value = ""; // Clear file selector
+  
+  // 🔥 FIX: Display existing images separated by ' | '
+  let imgArray = Array.isArray(p.image) ? p.image : [p.image]; 
+  $("editPImage").value = imgArray.join(" | "); 
+  $("editPImageFile").value = ""; // Clear file selector
+  
   $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
   $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
   if($("editPUniqueId")) $("editPUniqueId").value = p.uniqueId || "";
@@ -1365,7 +1377,16 @@ if ($("editClose")) { $("editClose").onclick = () => { $("editModal").classList.
 if ($("saveEditBtn")) {
   $("saveEditBtn").onclick = () => {
     if (!editingProductId) return;
-    const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); const newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+    const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); 
+    
+    // 🔥 FIX: Safely parse updated images
+    let newImgArray = [];
+    if(rawImage.includes("base64,") || rawImage.includes("|")) {
+        newImgArray = rawImage.split("|").map(s => s.trim()).filter(Boolean);
+    } else {
+        newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
+    }
+
     const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
     const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
     const pUniqueId = $("editPUniqueId") ? $("editPUniqueId").value.trim() : "";
