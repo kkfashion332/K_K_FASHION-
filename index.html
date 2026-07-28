@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" id="viewportMeta" />
-  <title>Gen-Z Store — Premium Apparel</title>  
-  <meta name="description" content="Shop exclusive, premium quality combo apparel for Gen-Z at Gen-Z Store." />
+  <title>Unique Fashion — Premium Apparel</title>  
+  <meta name="description" content="Shop exclusive, premium quality combo apparel for Gen-Z at Unique Fashion." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
@@ -44,6 +44,13 @@
     body:has(#splash:not(.hidden)) #onesignal-bell-container {
       display: none !important;
     }
+    
+    /* Youtube Pulse Animation Basic (Will enhance in CSS later) */
+    @keyframes ytPulse {
+      0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+    }
   </style>
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
@@ -69,7 +76,7 @@
 <body>
 
   <div id="initLoader" style="position:fixed; inset:0; background:#0a0a0a; z-index:99999; display:flex; align-items:center; justify-content:center; color:#C9A84C; font-family:'Inter', sans-serif; font-weight:600; font-size:14px;">
-    Loading Gen-Z Store...
+    Loading Unique Fashion...
   </div>
 
   <div id="splash" class="splash hidden">
@@ -89,10 +96,10 @@
       <div id="coin-scene">
         <div id="coin-rim"></div>
         <div id="logo-glow"></div>
-        <img id="logo" src="logo.png" alt="Gen-Z Store"/>
+        <img id="logo" src="logo.png" alt="Unique Fashion"/>
       </div>
 
-      <div id="welcome">WELCOME TO GEN-Z STORE</div>
+      <div id="welcome">WELCOME TO UNIQUE FASHION</div>
       <div id="welcome-line"></div>
       <div id="trusted">TRUSTED AND SECURE STORE</div>
       <div id="shield-glow"></div>
@@ -105,14 +112,11 @@
   <div id="app" class="app hidden">
     <header class="header">
       <button id="logoBtn" class="logo-btn" aria-label="Store logo">
-        <img src="logo.png" alt="Gen-Z Store" style="height: 48px; width: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.3);">
+        <img src="logo.png" alt="Unique Fashion" style="height: 48px; width: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.3);">
       </button>
       
-      <!-- UPDATED: PREMIUM SPIN WHEEL ICON WITH TEXT -->
+      <!-- REMOVED SPIN WHEEL - ONLY APP DOWNLOAD BUTTON LEFT -->
       <div style="display: flex; align-items: center; gap: 8px; padding-right: 50px;">
-        <button id="spinWheelHeaderBtn" class="spin-icon-btn" style="background: rgba(201,168,76,0.15); border: 1px solid var(--primary); border-radius: 999px; padding: 6px 12px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(201,168,76,0.4);">
-          🎡 <span style="font-size: 11px; font-weight: 700; color: var(--primary); margin-left: 5px; font-family: var(--font-body); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Spin & Win</span>
-        </button>
         <a href="https://drive.google.com/file/d/1ss69gfmB0VruEIM7qgpM5teQ-3GvhTzN/view?usp=drivesdk" target="_blank" class="app-download-btn" style="padding: 6px 12px; white-space: nowrap;">
           ⬇️ App
         </a>
@@ -159,8 +163,16 @@
         <div id="newCollectionList" style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;"></div>
       </div>
 
-      <div id="shortsPage" class="nav-page hidden" style="padding: 0; background: #000; height: calc(100vh - 65px);">
+      <div id="shortsPage" class="nav-page hidden" style="padding: 0; background: #000; height: calc(100vh - 65px); position: relative;">
         <div id="shortsContainer" class="shorts-container"></div>
+        
+        <!-- NEW: YOUTUBE SUBSCRIBE BUTTON (Floating on Shorts Page) -->
+        <a id="ytSubscribeBtn" href="https://youtube.com/@uniquefashion-w3y?si=vQ5t7nVl6PRfLH6D" target="_blank" style="position: absolute; right: 15px; top: 20px; z-index: 100; display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none;">
+          <div style="background: #fff; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; animation: ytPulse 2s infinite; border: 2px solid #ff0000;">
+            <svg viewBox="0 0 24 24" fill="#FF0000" width="30" height="30"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.5 12 3.5 12 3.5s-7.505 0-9.377.55a3.016 3.016 0 0 0-2.122 2.136C0 8.07 0 12 0 12s0 3.93.501 5.814a3.016 3.016 0 0 0 2.122 2.136c1.872.55 9.377.55 9.377.55s7.505 0 9.377-.55a3.016 3.016 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          </div>
+          <span style="color: #fff; font-size: 11px; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.9); background: rgba(0,0,0,0.5); padding: 2px 6px; border-radius: 10px;">Subscribe</span>
+        </a>
       </div>
 
       <div id="orderPage" class="nav-page hidden">
@@ -232,31 +244,13 @@
     </div>
   </div>
 
-  <div id="spinWheelModal" class="overlay center hidden" style="z-index: 160;">
-    <div class="pin-box" style="overflow: hidden; max-width: 350px;">
-      <button id="closeSpinModal" class="icon-btn close-abs" style="z-index: 10;">✕</button>
-      <h2 style="color:var(--primary); font-family:var(--font-display); font-size:26px; font-weight:700;">🎡 SPIN & WIN</h2>
-      <p style="font-size:12px; color:var(--muted); margin-bottom:15px; margin-top:4px;">Test your luck to win exclusive discount coupons!</p>
-      
-      <div class="wheel-container" style="position:relative; width:240px; height:240px; margin: 10px auto;">
-        <div class="wheel-pointer" style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); z-index:5; font-size:30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🔽</div>
-        <div id="spinWheelElement" class="wheel" style="width:100%; height:100%; border-radius:50%; border:4px solid var(--primary); box-shadow: 0 0 20px rgba(201,168,76,0.3); position:relative; overflow:hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);">
-        </div>
-      </div>
-      
-      <button id="startSpinBtn" class="btn-primary full auth-submit" style="margin-top:25px; font-size: 16px; padding: 12px; box-shadow: 0 4px 15px rgba(201,168,76,0.4);">SPIN NOW!</button>
-      <div id="spinResultMsg" class="hidden" style="margin-top:15px; font-weight:bold; font-size:15px; color:#4cc968; background: rgba(76,201,100,0.1); padding: 10px; border-radius: 8px; border: 1px dashed #4cc968;">
-      </div>
-    </div>
-  </div>
-
   <div id="prodDetail" class="prod-detail hidden">
     <div class="pd-header">
       <button id="pdBackBtn" class="pd-back-enhanced">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         <span>Back</span>
       </button>
-      <span class="brand-mark" style="font-size:18px;">GZ</span>
+      <span class="brand-mark" style="font-size:18px;">UF</span>
       <button id="pdCartBtn" class="icon-btn" aria-label="Open cart" style="display:none;"></button>
     </div>
 
@@ -282,10 +276,10 @@
 
       <div id="pdCouponBox" class="coupon-box" style="margin: 15px 16px; padding: 14px; border-radius: 12px; background: linear-gradient(145deg, rgba(201,168,76,0.08), rgba(20,20,20,1)); border: 1px dashed var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
           <div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <span>🎁</span> Apply Coupon / Spin Reward
+            <span>🎁</span> Apply Coupon
           </div>
           <div style="display: flex; gap: 8px;">
-              <input type="text" id="pdCouponInput" class="field" placeholder="Enter Code (e.g. GENZ50)" style="margin-bottom: 0; text-transform: uppercase; border-color: rgba(201,168,76,0.3); font-weight: 600; letter-spacing: 1px;">
+              <input type="text" id="pdCouponInput" class="field" placeholder="Enter Code (e.g. UF50)" style="margin-bottom: 0; text-transform: uppercase; border-color: rgba(201,168,76,0.3); font-weight: 600; letter-spacing: 1px;">
               <button id="pdApplyCouponBtn" class="btn-primary glowing-btn" style="white-space: nowrap; padding: 0 22px;">Apply</button>
           </div>
           <div id="pdCouponMessage" style="font-size: 12px; margin-top: 10px; font-weight: 600; display: none;"></div>
@@ -428,7 +422,7 @@
           <div style="color:var(--muted2); font-size:12px; margin-bottom:8px; text-transform:uppercase; letter-spacing: 1px;">Or Pay via UPI ID</div>
           
           <div id="copyUpiBtn" style="font-weight:bold; font-size:15px; color:var(--fg); background:var(--bg2); padding:10px 15px; border-radius:8px; border:1px dashed var(--border); display:inline-flex; align-items:center; gap:8px; cursor:pointer; margin-bottom:20px; transition:0.3s;">
-              genzstore@nyes <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>
+              ufstore@nyes <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>
           </div>
 
           <button id="waScreenshotBtn" class="btn-whatsapp">
@@ -595,20 +589,20 @@
           <button id="tabCatsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCats')">Categories</button>
           <button id="tabProdsBtn" class="am-tab active" onclick="switchAdminTab(event, 'amProds')">Products</button>
           <button id="tabShortsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amShorts')">Reels/Shorts</button>
-          <button id="tabCouponsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCoupons')">Coupons & Spin</button>
+          <button id="tabCouponsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCoupons')">Coupons</button>
           <button id="tabSettingsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
       </div>
 
       <div id="amCoupons" class="admin-section hidden">
           <section class="card">
-              <h3>Manage Coupons & Spin Rewards</h3>
-              <p class="section-hint">Naye coupon codes banayein aur Spin Wheel me set karein.</p>
+              <h3>Manage Coupons</h3>
+              <p class="section-hint">Naye coupon codes banayein discount dene ke liye.</p>
               
               <div id="adminCouponsList" style="margin-bottom: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;">
               </div>
               
               <div class="field-group" style="margin-top:10px;">
-                  <label class="field-label">Coupon Code (e.g. WELCOME50)</label>
+                  <label class="field-label">Coupon Code (e.g. UF50)</label>
                   <input id="newCouponCode" class="field" placeholder="Enter Code" style="text-transform: uppercase;" />
                   
                   <label class="field-label">Discount Amount (₹)</label>
@@ -616,16 +610,8 @@
                   
                   <label class="field-label">Minimum Order Value (₹)</label>
                   <input id="newCouponMinOrder" type="number" class="field" placeholder="e.g. 499" />
-                  
-                  <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:6px;">
-                    <span class="field-label">Add to Spin Wheel?</span>
-                    <label class="toggle-switch">
-                      <input type="checkbox" id="newCouponInSpin" checked />
-                      <span class="toggle-slider"></span>
-                    </label>
-                  </div>
 
-                  <button id="addCouponBtn" class="btn-primary sm-btn auth-submit">+ Create Coupon</button>
+                  <button id="addCouponBtn" class="btn-primary sm-btn auth-submit" style="margin-top: 12px;">+ Create Coupon</button>
               </div>
           </section>
       </div>
@@ -799,6 +785,15 @@
       <div id="amSettings" class="admin-section hidden">
           
           <section class="card">
+            <h3>YouTube Subscribe Link</h3>
+            <p class="section-hint">Shorts/Reels page par dikhne wale Subscribe button ka link update karein.</p>
+            <div class="inline-row" style="margin-top:8px;">
+              <input id="adminYtLink" type="text" class="field" placeholder="https://youtube.com/@..." />
+              <button id="saveYtBtn" class="btn-primary sm-btn auth-submit">Save</button>
+            </div>
+          </section>
+
+          <section class="card">
             <h3>WhatsApp Payment Number</h3>
             <p class="section-hint">Jis number par customer screenshot bhejega.</p>
             <div class="inline-row" style="margin-top:8px;">
@@ -896,23 +891,25 @@
     async function fetchSettings() { 
       try { 
         const snap = await getDoc(doc(db, "settings", "storeData")); 
-        let cats, bannersData, shortsData, couponsData, waData; 
+        let cats, bannersData, shortsData, couponsData, waData, ytLink; 
         if (snap.exists()) { 
           cats = snap.data().mainCategories || []; 
           bannersData = snap.data().banners || []; 
           shortsData = snap.data().shorts || []; 
           couponsData = snap.data().coupons || []; 
           waData = snap.data().waNumber || "8976073065"; 
+          ytLink = snap.data().youtubeLink || "https://youtube.com/@uniquefashion-w3y?si=vQ5t7nVl6PRfLH6D";
         } else { 
           cats = [{ id: "cat_genz", name: "GEN-Z PREMIUM", shopId: "GLOBAL" }]; 
-          bannersData = []; shortsData = []; couponsData = []; waData = "8976073065";
-          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData, shorts: shortsData, coupons: couponsData, waNumber: waData }, { merge: true }); 
+          bannersData = []; shortsData = []; couponsData = []; waData = "8976073065"; ytLink = "https://youtube.com/@uniquefashion-w3y?si=vQ5t7nVl6PRfLH6D";
+          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData, shorts: shortsData, coupons: couponsData, waNumber: waData, youtubeLink: ytLink }, { merge: true }); 
         } 
         if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats); 
         if (window.updateBannersFromFirebase) window.updateBannersFromFirebase(bannersData); 
         if (window.updateShortsFromFirebase) window.updateShortsFromFirebase(shortsData); 
         if (window.updateCouponsFromFirebase) window.updateCouponsFromFirebase(couponsData); 
         if (window.updateWaNumberFromFirebase) window.updateWaNumberFromFirebase(waData);
+        if (window.updateYtLinkFromFirebase) window.updateYtLinkFromFirebase(ytLink);
       } catch(e) {} 
     }
     
