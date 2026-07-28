@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH ALL FIXES & WHATSAPP PAYMENT)
+   GEN-Z STORE — app.js (FINAL WITH FAKE ORDERS, GLOBAL BG, CHECKOUT TOGGLES & YT)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -32,7 +32,7 @@ let shops = [];
 let homeBanners = [];
 let shortsData = []; 
 let couponsData = []; 
-let adminWaNumber = "8976073065"; // Default WhatsApp Number
+let adminWaNumber = "8976073065"; 
 let likes = load("knk_likes", []); 
 let currentCheckoutItem = null;    
 let appliedCoupon = null; 
@@ -69,18 +69,15 @@ const preventZoom = () => { document.querySelector('meta[name="viewport"]').setA
 
 function pushModalState() { history.pushState({ modal: true }, "", window.location.href); }
 
-// 🔥 FIX: BACK BUTTON LOGIC COMPLETELY FIXED
 window.addEventListener('popstate', (e) => {
   if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
     $("imageViewer").classList.add("hidden"); preventZoom();
   } else if ($("checkoutOverlay") && !$("checkoutOverlay").classList.contains("hidden")) {
-    $("checkoutOverlay").classList.add("hidden"); unlockScroll(); // Direct hide kiya, click event ka loop hata diya
+    $("checkoutOverlay").classList.add("hidden"); unlockScroll(); 
   } else if ($("prodDetail") && !$("prodDetail").classList.contains("hidden")) {
     closeProductDetail();
   } else if ($("myOrderDetailModal") && !$("myOrderDetailModal").classList.contains("hidden")) {
     $("myOrderDetailModal").classList.add("hidden"); unlockScroll();
-  } else if ($("spinWheelModal") && !$("spinWheelModal").classList.contains("hidden")) {
-    $("spinWheelModal").classList.add("hidden"); 
   } else if ($("adminPin") && !$("adminPin").classList.contains("hidden")) {
     $("adminPin").classList.add("hidden");
   } else if ($("superAdminPinModal") && !$("superAdminPinModal").classList.contains("hidden")) {
@@ -92,7 +89,31 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
-// Update data from Firebase
+// Settings & Toggles Update
+window.updateCheckoutFieldsFromFirebase = function(fieldsData) {
+    if(!fieldsData) return;
+    if($("chkStateGroup")) $("chkStateGroup").style.display = fieldsData.state ? "flex" : "none";
+    if($("chkPincodeGroup")) $("chkPincodeGroup").style.display = fieldsData.pincode ? "flex" : "none";
+    if($("chkLandmarkGroup")) $("chkLandmarkGroup").style.display = fieldsData.landmark ? "flex" : "none";
+    
+    if($("toggleStateField")) $("toggleStateField").checked = fieldsData.state;
+    if($("togglePincodeField")) $("togglePincodeField").checked = fieldsData.pincode;
+    if($("toggleLandmarkField")) $("toggleLandmarkField").checked = fieldsData.landmark;
+};
+
+window.updateYtLinkFromFirebase = function(link) {
+    if($("shortsYtLink")) $("shortsYtLink").href = link || "https://youtube.com/@uniquefashion-w3y?si=mbIRQmi1m9nWAGbo";
+    if($("adminYtLink")) $("adminYtLink").value = link || "";
+}
+
+window.updateGlobalBgFromFirebase = function(bgData) {
+    if(bgData) {
+        $("dynamicGlobalBg").innerHTML = `body { background-image: url('${bgData}') !important; background-size: cover; background-position: center; background-attachment: fixed; }`;
+    } else {
+        $("dynamicGlobalBg").innerHTML = "";
+    }
+};
+
 window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fetchedBanners || []; renderHomeBanners(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); }
 window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; renderShopsPage(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
@@ -101,9 +122,6 @@ window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts ||
 window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateWaNumberFromFirebase = function (waNum) { adminWaNumber = waNum; if($("adminWaNumber")) $("adminWaNumber").value = waNum; };
 
-// ----------------------------------------------------
-// DIRECT GALLERY UPLOAD (BASE64 CONVERTER)
-// ----------------------------------------------------
 function bindImageUploader(fileInputId, hiddenInputId) {
     const fi = $(fileInputId); const hi = $(hiddenInputId);
     if(!fi || !hi) return;
@@ -145,12 +163,43 @@ function bindImageUploader(fileInputId, hiddenInputId) {
     });
 }
 
+// 🔥 FAKE ORDER NOTIFICATION LOGIC
+function startFakeOrderNotifs() {
+    setInterval(() => {
+        if (products.length === 0) return;
+        if (!$("shortsPage").classList.contains("hidden")) return; // Don't show on shorts page
+        
+        let budgetProds = products.filter(p => finalPrice(p) <= 1200);
+        let targetList = budgetProds.length > 0 ? budgetProds : products;
+        let randomProd = targetList[Math.floor(Math.random() * targetList.length)];
+        
+        let names = ["Rahul", "Aman", "Priya", "Neha", "Vikas", "Rohit", "Sneha", "Karan", "Anjali", "Suresh", "Vikram", "Pooja"];
+        let cities = ["Jaipur", "Delhi", "Mumbai", "Pune", "Kota", "Surat", "Patna", "Indore", "Bhopal", "Lucknow", "Baran"];
+        let rName = names[Math.floor(Math.random() * names.length)];
+        let rCity = cities[Math.floor(Math.random() * cities.length)];
+        let mainImg = (Array.isArray(randomProd.image) && randomProd.image.length > 0) ? randomProd.image[0] : "placeholder.jpg";
+        
+        if($("fakeNotifImg")) $("fakeNotifImg").src = mainImg;
+        if($("fakeNotifTitle")) $("fakeNotifTitle").innerHTML = `<b>${rName}</b> from ${rCity} just bought<br><span style="color:var(--primary)">${randomProd.name}</span>`;
+        
+        if($("fakeOrderNotif")) {
+            $("fakeOrderNotif").classList.add("show");
+            setTimeout(() => { $("fakeOrderNotif").classList.remove("show"); }, 4000);
+        }
+    }, Math.floor(Math.random() * 10000) + 15000); // Trigger randomly between 15 to 25 seconds
+}
+
 window.addEventListener("DOMContentLoaded", () => {
-  if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
+  if (!isAppInitialized) { 
+      showSplashAndStart(); 
+      isAppInitialized = true; 
+      setTimeout(startFakeOrderNotifs, 8000); // Start fake orders after 8 seconds
+  }
   
   bindImageUploader("pImageFile", "pImage");
   bindImageUploader("editPImageFile", "editPImage");
   bindImageUploader("newBannerFile", "newBannerImg");
+  bindImageUploader("adminGlobalBgFile", "adminGlobalBgHidden");
   
   if ($("addCatBtn")) {
       $("addCatBtn").onclick = () => {
@@ -179,6 +228,67 @@ window.addEventListener("DOMContentLoaded", () => {
           superAdminTapTimer = setTimeout(() => { superAdminTapCount = 0; }, 3000);
       });
   }
+
+  // Admin Checkbox Logic
+  ["toggleStateField", "togglePincodeField", "toggleLandmarkField"].forEach(id => {
+      if($(id)) {
+          $(id).addEventListener("change", async () => {
+              let fields = {
+                  state: $("toggleStateField") ? $("toggleStateField").checked : true,
+                  pincode: $("togglePincodeField") ? $("togglePincodeField").checked : true,
+                  landmark: $("toggleLandmarkField") ? $("toggleLandmarkField").checked : true
+              };
+              try {
+                  if(window.fbSetDoc && window.fbDoc && window.fbDb) {
+                      await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { checkoutFields: fields }, { merge: true });
+                      window.updateCheckoutFieldsFromFirebase(fields);
+                  }
+              } catch(e) {}
+          });
+      }
+  });
+
+  if($("saveGlobalBgBtn")) {
+      $("saveGlobalBgBtn").onclick = async () => {
+          let bg = $("adminGlobalBgHidden").value.trim();
+          if(bg.includes("|")) bg = bg.split("|")[0].trim();
+          if(!bg) return alert("Pehle Gallery se image select karein!");
+          $("saveGlobalBgBtn").textContent = "Saving...";
+          try {
+              await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { globalBg: bg }, { merge: true });
+              window.updateGlobalBgFromFirebase(bg);
+              alert("Background Image Updated!");
+          } catch(e) {}
+          $("saveGlobalBgBtn").textContent = "Update Background";
+      }
+  }
+
+  if($("removeGlobalBgBtn")) {
+      $("removeGlobalBgBtn").onclick = async () => {
+          $("removeGlobalBgBtn").textContent = "Removing...";
+          try {
+              await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { globalBg: "" }, { merge: true });
+              window.updateGlobalBgFromFirebase("");
+              $("adminGlobalBgHidden").value = "";
+              alert("Background Removed!");
+          } catch(e) {}
+          $("removeGlobalBgBtn").textContent = "Remove Background";
+      }
+  }
+
+  if($("saveYtBtn")) {
+      $("saveYtBtn").onclick = async () => {
+          let link = $("adminYtLink").value.trim();
+          $("saveYtBtn").textContent = "Saving...";
+          try {
+              await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { ytLink: link }, { merge: true });
+              window.updateYtLinkFromFirebase(link);
+              alert("YouTube Link Saved!");
+          } catch(e) {}
+          $("saveYtBtn").textContent = "Save";
+      }
+  }
+
 });
 
 window.switchAdminTab = function(event, tabId) {
@@ -262,99 +372,6 @@ window.clearShopFilterAndGoHome = function() {
     activeShopId = null; activeMainCatId = null; searchQuery = "";
     if($("searchInput")) $("searchInput").value = "";
     switchNav('Home'); 
-}
-
-// ----------------------------------------------------
-// 🔥 SPIN WHEEL LOGIC
-// ----------------------------------------------------
-let spinPrizes = [];
-let isSpinning = false;
-
-if($("spinWheelHeaderBtn")) {
-    $("spinWheelHeaderBtn").onclick = () => {
-        pushModalState();
-        $("spinWheelModal").classList.remove("hidden");
-        renderSpinWheel();
-    }
-}
-if($("closeSpinModal")) {
-    $("closeSpinModal").onclick = () => {
-        history.back();
-    }
-}
-
-function renderSpinWheel() {
-    const wheel = $("spinWheelElement");
-    const activeSpinCoupons = couponsData.filter(c => c.inSpin && c.active !== false);
-    
-    spinPrizes = activeSpinCoupons.map(c => ({ label: c.code, type: 'coupon', data: c }));
-    
-    if(spinPrizes.length < 6) {
-       spinPrizes.push({ label: 'Better Luck', type: 'empty' }, { label: 'Try Again', type: 'empty' });
-    }
-    while(spinPrizes.length < 6) {
-        spinPrizes.push(...spinPrizes.slice(0, 6 - spinPrizes.length));
-    }
-
-    let html = "";
-    let sliceDeg = 360 / spinPrizes.length;
-    let conicColors = [];
-    const colors = ['#C9A84C', '#a87f28', '#141414', '#2a2a2a'];
-
-    spinPrizes.forEach((prize, i) => {
-        let startAngle = i * sliceDeg;
-        let endAngle = startAngle + sliceDeg;
-        conicColors.push(`${colors[i % colors.length]} ${startAngle}deg ${endAngle}deg`);
-
-        let rotation = startAngle + (sliceDeg / 2);
-        html += `<div style="position:absolute; top:50%; left:50%; width:50%; height:20px; margin-top:-10px; transform-origin:0 50%; transform:rotate(${rotation}deg); text-align:right; padding-right:15px; font-size:13px; font-weight:800; color:${i%2===0?'#000':'#fff'}; text-shadow:0 1px 2px rgba(0,0,0,0.5); font-family:var(--font-body); letter-spacing:1px;">${prize.label}</div>`;
-    });
-
-    wheel.style.background = `conic-gradient(${conicColors.join(", ")})`;
-    wheel.innerHTML = html;
-    wheel.style.transform = `rotate(0deg)`;
-    $("spinResultMsg").classList.add("hidden");
-}
-
-if($("startSpinBtn")) {
-    $("startSpinBtn").onclick = () => {
-        if(isSpinning) return;
-        isSpinning = true;
-        $("spinResultMsg").classList.add("hidden");
-        const wheel = $("spinWheelElement");
-
-        const prizeIndex = Math.floor(Math.random() * spinPrizes.length);
-        const sliceDeg = 360 / spinPrizes.length;
-        
-        const targetAngle = 270 - (prizeIndex * sliceDeg) - (sliceDeg / 2);
-        const spinAngle = targetAngle + (360 * 6);
-
-        wheel.style.transform = `rotate(${spinAngle}deg)`;
-
-        setTimeout(() => {
-            isSpinning = false;
-            const won = spinPrizes[prizeIndex];
-            const msg = $("spinResultMsg");
-            msg.classList.remove("hidden");
-            
-            if(won.type === 'coupon') {
-                msg.innerHTML = `🎉 You Won: <b>${won.label}</b> (₹${won.data.discount} OFF)! <br><button onclick="copyAndApplySpin('${won.label}')" class="btn-primary sm-btn" style="margin-top:10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Copy & Use Now</button>`;
-            } else {
-                msg.style.borderColor = "var(--destructive)";
-                msg.style.color = "var(--destructive)";
-                msg.style.background = "rgba(224,85,85,0.1)";
-                msg.innerHTML = `😔 Oh no! <b>${won.label}</b>. Try your luck later!`;
-            }
-        }, 4000);
-    }
-}
-
-window.copyAndApplySpin = function(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        localStorage.setItem("genz_won_coupon", code);
-        history.back(); 
-        alert(`Coupon ${code} copied! Ye automatically paste ho jayega jab aap koi product kholenge.`);
-    }).catch(err => alert("Copy failed. Please note the code manually: " + code));
 }
 
 function renderShortsPage() {
@@ -678,8 +695,6 @@ function closeProductDetail() {
   detail.addEventListener("animationend", () => { detail.classList.add("hidden"); detail.classList.remove("closing"); currentDetailProduct = null; unlockScroll(); }, { once: true });
 }
 
-$("pdBackBtn").onclick = () => { history.back(); }; 
-
 // 🔥 COUPON APPLY LOGIC
 if($("pdApplyCouponBtn")) {
     $("pdApplyCouponBtn").onclick = () => {
@@ -775,24 +790,6 @@ if ($("waScreenshotBtn")) {
     };
 }
 
-// 🔥 ADMIN WHATSAPP SAVE LOGIC
-if ($("saveWaBtn")) {
-    $("saveWaBtn").onclick = async () => {
-        const num = $("adminWaNumber").value.trim();
-        if(num.length < 10) return alert("Kripya sahi 10-digit number dalein!");
-        
-        $("saveWaBtn").textContent = "Saving...";
-        try {
-            if(window.fbSetDoc && window.fbDoc && window.fbDb) {
-                await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { waNumber: num }, { merge: true });
-                adminWaNumber = num;
-                alert("WhatsApp Number Update Ho Gaya!");
-            }
-        } catch(e) { console.log(e); }
-        $("saveWaBtn").textContent = "Save";
-    };
-}
-
 function directBuyCheckout(p, size, coupon) { 
     preventZoom(); 
     const s = size || "Default"; 
@@ -843,11 +840,39 @@ function openCheckout() {
   }
 }
 
-$("closeCheckout").onclick = () => { history.back(); }; 
+// 🔥 FIX: STEP BY STEP CHECKOUT BACK LOGIC
+$("closeCheckout").onclick = () => { 
+    if(!$("checkoutStep2").classList.contains("hidden")) {
+        $("checkoutStep2").classList.add("hidden");
+        $("checkoutStep1").classList.remove("hidden");
+        
+        $("step2PayBtn").classList.add("hidden");
+        $("confirmOrderBtn").classList.add("hidden");
+        $("step1NextBtn").classList.remove("hidden");
+        $("chkFooterTotalRow").classList.remove("hidden");
+        
+        $("paymentOptionsWrap").classList.remove("hidden");
+        $("qrScanSection").classList.add("hidden");
+        
+        $("step2Indicator").classList.remove("active");
+        $("line1").classList.remove("completed");
+        $("step1Indicator").classList.add("active");
+        $("step1Indicator").classList.remove("completed");
+        $("step1Circle").innerHTML = "1";
+    } else if(!$("checkoutStep3").classList.contains("hidden")) {
+        history.back();
+    } else {
+        history.back();
+    }
+};
 
 $("step1NextBtn").onclick = () => {
   const name = $("chkName").value.trim(); const mobile = $("chkMobile").value.trim(); const address = $("chkAddress").value.trim(); const state = $("chkState").value.trim(); const pincode = $("chkPincode").value.trim();
-  if (!name || !mobile || !address || !state || !pincode) return alert("Kripya sabhi zaroori jankari bharein!");
+  
+  if (!name || !mobile || !address) return alert("Kripya Full Name, Mobile aur Address zaroori bharein!");
+  if ($("toggleStateField") && $("toggleStateField").checked && !state) return alert("Kripya State (Rajya) ka naam daalein!");
+  if ($("togglePincodeField") && $("togglePincodeField").checked && !pincode) return alert("Kripya area Pincode daalein!");
+  
   if (mobile.length < 10 || isNaN(mobile)) return alert("Mobile number galat hai!");
   
   $("checkoutStep1").classList.add("hidden"); $("checkoutStep2").classList.remove("hidden");
@@ -864,8 +889,10 @@ function renderStep2() {
   $("chkStep2Img").src = mainImg; $("chkStep2Qty").value = item.qty > 7 ? 7 : item.qty;
   updateStep2Summary();
   
+  // 🔥 FIX: DYNAMIC PRICE UPDATE ON UNIT CHANGE
   $("chkStep2Qty").onchange = (e) => { 
-      item.qty = parseInt(e.target.value); updateStep2Summary(); 
+      item.qty = parseInt(e.target.value); 
+      updateStep2Summary(); 
       const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
       if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
   };
@@ -876,8 +903,10 @@ function renderStep2() {
 
 function updateStep2Summary() {
   if (!currentCheckoutItem) return;
+  
+  let pPrice = finalPrice(currentCheckoutItem.product);
   let actualTotal = currentCheckoutItem.product.price * currentCheckoutItem.qty; 
-  let itemFinalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
+  let itemFinalTotal = pPrice * currentCheckoutItem.qty;
   
   let couponDisc = 0;
   if(currentCheckoutItem.coupon) {
@@ -986,7 +1015,6 @@ async function sendTelegramAlert(orderData) {
     
     if(orderData.paymentMethod === "COD") { text += `💸 *Advance Paid:* ₹${orderData.amountPaid}\n🛑 *Balance Due (COD):* ₹${orderData.balanceDue}\n`; }
     
-    // 🔥 UTR checking removed since we use WhatsApp Screenshots now
     if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *WhatsApp Screenshot Expected*\n`;
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
@@ -1190,11 +1218,10 @@ if($("addCouponBtn")) {
         const code = $("newCouponCode").value.trim().toUpperCase();
         const discount = Number($("newCouponDiscount").value) || 0;
         const minOrder = Number($("newCouponMinOrder").value) || 0;
-        const inSpin = $("newCouponInSpin").checked;
         if(!code || !discount) return alert("Code and Discount details are required!");
         
         $("addCouponBtn").textContent = "Creating...";
-        couponsData.push({ id: genId(), code, discount, minOrder, inSpin, active: true });
+        couponsData.push({ id: genId(), code, discount, minOrder, active: true });
         if(window.saveCouponsToFirebase) await window.saveCouponsToFirebase(couponsData);
         
         $("newCouponCode").value = ""; $("newCouponDiscount").value = ""; $("newCouponMinOrder").value = "";
@@ -1320,7 +1347,7 @@ window.renderAdmin = function () {
       cList.innerHTML = "";
       couponsData.forEach(c => {
           const d = document.createElement("div"); d.className = "admin-prod";
-          d.innerHTML = `<div class="ap-info"><div class="ap-name">${c.code} <span style="color:var(--primary);">(₹${c.discount} OFF)</span></div><div class="ap-sub">Min Order: ₹${c.minOrder} | Spin: ${c.inSpin ? 'Yes' : 'No'}</div></div><div class="ap-actions"><button class="trash del-coupon" data-id="${c.id}">🗑️</button></div>`;
+          d.innerHTML = `<div class="ap-info"><div class="ap-name">${c.code} <span style="color:var(--primary);">(₹${c.discount} OFF)</span></div><div class="ap-sub">Min Order: ₹${c.minOrder}</div></div><div class="ap-actions"><button class="trash del-coupon" data-id="${c.id}">🗑️</button></div>`;
           d.querySelector('.del-coupon').onclick = async () => { if(confirm("Delete Coupon?")) { couponsData = couponsData.filter(x => x.id !== c.id); if(window.saveCouponsToFirebase) await window.saveCouponsToFirebase(couponsData); renderAdmin(); } }
           cList.appendChild(d);
       });
