@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   GEN-Z STORE — app.js (FINAL WITH ALL FIXES & WHATSAPP PAYMENT)
+   UNIQUE FASHION — app.js (FINAL WITH YOUTUBE & NO SPIN)
 ═══════════════════════════════════════════════════════ */
 
 const FIREBASE_SERVICE_ACCOUNT = {
@@ -32,7 +32,7 @@ let shops = [];
 let homeBanners = [];
 let shortsData = []; 
 let couponsData = []; 
-let adminWaNumber = "8976073065"; // Default WhatsApp Number
+let adminWaNumber = "8976073065"; 
 let likes = load("knk_likes", []); 
 let currentCheckoutItem = null;    
 let appliedCoupon = null; 
@@ -69,18 +69,16 @@ const preventZoom = () => { document.querySelector('meta[name="viewport"]').setA
 
 function pushModalState() { history.pushState({ modal: true }, "", window.location.href); }
 
-// 🔥 FIX: BACK BUTTON LOGIC COMPLETELY FIXED
+// BACK BUTTON LOGIC COMPLETELY FIXED
 window.addEventListener('popstate', (e) => {
   if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
     $("imageViewer").classList.add("hidden"); preventZoom();
   } else if ($("checkoutOverlay") && !$("checkoutOverlay").classList.contains("hidden")) {
-    $("checkoutOverlay").classList.add("hidden"); unlockScroll(); // Direct hide kiya, click event ka loop hata diya
+    $("checkoutOverlay").classList.add("hidden"); unlockScroll(); 
   } else if ($("prodDetail") && !$("prodDetail").classList.contains("hidden")) {
     closeProductDetail();
   } else if ($("myOrderDetailModal") && !$("myOrderDetailModal").classList.contains("hidden")) {
     $("myOrderDetailModal").classList.add("hidden"); unlockScroll();
-  } else if ($("spinWheelModal") && !$("spinWheelModal").classList.contains("hidden")) {
-    $("spinWheelModal").classList.add("hidden"); 
   } else if ($("adminPin") && !$("adminPin").classList.contains("hidden")) {
     $("adminPin").classList.add("hidden");
   } else if ($("superAdminPinModal") && !$("superAdminPinModal").classList.contains("hidden")) {
@@ -100,6 +98,12 @@ window.updateProductsFromFirebase = function (fbProducts) { products = fbProduct
 window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
 window.updateWaNumberFromFirebase = function (waNum) { adminWaNumber = waNum; if($("adminWaNumber")) $("adminWaNumber").value = waNum; };
+
+// Sync YouTube Link
+window.updateYtLinkFromFirebase = function (link) { 
+  if($("ytSubscribeBtn")) $("ytSubscribeBtn").href = link; 
+  if($("adminYtLink")) $("adminYtLink").value = link; 
+};
 
 // ----------------------------------------------------
 // DIRECT GALLERY UPLOAD (BASE64 CONVERTER)
@@ -262,99 +266,6 @@ window.clearShopFilterAndGoHome = function() {
     activeShopId = null; activeMainCatId = null; searchQuery = "";
     if($("searchInput")) $("searchInput").value = "";
     switchNav('Home'); 
-}
-
-// ----------------------------------------------------
-// 🔥 SPIN WHEEL LOGIC
-// ----------------------------------------------------
-let spinPrizes = [];
-let isSpinning = false;
-
-if($("spinWheelHeaderBtn")) {
-    $("spinWheelHeaderBtn").onclick = () => {
-        pushModalState();
-        $("spinWheelModal").classList.remove("hidden");
-        renderSpinWheel();
-    }
-}
-if($("closeSpinModal")) {
-    $("closeSpinModal").onclick = () => {
-        history.back();
-    }
-}
-
-function renderSpinWheel() {
-    const wheel = $("spinWheelElement");
-    const activeSpinCoupons = couponsData.filter(c => c.inSpin && c.active !== false);
-    
-    spinPrizes = activeSpinCoupons.map(c => ({ label: c.code, type: 'coupon', data: c }));
-    
-    if(spinPrizes.length < 6) {
-       spinPrizes.push({ label: 'Better Luck', type: 'empty' }, { label: 'Try Again', type: 'empty' });
-    }
-    while(spinPrizes.length < 6) {
-        spinPrizes.push(...spinPrizes.slice(0, 6 - spinPrizes.length));
-    }
-
-    let html = "";
-    let sliceDeg = 360 / spinPrizes.length;
-    let conicColors = [];
-    const colors = ['#C9A84C', '#a87f28', '#141414', '#2a2a2a'];
-
-    spinPrizes.forEach((prize, i) => {
-        let startAngle = i * sliceDeg;
-        let endAngle = startAngle + sliceDeg;
-        conicColors.push(`${colors[i % colors.length]} ${startAngle}deg ${endAngle}deg`);
-
-        let rotation = startAngle + (sliceDeg / 2);
-        html += `<div style="position:absolute; top:50%; left:50%; width:50%; height:20px; margin-top:-10px; transform-origin:0 50%; transform:rotate(${rotation}deg); text-align:right; padding-right:15px; font-size:13px; font-weight:800; color:${i%2===0?'#000':'#fff'}; text-shadow:0 1px 2px rgba(0,0,0,0.5); font-family:var(--font-body); letter-spacing:1px;">${prize.label}</div>`;
-    });
-
-    wheel.style.background = `conic-gradient(${conicColors.join(", ")})`;
-    wheel.innerHTML = html;
-    wheel.style.transform = `rotate(0deg)`;
-    $("spinResultMsg").classList.add("hidden");
-}
-
-if($("startSpinBtn")) {
-    $("startSpinBtn").onclick = () => {
-        if(isSpinning) return;
-        isSpinning = true;
-        $("spinResultMsg").classList.add("hidden");
-        const wheel = $("spinWheelElement");
-
-        const prizeIndex = Math.floor(Math.random() * spinPrizes.length);
-        const sliceDeg = 360 / spinPrizes.length;
-        
-        const targetAngle = 270 - (prizeIndex * sliceDeg) - (sliceDeg / 2);
-        const spinAngle = targetAngle + (360 * 6);
-
-        wheel.style.transform = `rotate(${spinAngle}deg)`;
-
-        setTimeout(() => {
-            isSpinning = false;
-            const won = spinPrizes[prizeIndex];
-            const msg = $("spinResultMsg");
-            msg.classList.remove("hidden");
-            
-            if(won.type === 'coupon') {
-                msg.innerHTML = `🎉 You Won: <b>${won.label}</b> (₹${won.data.discount} OFF)! <br><button onclick="copyAndApplySpin('${won.label}')" class="btn-primary sm-btn" style="margin-top:10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">Copy & Use Now</button>`;
-            } else {
-                msg.style.borderColor = "var(--destructive)";
-                msg.style.color = "var(--destructive)";
-                msg.style.background = "rgba(224,85,85,0.1)";
-                msg.innerHTML = `😔 Oh no! <b>${won.label}</b>. Try your luck later!`;
-            }
-        }, 4000);
-    }
-}
-
-window.copyAndApplySpin = function(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        localStorage.setItem("genz_won_coupon", code);
-        history.back(); 
-        alert(`Coupon ${code} copied! Ye automatically paste ho jayega jab aap koi product kholenge.`);
-    }).catch(err => alert("Copy failed. Please note the code manually: " + code));
 }
 
 function renderShortsPage() {
@@ -630,8 +541,7 @@ function openProductDetail(p) {
   if(p.freeDelivery !== false) { const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj; $("pdName").parentNode.insertBefore(d, $("pdColorsWrap")); }
 
   $("pdCouponMessage").style.display = "none";
-  const savedCoupon = localStorage.getItem("genz_won_coupon");
-  if(savedCoupon) { $("pdCouponInput").value = savedCoupon; } else { $("pdCouponInput").value = ""; }
+  $("pdCouponInput").value = ""; 
 
   if(p.groupId) {
       const variants = products.filter(x => x.groupId === p.groupId);
@@ -753,7 +663,7 @@ function buildHorizSection(title, list) {
 // ----------------------------------------------------
 // CHECKOUT & PAYMENTS
 // ----------------------------------------------------
-let currentDynamicUpi = "genzstore@nyes";
+let currentDynamicUpi = "ufstore@nyes";
 
 if ($("copyUpiBtn")) {
   $("copyUpiBtn").onclick = function () {
@@ -764,18 +674,16 @@ if ($("copyUpiBtn")) {
   };
 }
 
-// 🔥 NEW WHATSAPP BUTTON LOGIC
 if ($("waScreenshotBtn")) {
     $("waScreenshotBtn").onclick = () => {
         let amountPaid = $("qrAmountDisplay").textContent;
         let pName = currentCheckoutItem ? currentCheckoutItem.product.name : "Products";
-        let message = `Hello Gen-Z Store! \nHere is my payment screenshot for the order of *${pName}*. \nAmount Paid: *${amountPaid}*`;
+        let message = `Hello Unique Fashion! \nHere is my payment screenshot for the order of *${pName}*. \nAmount Paid: *${amountPaid}*`;
         let waUrl = `https://wa.me/91${adminWaNumber}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
     };
 }
 
-// 🔥 ADMIN WHATSAPP SAVE LOGIC
 if ($("saveWaBtn")) {
     $("saveWaBtn").onclick = async () => {
         const num = $("adminWaNumber").value.trim();
@@ -790,6 +698,22 @@ if ($("saveWaBtn")) {
             }
         } catch(e) { console.log(e); }
         $("saveWaBtn").textContent = "Save";
+    };
+}
+
+if ($("saveYtBtn")) {
+    $("saveYtBtn").onclick = async () => {
+        const link = $("adminYtLink").value.trim();
+        if(!link) return alert("Link daalein!");
+        $("saveYtBtn").textContent = "Saving...";
+        try {
+            if(window.fbSetDoc && window.fbDoc && window.fbDb) {
+                await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { youtubeLink: link }, { merge: true });
+                if($("ytSubscribeBtn")) $("ytSubscribeBtn").href = link;
+                alert("YouTube Link Update Ho Gaya!");
+            }
+        } catch(e) { console.log(e); }
+        $("saveYtBtn").textContent = "Save";
     };
 }
 
@@ -825,9 +749,9 @@ function openCheckout() {
   let shopCodEnabled = true; let shopCodAdvance = 0; let shopFullCodEnabled = false;
   if (currentCheckoutItem.product.shopId) {
       const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId);
-      if (sp) { currentDynamicUpi = sp.upi || "genzstore@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
-      else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
-  } else { currentDynamicUpi = "genzstore@nyes"; $("chkQrImage").src = "62673.png"; }
+      if (sp) { currentDynamicUpi = sp.upi || "ufstore@nyes"; $("chkQrImage").src = sp.qr || "62673.png"; shopCodEnabled = sp.codEnabled !== false; shopCodAdvance = Number(sp.codAdvance) || 0; shopFullCodEnabled = sp.fullCodEnabled === true; } 
+      else { currentDynamicUpi = "ufstore@nyes"; $("chkQrImage").src = "62673.png"; }
+  } else { currentDynamicUpi = "ufstore@nyes"; $("chkQrImage").src = "62673.png"; }
   
   $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`;
 
@@ -986,7 +910,6 @@ async function sendTelegramAlert(orderData) {
     
     if(orderData.paymentMethod === "COD") { text += `💸 *Advance Paid:* ₹${orderData.amountPaid}\n🛑 *Balance Due (COD):* ₹${orderData.balanceDue}\n`; }
     
-    // 🔥 UTR checking removed since we use WhatsApp Screenshots now
     if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *WhatsApp Screenshot Expected*\n`;
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
@@ -1024,7 +947,7 @@ $("confirmOrderBtn").onclick = async () => {
   
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : autoEmail;
 
-  let orderShopName = "Gen-Z Store"; let orderShopLogo = "placeholder.jpg";
+  let orderShopName = "Unique Fashion"; let orderShopLogo = "placeholder.jpg";
   if (currentCheckoutItem.product.shopId) { const sp = shops.find(s => s.id === currentCheckoutItem.product.shopId); if (sp) { orderShopName = sp.name; orderShopLogo = sp.logo || "placeholder.jpg"; } }
 
   const orderData = { name: $("chkName").value.trim(), mobile: chkMobile, address: $("chkAddress").value.trim(), state: $("chkState").value.trim(), pincode: $("chkPincode").value.trim(), landmark: $("chkLandmark").value.trim(), items: [currentCheckoutItem], couponUsed: currentCheckoutItem.coupon || null, totalAmount: finalTotal, paymentMethod: payMethod, amountPaid: amountPaid, balanceDue: balanceDue, utrNumber: utrValue, status: "Recent", userEmail: userEmail, shopName: orderShopName, shopLogo: orderShopLogo, savedAt: Date.now() };
@@ -1190,11 +1113,11 @@ if($("addCouponBtn")) {
         const code = $("newCouponCode").value.trim().toUpperCase();
         const discount = Number($("newCouponDiscount").value) || 0;
         const minOrder = Number($("newCouponMinOrder").value) || 0;
-        const inSpin = $("newCouponInSpin").checked;
+        
         if(!code || !discount) return alert("Code and Discount details are required!");
         
         $("addCouponBtn").textContent = "Creating...";
-        couponsData.push({ id: genId(), code, discount, minOrder, inSpin, active: true });
+        couponsData.push({ id: genId(), code, discount, minOrder, active: true });
         if(window.saveCouponsToFirebase) await window.saveCouponsToFirebase(couponsData);
         
         $("newCouponCode").value = ""; $("newCouponDiscount").value = ""; $("newCouponMinOrder").value = "";
@@ -1254,7 +1177,7 @@ if ($("addShopBtn")) {
 function syncAddProductDropdowns() {
   const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach((cat) => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); });
   const pShop = $("pShop"); const newCatShop = $("newCatShop");
-  if(pShop) { pShop.innerHTML = '<option value="">Gen-Z Store (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
+  if(pShop) { pShop.innerHTML = '<option value="">Unique Fashion (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
   if(newCatShop) { newCatShop.innerHTML = '<option value="GLOBAL">Global (All Shops)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; newCatShop.appendChild(o); }); }
 }
 
@@ -1275,7 +1198,7 @@ window.renderAdminOrders = function (orders) {
       <div class="order-head"><span>Name: ${o.name} (${o.mobile})</span><strong>₹${o.totalAmount}</strong></div>
       <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);">
          <img src="${o.shopLogo || 'placeholder.jpg'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--primary);">
-         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'Gen-Z Store'}</strong>
+         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'Unique Fashion'}</strong>
          <span style="margin-left:auto; font-size:11px; font-weight:700; background:var(--card2); padding:4px 8px; border-radius:4px; color:${o.paymentMethod==='COD'?'var(--destructive)':'#4cc968'}">${o.paymentMethod}</span>
       </div>
       <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;"><strong>Address:</strong> ${o.address}<br>${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}<strong>State & Pincode:</strong> ${o.state} - ${o.pincode}${couponHTML}</div>
@@ -1320,7 +1243,7 @@ window.renderAdmin = function () {
       cList.innerHTML = "";
       couponsData.forEach(c => {
           const d = document.createElement("div"); d.className = "admin-prod";
-          d.innerHTML = `<div class="ap-info"><div class="ap-name">${c.code} <span style="color:var(--primary);">(₹${c.discount} OFF)</span></div><div class="ap-sub">Min Order: ₹${c.minOrder} | Spin: ${c.inSpin ? 'Yes' : 'No'}</div></div><div class="ap-actions"><button class="trash del-coupon" data-id="${c.id}">🗑️</button></div>`;
+          d.innerHTML = `<div class="ap-info"><div class="ap-name">${c.code} <span style="color:var(--primary);">(₹${c.discount} OFF)</span></div><div class="ap-sub">Min Order: ₹${c.minOrder}</div></div><div class="ap-actions"><button class="trash del-coupon" data-id="${c.id}">🗑️</button></div>`;
           d.querySelector('.del-coupon').onclick = async () => { if(confirm("Delete Coupon?")) { couponsData = couponsData.filter(x => x.id !== c.id); if(window.saveCouponsToFirebase) await window.saveCouponsToFirebase(couponsData); renderAdmin(); } }
           cList.appendChild(d);
       });
