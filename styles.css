@@ -363,6 +363,7 @@ body.theme-light .pd-back-enhanced { background: #fff; color: #111; box-shadow: 
 @keyframes drawerSlide { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @keyframes slideFromRight { from { transform: translateX(100%); opacity: 0.6; } to { transform: translateX(0); opacity: 1; } }
 @keyframes slideToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+@keyframes ytPulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg2); }
@@ -450,7 +451,7 @@ body.theme-light .app-download-btn {
 }
 .short-buy-card {
   position: absolute;
-  bottom: 85px; 
+  bottom: 120px; /* FIXED: Moved up significantly to prevent hiding behind nav bar */
   left: 15px;
   right: 15px;
   background: rgba(10, 10, 10, 0.75);
@@ -509,7 +510,7 @@ body.theme-light .app-download-btn {
 }
 
 /* =========================================
-   NEW COUPON, SPIN WHEEL & WHATSAPP CSS
+   NEW COUPON & WHATSAPP CSS
 ========================================= */
 
 /* Glowing Coupon Button */
@@ -522,43 +523,6 @@ body.theme-light .app-download-btn {
   0% { box-shadow: 0 0 0px rgba(201,168,76,0.2); }
   50% { box-shadow: 0 0 15px rgba(201,168,76,0.8), 0 0 25px rgba(201,168,76,0.5); transform: scale(1.02); }
   100% { box-shadow: 0 0 0px rgba(201,168,76,0.2); }
-}
-
-/* UPDATED Spin Icon Animation (No crazy spin, just nice pulse/glow) */
-.spin-icon-btn {
-  transition: all 0.3s ease;
-  animation: goldGlowPulse 2s infinite;
-}
-.spin-icon-btn:active {
-  transform: scale(0.9);
-}
-
-/* Spin Wheel Slices & Text */
-.wheel-sector {
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  clip-path: polygon(50% 50%, 100% 0, 100% 100%);
-  transform-origin: 50% 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #000;
-  font-size: 14px;
-  text-align: center;
-}
-.wheel-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: 0 0;
-  text-align: right;
-  width: 45%;
-  font-size: 12px;
-  font-weight: bold;
-  color: #000;
-  padding-right: 15px;
-  margin-top: -8px; 
 }
 
 /* WhatsApp Button */
