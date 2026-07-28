@@ -8,10 +8,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  
-  <!-- Global Background Styling -->
-  <style id="dynamicGlobalBg"></style>
-
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-08325P1W4G"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -80,33 +76,30 @@
     <div id="stage">
       <div id="bg-glow"></div>
       <div id="particles"></div>
+
       <div class="streak" id="s1" style="width:58%;top:37%;left:21%;"></div>
       <div class="streak" id="s2" style="width:42%;top:54%;left:32%;transform:rotate(-7deg);"></div>
       <div class="streak" id="s3" style="width:33%;top:44%;right:14%;transform:rotate(6deg);"></div>
+
       <div class="wave" id="wave1"></div>
       <div class="wave" id="wave2"></div>
+
       <div id="flash"></div>
+
       <div id="coin-scene">
         <div id="coin-rim"></div>
         <div id="logo-glow"></div>
         <img id="logo" src="logo.png" alt="Gen-Z Store"/>
       </div>
+
       <div id="welcome">WELCOME TO GEN-Z STORE</div>
       <div id="welcome-line"></div>
       <div id="trusted">TRUSTED AND SECURE STORE</div>
       <div id="shield-glow"></div>
+
       <div id="outro-overlay"></div>
     </div>
     <audio id="bg-audio" src="bg_music.mp3" loop style="display:none"></audio>
-  </div>
-
-  <!-- Fake Order Notification -->
-  <div id="fakeOrderNotif" class="fake-notif hidden">
-    <img id="fakeNotifImg" src="placeholder.jpg" alt="Product">
-    <div class="fake-notif-info">
-      <div class="fake-notif-title" id="fakeNotifTitle">Someone bought an item</div>
-      <div class="fake-notif-time">Just now</div>
-    </div>
   </div>
 
   <div id="app" class="app hidden">
@@ -115,7 +108,11 @@
         <img src="logo.png" alt="Gen-Z Store" style="height: 48px; width: 48px; object-fit: cover; border-radius: 50%; box-shadow: 0 0 8px rgba(201,168,76,0.3);">
       </button>
       
+      <!-- UPDATED: PREMIUM SPIN WHEEL ICON WITH TEXT -->
       <div style="display: flex; align-items: center; gap: 8px; padding-right: 50px;">
+        <button id="spinWheelHeaderBtn" class="spin-icon-btn" style="background: rgba(201,168,76,0.15); border: 1px solid var(--primary); border-radius: 999px; padding: 6px 12px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(201,168,76,0.4);">
+          🎡 <span style="font-size: 11px; font-weight: 700; color: var(--primary); margin-left: 5px; font-family: var(--font-body); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Spin & Win</span>
+        </button>
         <a href="https://drive.google.com/file/d/1ss69gfmB0VruEIM7qgpM5teQ-3GvhTzN/view?usp=drivesdk" target="_blank" class="app-download-btn" style="padding: 6px 12px; white-space: nowrap;">
           ⬇️ App
         </a>
@@ -162,12 +159,7 @@
         <div id="newCollectionList" style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;"></div>
       </div>
 
-      <div id="shortsPage" class="nav-page hidden" style="padding: 0; background: #000; height: calc(100vh - 65px); position: relative;">
-        <!-- YouTube Subscribe Overlay -->
-        <a id="shortsYtLink" href="https://youtube.com/@uniquefashion-w3y?si=mbIRQmi1m9nWAGbo" target="_blank" class="shorts-yt-overlay">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-          <span>Subscribe</span>
-        </a>
+      <div id="shortsPage" class="nav-page hidden" style="padding: 0; background: #000; height: calc(100vh - 65px);">
         <div id="shortsContainer" class="shorts-container"></div>
       </div>
 
@@ -240,9 +232,27 @@
     </div>
   </div>
 
+  <div id="spinWheelModal" class="overlay center hidden" style="z-index: 160;">
+    <div class="pin-box" style="overflow: hidden; max-width: 350px;">
+      <button id="closeSpinModal" class="icon-btn close-abs" style="z-index: 10;">✕</button>
+      <h2 style="color:var(--primary); font-family:var(--font-display); font-size:26px; font-weight:700;">🎡 SPIN & WIN</h2>
+      <p style="font-size:12px; color:var(--muted); margin-bottom:15px; margin-top:4px;">Test your luck to win exclusive discount coupons!</p>
+      
+      <div class="wheel-container" style="position:relative; width:240px; height:240px; margin: 10px auto;">
+        <div class="wheel-pointer" style="position:absolute; top:-15px; left:50%; transform:translateX(-50%); z-index:5; font-size:30px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">🔽</div>
+        <div id="spinWheelElement" class="wheel" style="width:100%; height:100%; border-radius:50%; border:4px solid var(--primary); box-shadow: 0 0 20px rgba(201,168,76,0.3); position:relative; overflow:hidden; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);">
+        </div>
+      </div>
+      
+      <button id="startSpinBtn" class="btn-primary full auth-submit" style="margin-top:25px; font-size: 16px; padding: 12px; box-shadow: 0 4px 15px rgba(201,168,76,0.4);">SPIN NOW!</button>
+      <div id="spinResultMsg" class="hidden" style="margin-top:15px; font-weight:bold; font-size:15px; color:#4cc968; background: rgba(76,201,100,0.1); padding: 10px; border-radius: 8px; border: 1px dashed #4cc968;">
+      </div>
+    </div>
+  </div>
+
   <div id="prodDetail" class="prod-detail hidden">
     <div class="pd-header">
-      <button id="pdBackBtn" class="pd-back-enhanced" onclick="history.back()">
+      <button id="pdBackBtn" class="pd-back-enhanced">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         <span>Back</span>
       </button>
@@ -272,7 +282,7 @@
 
       <div id="pdCouponBox" class="coupon-box" style="margin: 15px 16px; padding: 14px; border-radius: 12px; background: linear-gradient(145deg, rgba(201,168,76,0.08), rgba(20,20,20,1)); border: 1px dashed var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
           <div style="font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <span>🎁</span> Apply Coupon Code
+            <span>🎁</span> Apply Coupon / Spin Reward
           </div>
           <div style="display: flex; gap: 8px;">
               <input type="text" id="pdCouponInput" class="field" placeholder="Enter Code (e.g. GENZ50)" style="margin-bottom: 0; text-transform: uppercase; border-color: rgba(201,168,76,0.3); font-weight: 600; letter-spacing: 1px;">
@@ -337,17 +347,17 @@
         </div>
 
         <div class="row2" style="margin-top:12px;">
-          <div class="field-group" id="chkStateGroup">
+          <div class="field-group">
             <label class="field-label">State</label>
             <input id="chkState" class="field" type="text" placeholder="e.g. Rajasthan" />
           </div>
-          <div class="field-group" id="chkPincodeGroup">
+          <div class="field-group">
             <label class="field-label">Pincode</label>
             <input id="chkPincode" class="field" type="number" placeholder="e.g. 324002" />
           </div>
         </div>
 
-        <div class="field-group" style="margin-top:12px;" id="chkLandmarkGroup">
+        <div class="field-group" style="margin-top:12px;">
           <label class="field-label">Landmark (Optional)</label>
           <input id="chkLandmark" class="field" type="text" placeholder="Near school, temple, hospital etc." />
         </div>
@@ -585,14 +595,14 @@
           <button id="tabCatsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCats')">Categories</button>
           <button id="tabProdsBtn" class="am-tab active" onclick="switchAdminTab(event, 'amProds')">Products</button>
           <button id="tabShortsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amShorts')">Reels/Shorts</button>
-          <button id="tabCouponsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCoupons')">Coupons</button>
+          <button id="tabCouponsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCoupons')">Coupons & Spin</button>
           <button id="tabSettingsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
       </div>
 
       <div id="amCoupons" class="admin-section hidden">
           <section class="card">
-              <h3>Manage Coupons</h3>
-              <p class="section-hint">Naye coupon codes banayein checkout ke liye.</p>
+              <h3>Manage Coupons & Spin Rewards</h3>
+              <p class="section-hint">Naye coupon codes banayein aur Spin Wheel me set karein.</p>
               
               <div id="adminCouponsList" style="margin-bottom: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;">
               </div>
@@ -607,7 +617,15 @@
                   <label class="field-label">Minimum Order Value (₹)</label>
                   <input id="newCouponMinOrder" type="number" class="field" placeholder="e.g. 499" />
                   
-                  <button id="addCouponBtn" class="btn-primary sm-btn auth-submit" style="margin-top: 10px;">+ Create Coupon</button>
+                  <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:6px;">
+                    <span class="field-label">Add to Spin Wheel?</span>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="newCouponInSpin" checked />
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <button id="addCouponBtn" class="btn-primary sm-btn auth-submit">+ Create Coupon</button>
               </div>
           </section>
       </div>
@@ -781,51 +799,6 @@
       <div id="amSettings" class="admin-section hidden">
           
           <section class="card">
-            <h3>Global Background Image</h3>
-            <p class="section-hint">Ye image website ke har page (Home, Detail, Checkout) ke background mein dikhegi.</p>
-            <div class="field-group" style="margin-top:8px;">
-              <input id="adminGlobalBgFile" type="file" class="field" accept="image/*" style="padding: 8px; background: var(--card2);" />
-              <input id="adminGlobalBgHidden" type="hidden" />
-              <button id="saveGlobalBgBtn" class="btn-primary sm-btn auth-submit" style="margin-top: 8px;">Update Background</button>
-              <button id="removeGlobalBgBtn" class="btn-outline sm-btn auth-submit" style="margin-top: 8px; border-color: var(--destructive); color: var(--destructive);">Remove Background</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h3>YouTube Subscribe Link (Shorts Page)</h3>
-            <div class="inline-row" style="margin-top:8px;">
-              <input id="adminYtLink" type="text" class="field" placeholder="e.g. https://youtube.com/..." />
-              <button id="saveYtBtn" class="btn-primary sm-btn auth-submit">Save</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h3>Checkout Fields Control</h3>
-            <p class="section-hint">In fields ko checkout page par chalu (On) ya band (Off) karein.</p>
-            <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:10px;">
-              <span class="field-label" style="font-size:14px; color:var(--fg);">Show State Field</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="toggleStateField" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="stock-toggle-row" style="margin-bottom:12px;">
-              <span class="field-label" style="font-size:14px; color:var(--fg);">Show Pincode Field</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="togglePincodeField" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <div class="stock-toggle-row" style="margin-bottom:12px;">
-              <span class="field-label" style="font-size:14px; color:var(--fg);">Show Landmark Field</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="toggleLandmarkField" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-          </section>
-
-          <section class="card">
             <h3>WhatsApp Payment Number</h3>
             <p class="section-hint">Jis number par customer screenshot bhejega.</p>
             <div class="inline-row" style="margin-top:8px;">
@@ -923,32 +896,23 @@
     async function fetchSettings() { 
       try { 
         const snap = await getDoc(doc(db, "settings", "storeData")); 
-        let cats, bannersData, shortsData, couponsData, waData, fieldsData, ytLinkData, bgData; 
+        let cats, bannersData, shortsData, couponsData, waData; 
         if (snap.exists()) { 
           cats = snap.data().mainCategories || []; 
           bannersData = snap.data().banners || []; 
           shortsData = snap.data().shorts || []; 
           couponsData = snap.data().coupons || []; 
           waData = snap.data().waNumber || "8976073065"; 
-          fieldsData = snap.data().checkoutFields || { state: true, pincode: true, landmark: true };
-          ytLinkData = snap.data().ytLink || "https://youtube.com/@uniquefashion-w3y?si=mbIRQmi1m9nWAGbo";
-          bgData = snap.data().globalBg || "";
         } else { 
           cats = [{ id: "cat_genz", name: "GEN-Z PREMIUM", shopId: "GLOBAL" }]; 
           bannersData = []; shortsData = []; couponsData = []; waData = "8976073065";
-          fieldsData = { state: true, pincode: true, landmark: true };
-          ytLinkData = "https://youtube.com/@uniquefashion-w3y?si=mbIRQmi1m9nWAGbo";
-          bgData = "";
-          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData, shorts: shortsData, coupons: couponsData, waNumber: waData, checkoutFields: fieldsData, ytLink: ytLinkData, globalBg: bgData }, { merge: true }); 
+          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData, shorts: shortsData, coupons: couponsData, waNumber: waData }, { merge: true }); 
         } 
         if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats); 
         if (window.updateBannersFromFirebase) window.updateBannersFromFirebase(bannersData); 
         if (window.updateShortsFromFirebase) window.updateShortsFromFirebase(shortsData); 
         if (window.updateCouponsFromFirebase) window.updateCouponsFromFirebase(couponsData); 
         if (window.updateWaNumberFromFirebase) window.updateWaNumberFromFirebase(waData);
-        if (window.updateCheckoutFieldsFromFirebase) window.updateCheckoutFieldsFromFirebase(fieldsData);
-        if (window.updateYtLinkFromFirebase) window.updateYtLinkFromFirebase(ytLinkData);
-        if (window.updateGlobalBgFromFirebase) window.updateGlobalBgFromFirebase(bgData);
       } catch(e) {} 
     }
     
