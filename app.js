@@ -2,15 +2,6 @@
    UNIQUE FASHION — app.js (FINAL WITH YOUTUBE & NO SPIN)
 ═══════════════════════════════════════════════════════ */
 
-const FIREBASE_SERVICE_ACCOUNT = {
-  "type": "service_account",
-  "project_id": "kkfashion-f51ff",
-  "private_key_id": "88311c4aac96bede55f051fe8e4fe9079bb30052",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC9TJos34ZscVwJ\nnh1hazkv7/tPQNbpE83VHpgDZucZiEm22lkaxVzR29M7BNjebtJ0TmTszpUsGx+P\nUp4O08FEgym1D6DPe6lsBrNmBPfsplaXFcBEQ9+kzrqMN3YJjVZ80uO2Bv2kz1Ui\nGIJDS0ePSy/LXIrHljDo9qriGzKdfw/LRjwrpqWIttUBaPu7kSmtt9MKiXWUr/Uy\nW+CTsHqyY4psATNuubSC0zwPh14VLU2Ma8U7U2BcmZJrnv1iF3FF6EyoKabwlhfm\nozEC//mYnBIcuKIEth3cBbkyJcMRQ3/+SKPo8JL2WGlJERfGR3bUV8Qp48Eg3+e1\ncC6thghrAgMBAAECggEARUQc3BOUX+Tg7SH+lTGDVO+mkPrkSJf3Bqcxr3j9UgHl\nGzPtS9bw3ldmBOACrO13M5il5GK5AdEQ7MQp0roYK4YlAjwsNw+EUGNpTIi/4UeC\nQrlyR2hgkrEUYI9AsUEW5wjRyr7nG+HDwHygWZhXoG6+F9cObvadgfkUUTTrgeYl\nxEJN0WPppSY9B7Batf0VyCwncZ5bqFllK1f9hrhb1ZJYXhJnA/303nQnyVYhxJez\nxUCKp1sfVnilnPsoPX0ZfIc6UT7ZBk3GAjVwxyNfi7PLQCt4QFlXgQIVnRg9GcqG\n9hRXCM8baKW/BLoFGCNW4ozp0n/9RkNjMDXIWAN3HQKBgQDjf0XMi+mNWooASdwF\nqcv7qod2dmEbhEIRcifZBQv2EvHtIiiALGri8rzDH77EpcafPapczhUKXtYeDd7y\nXYDdWrSzIYD0jz/1wxsBmk/htBDmfioRt94k6Qd9mqydTMsOpI5SltAxjClMT3kr\ncWr8LNi36vOciyojJRZUG1bBJQKBgQDVBCwDDxys/RX3v7fvlJqit8YOK7kO9gB7\ntNURg9niLUpcoPnJmod5X/PRVBx+6O3zGD0RFQp3uswYaE9+81gJXhOc2ga6R0I9\n6o2J/QUlqyDGbZ5oHsB6RDtDLLM2xeDVkGoTQ3JGKctH7XBtI3IgNAtssXGa7HCq\nt8PAqgZWTwKBgQDTOUtkVI+fx+2TwQABXhrf6wBlVBprgwwYyKYI0K+/ZO2s3+c8\nwoDngLsUbDgiu0zEc2vnSQyuGUmyk+xpmblZTKu0GipyZ0Lae7Fqdo0uoZKDf6at\n1srx+E8VJvSYBEIQsWbXdeGN73Y0vSFi3aaYx0bc1NAli+yuvvORWeTd5QKBgEyD\nNxvSLcalEWLv5i2T/wc7Y1RruAj7q6jDh1THO1fWVMN4vr//VXHvWTBzOdkL6YxL\nxIOCP0RKQEz0CrnaxmB2/ix0073NIqoCudw6mcKx+Q/NB/z2LsS8BV1XjPe7k8qi\nGLfang09rdqkGqHY/YE7sG7WPawcCUwIvbNSXvxZAoGAeBrl48EeZfZ4xX+87oxF\n+3HOAwfSYqF4YaoYiz92HDAFE5n1aMEnSKi6XCa8F/xONV6Kbdfgi80G19c+8u82\nItJVPEsKBfJN311mR82I0QxNWxKsWOFg9OvLa2EjqUgDbhyQMAUN80aG9EDvqPc9\nE9zkDQMp9WAvOceIGrWZMGM=\n-----END PRIVATE KEY-----\n",
-  "client_email": "firebase-adminsdk-fbsvc@kkfashion-f51ff.iam.gserviceaccount.com",
-  "client_id": "113003982145951280521"
-};
-
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
 const TELEGRAM_CHAT_ID = "7503426190";
 
