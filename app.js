@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   UNIQUE FASHION — app.js (FINAL WITH YOUTUBE & NO SPIN)
+   UNIQUE FASHION — CUSTOMER ONLY JS (100% SECURE)
 ═══════════════════════════════════════════════════════ */
 
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
@@ -11,11 +11,6 @@ const $ = (id) => { return document.getElementById(id); };
 const delay = (ms) => new Promise(r => setTimeout(r, ms));
 const addClass = (id, cls) => { const el = $(id); if(el) el.classList.add(cls); };
 const removeClass = (id, cls) => { const el = $(id); if(el) el.classList.remove(cls); };
-
-const ADMIN_PIN = "9721";
-const SUPER_ADMIN_PIN = "90793"; 
-let superAdminTapCount = 0;
-let superAdminTapTimer = null;
 
 let mainCategories = [];
 let products = [];
@@ -30,13 +25,10 @@ let appliedCoupon = null;
 
 let activeMainCatId = null;
 let activeShopId = null;
-let editingProductId = null;
-let editingShopId = null;
 let searchQuery = "";
 let currentDetailProduct = null;
 let currentSelectedSize = null; 
 let isAppInitialized = false;
-let activeAdminOrderTab = "Recent";
 let bannerScrollInterval = null;
 
 let currentTheme = load("knk_app_theme", "dark");
@@ -49,7 +41,6 @@ window.setAppTheme = function(t) {
 }
 setAppTheme(currentTheme);
 
-const genId = () => { return "id_" + Date.now() + Math.floor(Math.random() * 1000); };
 const finalPrice = (p) => { return Math.round(p.price - (p.price * (p.discount || 0)) / 100 + (p.extra || 0)); };
 const getCat = (id) => { return mainCategories.find((c) => c.id === id); };
 
@@ -60,7 +51,7 @@ const preventZoom = () => { document.querySelector('meta[name="viewport"]').setA
 
 function pushModalState() { history.pushState({ modal: true }, "", window.location.href); }
 
-// BACK BUTTON LOGIC COMPLETELY FIXED
+// BACK BUTTON LOGIC
 window.addEventListener('popstate', (e) => {
   if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
     $("imageViewer").classList.add("hidden"); preventZoom();
@@ -70,118 +61,25 @@ window.addEventListener('popstate', (e) => {
     closeProductDetail();
   } else if ($("myOrderDetailModal") && !$("myOrderDetailModal").classList.contains("hidden")) {
     $("myOrderDetailModal").classList.add("hidden"); unlockScroll();
-  } else if ($("adminPin") && !$("adminPin").classList.contains("hidden")) {
-    $("adminPin").classList.add("hidden");
-  } else if ($("superAdminPinModal") && !$("superAdminPinModal").classList.contains("hidden")) {
-    $("superAdminPinModal").classList.add("hidden");
-  } else if ($("editModal") && !$("editModal").classList.contains("hidden")) {
-    $("editModal").classList.add("hidden"); 
-  } else if ($("editShopModal") && !$("editShopModal").classList.contains("hidden")) {
-    $("editShopModal").classList.add("hidden"); 
   }
 });
 
 // Update data from Firebase
-window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fetchedBanners || []; renderHomeBanners(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); }
-window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; renderShopsPage(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
-window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
-window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
-window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
-window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; if (!$("adminPanel").classList.contains("hidden")) renderAdmin(); };
-window.updateWaNumberFromFirebase = function (waNum) { adminWaNumber = waNum; if($("adminWaNumber")) $("adminWaNumber").value = waNum; };
+window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fetchedBanners || []; renderHomeBanners(); }
+window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; };
+window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); };
+window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); };
+window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; };
+window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; };
+window.updateWaNumberFromFirebase = function (waNum) { adminWaNumber = waNum; };
 
-// Sync YouTube Link
 window.updateYtLinkFromFirebase = function (link) { 
   if($("ytSubscribeBtn")) $("ytSubscribeBtn").href = link; 
-  if($("adminYtLink")) $("adminYtLink").value = link; 
 };
-
-// ----------------------------------------------------
-// DIRECT GALLERY UPLOAD (BASE64 CONVERTER)
-// ----------------------------------------------------
-function bindImageUploader(fileInputId, hiddenInputId) {
-    const fi = $(fileInputId); const hi = $(hiddenInputId);
-    if(!fi || !hi) return;
-    fi.addEventListener("change", function(e) {
-        const files = Array.from(e.target.files);
-        if(!files.length) return;
-        
-        fi.disabled = true;
-        const originalText = fi.previousElementSibling ? fi.previousElementSibling.textContent : "Processing...";
-        if(fi.previousElementSibling) fi.previousElementSibling.textContent = "Compressing & Uploading...";
-
-        const promises = files.map(file => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = event => {
-                    const img = new Image();
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvas.width = MAX_WIDTH;
-                        canvas.height = img.height * scaleSize;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        resolve(canvas.toDataURL('image/jpeg', 0.6));
-                    };
-                    img.src = event.target.result;
-                };
-                reader.readAsDataURL(file);
-            });
-        });
-        
-        Promise.all(promises).then(b64s => {
-            hi.value = hi.value ? hi.value + " | " + b64s.join(" | ") : b64s.join(" | ");
-            if(fi.previousElementSibling) fi.previousElementSibling.textContent = originalText;
-            fi.disabled = false;
-            alert(files.length + " Image(s) Attached from Gallery! ✅");
-        });
-    });
-}
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
-  
-  bindImageUploader("pImageFile", "pImage");
-  bindImageUploader("editPImageFile", "editPImage");
-  bindImageUploader("newBannerFile", "newBannerImg");
-  
-  if ($("addCatBtn")) {
-      $("addCatBtn").onclick = () => {
-          const n = $("newCatName").value.trim().toUpperCase();
-          const shopSel = $("newCatShop"); const sId = shopSel ? shopSel.value : "GLOBAL";
-          if (!n) return alert("Category ka naam daalein!");
-          mainCategories.push({ id: genId(), name: n, shopId: sId });
-          saveCategories(); $("newCatName").value = ""; renderAdmin(); renderMainCats();
-      };
-  }
-
-  document.querySelectorAll("#adminOrderTabs .admin-tab").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-          document.querySelectorAll("#adminOrderTabs .admin-tab").forEach(b => b.classList.remove("active"));
-          e.target.classList.add("active");
-          activeAdminOrderTab = e.target.getAttribute("data-tab");
-          if(window.allFirebaseOrders) window.renderAdminOrders(window.allFirebaseOrders);
-      });
-  });
-
-  if ($("tabProdsBtn")) {
-      $("tabProdsBtn").addEventListener("click", (e) => {
-          superAdminTapCount++;
-          if (superAdminTapTimer) clearTimeout(superAdminTapTimer);
-          if (superAdminTapCount >= 10) { superAdminTapCount = 0; pushModalState(); openSuperAdminPin(); return; }
-          superAdminTapTimer = setTimeout(() => { superAdminTapCount = 0; }, 3000);
-      });
-  }
 });
-
-window.switchAdminTab = function(event, tabId) {
-    document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-    event.target.classList.add('active');
-    $(tabId).classList.remove('hidden');
-}
 
 async function showSplashAndStart() {
   const splash = $("splash"); 
@@ -341,16 +239,8 @@ function renderShortsPage() {
     document.querySelectorAll('.short-video-wrapper').forEach(wrapper => { observer.observe(wrapper); });
 }
 
-let logoTapCount = 0;
-let logoTapTimer = null;
 if ($("logoBtn")) {
   $("logoBtn").onclick = () => {
-    logoTapCount++;
-    if (logoTapTimer) clearTimeout(logoTapTimer);
-    if (logoTapCount >= 10) {
-      logoTapCount = 0; pushModalState(); openPin(); return;
-    }
-    logoTapTimer = setTimeout(() => { logoTapCount = 0; }, 2000);
     clearShopFilterAndGoHome();
   };
 }
@@ -675,39 +565,6 @@ if ($("waScreenshotBtn")) {
     };
 }
 
-if ($("saveWaBtn")) {
-    $("saveWaBtn").onclick = async () => {
-        const num = $("adminWaNumber").value.trim();
-        if(num.length < 10) return alert("Kripya sahi 10-digit number dalein!");
-        
-        $("saveWaBtn").textContent = "Saving...";
-        try {
-            if(window.fbSetDoc && window.fbDoc && window.fbDb) {
-                await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { waNumber: num }, { merge: true });
-                adminWaNumber = num;
-                alert("WhatsApp Number Update Ho Gaya!");
-            }
-        } catch(e) { console.log(e); }
-        $("saveWaBtn").textContent = "Save";
-    };
-}
-
-if ($("saveYtBtn")) {
-    $("saveYtBtn").onclick = async () => {
-        const link = $("adminYtLink").value.trim();
-        if(!link) return alert("Link daalein!");
-        $("saveYtBtn").textContent = "Saving...";
-        try {
-            if(window.fbSetDoc && window.fbDoc && window.fbDb) {
-                await window.fbSetDoc(window.fbDoc(window.fbDb, "settings", "storeData"), { youtubeLink: link }, { merge: true });
-                if($("ytSubscribeBtn")) $("ytSubscribeBtn").href = link;
-                alert("YouTube Link Update Ho Gaya!");
-            }
-        } catch(e) { console.log(e); }
-        $("saveYtBtn").textContent = "Save";
-    };
-}
-
 function directBuyCheckout(p, size, coupon) { 
     preventZoom(); 
     const s = size || "Default"; 
@@ -949,7 +806,6 @@ $("confirmOrderBtn").onclick = async () => {
       if (success) {
         let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
         sendTelegramAlert(orderData); showStep3Success(payMethod, amountPaid, balanceDue);
-        if (window.fetchOrdersFromFirebase) window.fetchOrdersFromFirebase();
       } else { alert("Server error. Please try again."); btn.textContent = "Verify Payment & Confirm"; }
     });
   } else {
@@ -1067,278 +923,6 @@ function renderLikesPageTab() {
     el.innerHTML = `<img src="${mainImg}" alt="${p.name}" /><div class="ci-info"><div class="ci-name">${p.name}</div><div class="ci-sub">₹${finalPrice(p)}</div></div><button class="trash" style="font-size: 20px;" onclick="event.stopPropagation(); toggleLike('${p.id}')">❌</button>`;
     el.onclick = () => { openProductDetail(p); }; body.appendChild(el);
   });
-}
-
-function openPin() { $("pinInput").value = ""; $("pinError").classList.add("hidden"); $("adminPin").classList.remove("hidden"); setTimeout(() => $("pinInput").focus(), 100); }
-$("pinClose").onclick = () => { history.back(); };
-$("pinUnlock").onclick = tryUnlock; $("pinInput").onkeydown = (e) => { if (e.key === "Enter") tryUnlock(); };
-function tryUnlock() { if ($("pinInput").value === ADMIN_PIN) { $("adminPin").classList.add("hidden"); openAdminAsVendor(); } else { $("pinError").classList.remove("hidden"); } }
-
-function openSuperAdminPin() { $("superPinInput").value = ""; $("superPinError").classList.add("hidden"); $("superAdminPinModal").classList.remove("hidden"); setTimeout(() => $("superPinInput").focus(), 100); }
-$("superPinClose").onclick = () => { history.back(); };
-$("superPinInput").onkeydown = (e) => { if (e.key === "Enter") trySuperUnlock(); }; $("superPinUnlock").onclick = trySuperUnlock;
-
-function trySuperUnlock() {
-    if ($("superPinInput").value === SUPER_ADMIN_PIN) {
-        $("superAdminPinModal").classList.add("hidden");
-        $("tabShopsBtn").classList.remove("hidden"); $("tabOrdersBtn").classList.remove("hidden"); $("tabCatsBtn").classList.remove("hidden"); $("tabShortsBtn").classList.remove("hidden"); $("tabSettingsBtn").classList.remove("hidden"); $("tabCouponsBtn").classList.remove("hidden");
-        if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.remove("hidden"); }
-    } else { $("superPinError").classList.remove("hidden"); }
-}
-
-function openAdminAsVendor() { 
-  lockScroll(); renderAdmin(); $("adminPanel").classList.remove("hidden"); 
-  $("tabShopsBtn").classList.add("hidden"); $("tabOrdersBtn").classList.add("hidden"); $("tabCatsBtn").classList.add("hidden"); $("tabShortsBtn").classList.add("hidden"); $("tabSettingsBtn").classList.add("hidden"); $("tabCouponsBtn").classList.add("hidden");
-  if ($("adminProducts") && $("adminProducts").parentElement) { $("adminProducts").parentElement.classList.add("hidden"); }
-  document.querySelectorAll('.am-tab').forEach(b => b.classList.remove('active')); document.querySelectorAll('.admin-section').forEach(s => s.classList.add('hidden'));
-  $("tabProdsBtn").classList.add('active'); $("amProds").classList.remove('hidden');
-}
-
-$("adminClose").onclick = () => { $("adminPanel").classList.add("hidden"); unlockScroll(); };
-
-function saveCategories() { if (window.saveCategoriesToFirebase) { window.saveCategoriesToFirebase(mainCategories); } }
-
-// 🔥 ADMIN COUPON MANAGEMENT
-if($("addCouponBtn")) {
-    $("addCouponBtn").onclick = async () => {
-        const code = $("newCouponCode").value.trim().toUpperCase();
-        const discount = Number($("newCouponDiscount").value) || 0;
-        const minOrder = Number($("newCouponMinOrder").value) || 0;
-        
-        if(!code || !discount) return alert("Code and Discount details are required!");
-        
-        $("addCouponBtn").textContent = "Creating...";
-        couponsData.push({ id: genId(), code, discount, minOrder, active: true });
-        if(window.saveCouponsToFirebase) await window.saveCouponsToFirebase(couponsData);
-        
-        $("newCouponCode").value = ""; $("newCouponDiscount").value = ""; $("newCouponMinOrder").value = "";
-        $("addCouponBtn").textContent = "+ Create Coupon";
-        renderAdmin(); alert("Coupon Added Successfully!");
-    }
-}
-
-if ($("addShortBtn")) {
-    $("addShortBtn").onclick = async () => {
-        const url = $("newShortUrl").value.trim(); const pid = $("newShortProductId").value.trim();
-        if(!url || !pid) return alert("Video URL aur Product ID dono zaroori hain!");
-        $("addShortBtn").textContent = "Adding...";
-        shortsData.push({ id: genId(), url: url, productId: pid });
-        if(window.saveShortsToFirebase) await window.saveShortsToFirebase(shortsData);
-        $("newShortUrl").value = ""; $("newShortProductId").value = "";
-        renderAdmin(); alert("Short Video Add Ho Gaya!"); $("addShortBtn").textContent = "+ Add Short Video";
-    };
-}
-
-if ($("addBannerBtn")) {
-    $("addBannerBtn").onclick = async () => {
-        const i = $("newBannerImg").value.trim(); const l = $("newBannerLink").value.trim();
-        if(!i) return alert("Banner Image zaroori hai! Gallery se upload karein.");
-        $("addBannerBtn").textContent = "Adding...";
-        homeBanners.push({ id: genId(), image: i, link: l });
-        if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners);
-        $("newBannerImg").value = ""; $("newBannerLink").value = "";
-        renderAdmin(); renderHomeBanners(); alert("Banner Add Ho Gaya!"); $("addBannerBtn").textContent = "+ Add Banner";
-    };
-}
-
-if ($("addShopBtn")) {
-    $("addShopBtn").onclick = async () => {
-        const n = $("newShopName").value.trim(); const c = $("newShopCity").value.trim(); const t = $("newShopType").value.trim(); const l = $("newShopImage").value.trim(); const u = $("newShopUPI").value.trim(); const q = $("newShopQR").value.trim();
-        const codAmt = Number($("newShopCodAmt").value) || 0; const codStat = $("newShopCodStatus").checked; const fCodStat = $("newShopFullCodStatus") ? $("newShopFullCodStatus").checked : false;
-
-        if(!n || !c || !l || !u) return alert("Shop Name, City, Logo URL, aur UPI ID sab zaroori hain!");
-        $("addShopBtn").textContent = "Adding/Updating...";
-        try {
-            if(editingShopId && window.fbUpdateDoc && window.fbDoc && window.fbDb) {
-                await window.fbUpdateDoc(window.fbDoc(window.fbDb, "shops", editingShopId), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
-                const idx = shops.findIndex(s => s.id === editingShopId);
-                if(idx > -1) shops[idx] = { id: editingShopId, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat };
-                alert("Dukaan Update Ho Gayi!");
-            } else if(window.fbAddDoc && window.fbCollection && window.fbDb) {
-                const docRef = await window.fbAddDoc(window.fbCollection(window.fbDb, "shops"), { name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat, timestamp: new Date() });
-                shops.push({ id: docRef.id, name: n, city: c, type: t, logo: l, upi: u, qr: q, codAdvance: codAmt, codEnabled: codStat, fullCodEnabled: fCodStat });
-                alert("Nai Dukaan Add Ho Gayi!");
-            }
-            $("newShopName").value = ""; $("newShopCity").value = ""; $("newShopType").value=""; $("newShopImage").value = ""; $("newShopUPI").value = ""; $("newShopQR").value = ""; $("newShopCodAmt").value = ""; $("newShopCodStatus").checked = true; if($("newShopFullCodStatus")) $("newShopFullCodStatus").checked = false;
-            editingShopId = null; $("addShopBtn").textContent = "+ Add Shop"; renderAdmin(); 
-        } catch(e) {}
-    };
-}
-
-function syncAddProductDropdowns() {
-  const pMainCat = $("pMainCat"); pMainCat.innerHTML = ""; mainCategories.forEach((cat) => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; pMainCat.appendChild(o); });
-  const pShop = $("pShop"); const newCatShop = $("newCatShop");
-  if(pShop) { pShop.innerHTML = '<option value="">Unique Fashion (Default Store)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name + " (" + (s.city || 'City') + ")"; pShop.appendChild(o); }); }
-  if(newCatShop) { newCatShop.innerHTML = '<option value="GLOBAL">Global (All Shops)</option>'; shops.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.name; newCatShop.appendChild(o); }); }
-}
-
-window.renderAdminOrders = function (orders) {
-  const list = $("adminOrdersList"); if (!list) return; list.innerHTML = "";
-  const filteredOrders = orders.filter(o => (o.status || 'Recent') === activeAdminOrderTab);
-  if (filteredOrders.length === 0) { list.innerHTML = `<p class="empty" style="padding: 20px;">No ${activeAdminOrderTab} orders found.</p>`; return; }
-  
-  filteredOrders.forEach((o) => {
-    const div = document.createElement("div"); div.className = "admin-order-card";
-    let itemsHtml = (o.items || []).map(i => {
-       const img = Array.isArray(i.product.image) ? i.product.image[0] : i.product.image;
-       const sizeHtml = i.size && i.size !== "Default" ? `<span style="color:var(--primary); font-weight:700;">[${i.size}]</span>` : '';
-       return `<div class="order-item-row" style="display:flex; align-items:center; gap:10px; margin-bottom:8px;"><img src="${img}" style="width:40px; height:40px; border-radius:6px; object-fit:cover; border:1px solid var(--border);"><div style="font-size:12px; color:var(--fg);">${i.product.name} ${sizeHtml} <strong style="color:var(--primary);">(x${i.qty})</strong></div></div>`;
-    }).join("");
-    const couponHTML = o.couponUsed ? `<br><strong style="color:#4cc968;">Coupon: ${o.couponUsed.code} (-₹${o.couponUsed.discount})</strong>` : "";
-    div.innerHTML = `
-      <div class="order-head"><span>Name: ${o.name} (${o.mobile})</span><strong>₹${o.totalAmount}</strong></div>
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; padding-bottom:10px; border-bottom:1px dashed var(--border);">
-         <img src="${o.shopLogo || 'placeholder.jpg'}" style="width:30px; height:30px; border-radius:50%; object-fit:cover; border:1px solid var(--primary);">
-         <strong style="color:var(--primary); font-size:13px;">Seller: ${o.shopName || 'Unique Fashion'}</strong>
-         <span style="margin-left:auto; font-size:11px; font-weight:700; background:var(--card2); padding:4px 8px; border-radius:4px; color:${o.paymentMethod==='COD'?'var(--destructive)':'#4cc968'}">${o.paymentMethod}</span>
-      </div>
-      <div style="font-size:12px; color:var(--muted2); margin:8px 0; line-height:1.5;"><strong>Address:</strong> ${o.address}<br>${o.landmark ? '<strong>Landmark:</strong> ' + o.landmark + '<br>' : ''}<strong>State & Pincode:</strong> ${o.state} - ${o.pincode}${couponHTML}</div>
-      <div class="order-items" style="background:var(--card); padding:10px; border-radius:8px; margin-bottom:10px;">${itemsHtml}</div>
-      <div class="order-actions" style="display:flex; justify-content: space-between; align-items: center; margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
-        <select class="field small-field status-select" data-id="${o.id}" style="padding:6px; margin-bottom:0;"><option value="Recent" ${o.status === 'Recent' ? 'selected' : ''}>Recent</option><option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Pending</option><option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Completed</option></select>
-        <button class="del-order-btn" data-id="${o.id}">🗑️ Delete Order</button>
-      </div>`;
-    div.querySelector(".status-select").onchange = async (e) => { const newStatus = e.target.value; if (window.updateOrderStatusInFirebase) { await window.updateOrderStatusInFirebase(o.id, newStatus); o.status = newStatus; window.renderAdminOrders(window.allFirebaseOrders); } };
-    div.querySelector(".del-order-btn").onclick = async () => { if(confirm("Are you sure you want to permanently delete this order?")) { if (window.deleteOrderFromFirebase) { await window.deleteOrderFromFirebase(o.id); window.allFirebaseOrders = window.allFirebaseOrders.filter(x => x.id !== o.id); window.renderAdminOrders(window.allFirebaseOrders); } } };
-    list.appendChild(div);
-  });
-};
-
-function renderAdminProducts() {
-  $("adminProdTitle").textContent = `Products (${products.length})`;
-  const filterCat = $("adminFilterCat").value || "ALL"; const list = $("adminProducts"); list.innerHTML = "";
-  const filtered = filterCat === "ALL" ? products : products.filter(p => p.mainCategoryId === filterCat);
-  filtered.forEach(p => {
-    const price = finalPrice(p); const inStock = p.inStock !== false; const cat = getCat(p.mainCategoryId); const catName = cat ? cat.name : "—";
-    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
-    const uidDisplay = p.uniqueId ? `<span style="color:var(--primary); font-weight:bold;">[ID: ${p.uniqueId}]</span> ` : "";
-    
-    const el = document.createElement("div"); el.className = "admin-prod";
-    el.innerHTML = `
-      <img src="${mainImg}" alt="${p.name}" />
-      <div class="ap-info"><div class="ap-name">${uidDisplay}${p.name}</div><div class="ap-sub">${catName}</div><div class="ap-price">₹${price} ${p.discount > 0 ? `(${p.discount}% off)` : ''} · <span style="color:${inStock ? '#4cc968' : '#e05555'}">${inStock ? 'In Stock' : 'Out of Stock'}</span></div></div>
-      <div class="ap-actions"><button class="edit-btn">✏️</button><button class="trash">🗑️</button></div>`;
-    el.querySelector(".edit-btn").onclick = () => openEditModal(p);
-    el.querySelector(".trash").onclick = () => { if (!confirm("Delete this product?")) return; products = products.filter(x => x.id !== p.id); renderProducts(); renderAdmin(); if (window.deleteProductFromFirebase) { window.deleteProductFromFirebase(p.id); } };
-    list.appendChild(el);
-  });
-}
-
-window.renderAdmin = function () {
-  syncAddProductDropdowns();
-  
-  if ($("adminFilterCat")) { const sel = $("adminFilterCat"); sel.innerHTML = '<option value="ALL">All Categories</option>'; mainCategories.forEach(cat => { const o = document.createElement("option"); o.value = cat.id; o.textContent = cat.name; sel.appendChild(o); }); }
-  
-  const cList = $("adminCouponsList");
-  if(cList) {
-      cList.innerHTML = "";
-      couponsData.forEach(c => {
-          const d = document.createElement("div"); d.className = "admin-prod";
-          d.innerHTML = `<div class="ap-info"><div class="ap-name">${c.code} <span style="color:var(--primary);">(₹${c.discount} OFF)</span></div><div class="ap-sub">Min Order: ₹${c.minOrder}</div></div><div class="ap-actions"><button class="trash del-coupon" data-id="${c.id}">🗑️</button></div>`;
-          d.querySelector('.del-coupon').onclick = async () => { if(confirm("Delete Coupon?")) { couponsData = couponsData.filter(x => x.id !== c.id); if(window.saveCouponsToFirebase) await window.saveCouponsToFirebase(couponsData); renderAdmin(); } }
-          cList.appendChild(d);
-      });
-  }
-
-  const blist = $("adminBannersList");
-  if(blist) { blist.innerHTML = ""; homeBanners.forEach(b => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<img src="${b.image}" alt="Banner" style="width:80px; border-radius:4px; object-fit:cover;" /><div class="ap-info"><div class="ap-name" style="font-size:11px; color:var(--muted);">${b.link || 'No Link'}</div></div><div class="ap-actions"><button class="trash del-banner" data-id="${b.id}">🗑️</button></div>`; d.querySelector('.del-banner').onclick = async () => { if(confirm("Delete this Banner?")) { homeBanners = homeBanners.filter(x => x.id !== b.id); if(window.saveBannersToFirebase) await window.saveBannersToFirebase(homeBanners); renderAdmin(); renderHomeBanners(); } }; blist.appendChild(d); }); }
-  
-  const shortList = $("adminShortsList");
-  if(shortList) { shortList.innerHTML = ""; shortsData.forEach(sh => { const d = document.createElement("div"); d.className = "admin-prod"; d.innerHTML = `<div class="ap-info"><div class="ap-name" style="font-size:12px;">URL: ${sh.url}</div><div class="ap-sub" style="color:var(--primary); font-size:10px;">Linked Product: ${sh.productId}</div></div><div class="ap-actions"><button class="trash del-short" data-id="${sh.id}">🗑️</button></div>`; d.querySelector('.del-short').onclick = async () => { if(confirm("Delete this Short?")) { shortsData = shortsData.filter(x => x.id !== sh.id); if(window.saveShortsToFirebase) await window.saveShortsToFirebase(shortsData); renderAdmin(); } }; shortList.appendChild(d); }); }
-
-  renderAdminProducts();
-  if (window.fetchOrdersFromFirebase) { window.fetchOrdersFromFirebase(); }
-};
-
-// ADD PRODUCT
-document.getElementById("addProductBtn").addEventListener("click", async () => {
-    const pName = document.getElementById("pName").value.trim();
-    const rawImage = document.getElementById("pImage").value.trim(); 
-    const pPrice = document.getElementById("pPrice").value;
-    const pDisc = document.getElementById("pDiscount").value;
-    const pExtra = document.getElementById("pExtra").value;
-    const pCatId = document.getElementById("pMainCat").value;
-    const pShopId = document.getElementById("pShop").value || "";
-    const pInStock = document.getElementById("pInStock").checked;
-    const pFreeDelivery = document.getElementById("pFreeDelivery").checked;
-    const pSizesIn = document.getElementById("pSizesIn").value.trim();
-    const pSizesOut = document.getElementById("pSizesOut").value.trim();
-    const pColor = document.getElementById("pColor").value.trim();
-    const pGroupId = document.getElementById("pGroupId").value.trim();
-    const pUniqueId = document.getElementById("pUniqueId") ? document.getElementById("pUniqueId").value.trim() : "";
-
-    let imgArray = [];
-    if(rawImage.includes("base64,") || rawImage.includes("|")) {
-        imgArray = rawImage.split("|").map(s => s.trim()).filter(Boolean);
-    } else {
-        imgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-    }
-
-    if (!pName || imgArray.length === 0 || !pPrice) { alert("Naam, Photo (Gallery Se) aur Price zaroori hain!"); return; }
-    
-    const btn = document.getElementById("addProductBtn"); btn.textContent = "Listing...";
-    
-    const newProductData = {
-        name: pName, uniqueId: pUniqueId, imageUrl: imgArray, price: Number(pPrice), discount: Number(pDisc) || 0, extra: Number(pExtra) || 0,
-        mainCategoryId: pCatId, shopId: pShopId, inStock: pInStock, freeDelivery: pFreeDelivery,
-        sizesIn: pSizesIn, sizesOut: pSizesOut, color: pColor, groupId: pGroupId, timestamp: new Date()
-    };
-
-    try {
-      await window.fbAddDoc(window.fbCollection(window.fbDb, "products"), newProductData);
-      alert("Product listed successfully! 🎉");
-      ["pName","pImage","pImageFile","pPrice","pDiscount","pExtra","pSizesIn","pSizesOut","pColor","pGroupId"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).value = ""; });
-      if(document.getElementById("pUniqueId")) document.getElementById("pUniqueId").value = "";
-      
-      const snap = await window.fbGetDocs(window.fbCollection(window.fbDb, "products")); const list = [];
-      snap.forEach(d => { const data = d.data(); let imgData = Array.isArray(data.imageUrl) ? data.imageUrl : (data.imageUrl ? [data.imageUrl] : []); list.push({ id: d.id, uniqueId: data.uniqueId || "", name: data.name, image: imgData, price: data.price, discount: data.discount || 0, extra: data.extra || 0, mainCategoryId: data.mainCategoryId || "", shopId: data.shopId || "", inStock: data.inStock !== false, sizesIn: data.sizesIn || "", sizesOut: data.sizesOut || "", color: data.color || "", groupId: data.groupId || "", freeDelivery: data.freeDelivery !== false, timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0 }); });
-      if (window.updateProductsFromFirebase) window.updateProductsFromFirebase(list);
-    } catch(e) { console.error(e); } finally { btn.textContent = "Add Product to Collection"; }
-});
-
-function openEditModal(p) {
-  editingProductId = p.id; $("editPName").textContent = p.name;
-  
-  let imgArray = Array.isArray(p.image) ? p.image : [p.image]; 
-  $("editPImage").value = imgArray.join(" | "); 
-  $("editPImageFile").value = ""; 
-  
-  $("editPSizesIn").value = p.sizesIn || ""; $("editPSizesOut").value = p.sizesOut || ""; $("editPColor").value = p.color || ""; $("editPGroupId").value = p.groupId || "";
-  $("editPPrice").value = p.price; $("editPDiscount").value = p.discount || 0; $("editPExtra").value = p.extra || 0;
-  if($("editPUniqueId")) $("editPUniqueId").value = p.uniqueId || "";
-  
-  const inStock = p.inStock !== false; $("editInStock").checked = inStock;
-  const freeDel = p.freeDelivery !== false; if($("editPFreeDelivery")) $("editPFreeDelivery").checked = freeDel;
-
-  const lbl = $("editStockLabel"); lbl.textContent = inStock ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (inStock ? "in" : "out");
-  $("editModal").classList.remove("hidden");
-}
-
-if ($("editInStock")) { $("editInStock").addEventListener("change", function () { const lbl = $("editStockLabel"); lbl.textContent = this.checked ? "In Stock" : "Out of Stock"; lbl.className = "stock-label " + (this.checked ? "in" : "out"); }); }
-if ($("editClose")) { $("editClose").onclick = () => { $("editModal").classList.add("hidden"); editingProductId = null; }; }
-
-if ($("saveEditBtn")) {
-  $("saveEditBtn").onclick = () => {
-    if (!editingProductId) return;
-    const newPrice = Number($("editPPrice").value); const newDiscount = Number($("editPDiscount").value) || 0; const newExtra = Number($("editPExtra").value) || 0; const newInStock = $("editInStock").checked; const rawImage = $("editPImage").value.trim(); 
-    
-    let newImgArray = [];
-    if(rawImage.includes("base64,") || rawImage.includes("|")) {
-        newImgArray = rawImage.split("|").map(s => s.trim()).filter(Boolean);
-    } else {
-        newImgArray = rawImage.split(",").map(s => s.trim()).filter(Boolean);
-    }
-
-    const sIn = $("editPSizesIn").value.trim(); const sOut = $("editPSizesOut").value.trim(); const c = $("editPColor").value.trim(); const gid = $("editPGroupId").value.trim();
-    const newFreeDel = $("editPFreeDelivery") ? $("editPFreeDelivery").checked : true;
-    const pUniqueId = $("editPUniqueId") ? $("editPUniqueId").value.trim() : "";
-    
-    if (!newPrice || newPrice <= 0 || newImgArray.length === 0) return alert("Sahi Image aur Price daalein!");
-    const idx = products.findIndex(p => p.id === editingProductId);
-    if (idx > -1) { products[idx] = { ...products[idx], uniqueId: pUniqueId, image: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }; renderProducts(); renderAdmin(); }
-    if (window.updateProductInFirebase) { window.updateProductInFirebase(editingProductId, { uniqueId: pUniqueId, imageUrl: newImgArray, price: newPrice, discount: newDiscount, extra: newExtra, inStock: newInStock, freeDelivery: newFreeDel, sizesIn: sIn, sizesOut: sOut, color: c, groupId: gid }); }
-    $("editModal").classList.add("hidden"); editingProductId = null;
-  };
 }
 
 $("closeViewerBtn").onclick = () => { history.back(); };
