@@ -455,412 +455,17 @@
     </div>
   </div>
 
-  <div id="adminPin" class="overlay center hidden" style="z-index: 110;">
-    <div class="pin-box">
-      <button id="pinClose" class="icon-btn close-abs">✕</button>
-      <div class="lock">🔒</div>
-      <h2>Vendor Login</h2>
-      <p>Enter PIN to continue</p>
-      <input id="pinInput" type="password" inputmode="numeric" placeholder="••••" class="pin-input" />
-      <div id="pinError" class="error hidden">Wrong PIN</div>
-      <button id="pinUnlock" class="btn-primary full auth-submit">Unlock</button>
-    </div>
-  </div>
-
-  <div id="superAdminPinModal" class="overlay center hidden" style="z-index: 115;">
-    <div class="pin-box">
-      <button id="superPinClose" class="icon-btn close-abs">✕</button>
-      <div class="lock">👑</div>
-      <h2>Super Admin</h2>
-      <p>Enter 5-digit Master PIN</p>
-      <input id="superPinInput" type="password" inputmode="numeric" placeholder="•••••" class="pin-input" maxlength="5" />
-      <div id="superPinError" class="error hidden">Wrong PIN</div>
-      <button id="superPinUnlock" class="btn-primary full auth-submit">Unlock All Access</button>
-    </div>
-  </div>
-
-  <div id="editShopModal" class="overlay center hidden" style="z-index: 125;">
-    <div class="pin-box wide-box">
-      <button id="editShopClose" class="icon-btn close-abs">✕</button>
-      <h2>Edit Shop</h2>
-      <div class="field-group" style="width: 100%; margin-top: 12px;">
-        <input id="editSName" class="field" placeholder="Shop Name" />
-        <input id="editSCity" class="field" placeholder="City" />
-        <input id="editSType" class="field" placeholder="Type (e.g. Shoes, Clothes)" />
-        <input id="editSImage" class="field" placeholder="Logo URL" />
-        <input id="editSUPI" class="field" placeholder="UPI ID" />
-        <input id="editSQR" class="field" placeholder="QR Image URL" />
-        <input id="editSCodAmt" class="field" type="number" placeholder="COD Advance Amount (₹)" />
-        <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:10px;">
-          <span class="field-label">Enable C.O.D.</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="editSCodStatus" checked />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:10px;">
-          <span class="field-label">100% COD (No Advance)</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="editSFullCodStatus" />
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-      <button id="saveEditShopBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Shop</button>
-    </div>
-  </div>
-
-  <div id="editModal" class="overlay center hidden" style="z-index: 120;">
-    <div class="pin-box wide-box">
-      <button id="editClose" class="icon-btn close-abs">✕</button>
-      <h2>Edit Product</h2>
-      <p id="editPName" class="edit-prod-name"></p>
-      
-      <div class="field-group" style="width: 100%; margin-bottom: 12px;">
-        <label class="field-label" style="text-align: left; margin-bottom: 4px;">Upload New Images (Direct from Gallery)</label>
-        <input id="editPImageFile" type="file" class="field" accept="image/*" multiple style="background: var(--card2); padding: 8px;" />
-        <input id="editPImage" type="hidden" /> 
-      </div>
-
-      <div class="field-group" style="width: 100%; margin-bottom: 12px;">
-        <label class="field-label">In-Stock Sizes (Comma separated: S, M, L)</label>
-        <input id="editPSizesIn" class="field" type="text" placeholder="e.g. S, M, L" />
-      </div>
-      <div class="field-group" style="width: 100%; margin-bottom: 12px;">
-        <label class="field-label">Out-of-Stock Sizes (Comma separated: XL)</label>
-        <input id="editPSizesOut" class="field" type="text" placeholder="e.g. XL, XXL" />
-      </div>
-      <div class="row2" style="width: 100%; margin-bottom: 12px;">
-        <div class="field-group">
-          <label class="field-label">Color Name</label>
-          <input id="editPColor" class="field" type="text" placeholder="e.g. Red" />
-        </div>
-        <div class="field-group">
-          <label class="field-label">Variant Group ID</label>
-          <input id="editPGroupId" class="field" type="text" placeholder="Same ID for all colors" />
-        </div>
-      </div>
-
-      <div class="row3" style="margin-bottom:12px; width: 100%;">
-        <div class="field-group">
-          <label class="field-label">Actual Price (₹)</label>
-          <input id="editPPrice" class="field" type="number" placeholder="Price" />
-        </div>
-        <div class="field-group">
-          <label class="field-label">Discount %</label>
-          <input id="editPDiscount" class="field" type="number" placeholder="0" />
-        </div>
-        <div class="field-group">
-          <label class="field-label">Extra Charge (₹)</label>
-          <input id="editPExtra" class="field" type="number" placeholder="0" />
-        </div>
-      </div>
-      <div class="stock-toggle-row">
-        <span class="field-label">Stock Status</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="editInStock" checked />
-          <span class="toggle-slider"></span>
-        </label>
-        <span id="editStockLabel" class="stock-label in">In Stock</span>
-      </div>
-      
-      <div class="stock-toggle-row" style="margin-top:8px;">
-        <span class="field-label">Free Delivery Tag</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="editPFreeDelivery" checked />
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-
-      <button id="saveEditBtn" class="btn-primary full auth-submit" style="margin-top:16px;">Save Changes</button>
-    </div>
-  </div>
-
-  <div id="adminPanel" class="admin hidden" style="z-index: 105;">
-    <div class="admin-inner">
-      <div class="drawer-head" style="border-bottom:none; padding-bottom:5px;">
-        <h2>Admin Panel</h2>
-        <button id="adminClose" class="icon-btn">✕</button>
-      </div>
-      
-      <div class="admin-main-tabs">
-          <button id="tabShopsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amShops')">Shops</button>
-          <button id="tabOrdersBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amOrders')">Orders</button>
-          <button id="tabCatsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCats')">Categories</button>
-          <button id="tabProdsBtn" class="am-tab active" onclick="switchAdminTab(event, 'amProds')">Products</button>
-          <button id="tabShortsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amShorts')">Reels/Shorts</button>
-          <button id="tabCouponsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amCoupons')">Coupons</button>
-          <button id="tabSettingsBtn" class="am-tab hidden" onclick="switchAdminTab(event, 'amSettings')">Settings</button>
-      </div>
-
-      <div id="amCoupons" class="admin-section hidden">
-          <section class="card">
-              <h3>Manage Coupons</h3>
-              <p class="section-hint">Naye coupon codes banayein discount dene ke liye.</p>
-              
-              <div id="adminCouponsList" style="margin-bottom: 15px; border-bottom: 1px dashed var(--border); padding-bottom: 10px;">
-              </div>
-              
-              <div class="field-group" style="margin-top:10px;">
-                  <label class="field-label">Coupon Code (e.g. UF50)</label>
-                  <input id="newCouponCode" class="field" placeholder="Enter Code" style="text-transform: uppercase;" />
-                  
-                  <label class="field-label">Discount Amount (₹)</label>
-                  <input id="newCouponDiscount" type="number" class="field" placeholder="e.g. 50" />
-                  
-                  <label class="field-label">Minimum Order Value (₹)</label>
-                  <input id="newCouponMinOrder" type="number" class="field" placeholder="e.g. 499" />
-
-                  <button id="addCouponBtn" class="btn-primary sm-btn auth-submit" style="margin-top: 12px;">+ Create Coupon</button>
-              </div>
-          </section>
-      </div>
-
-      <div id="amShorts" class="admin-section hidden">
-          <section class="card">
-            <h3>Manage Shorts / Reels</h3>
-            <p class="section-hint">Insta Reel / YouTube Short URL aur link hone wala Product ID dalein.</p>
-            <div id="adminShortsList" style="margin-bottom: 10px;"></div>
-            
-            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-              <label class="field-label">Video URL (YouTube/Insta Embed)</label>
-              <input id="newShortUrl" class="field" placeholder="e.g. https://www.youtube.com/embed/XXXXX" />
-              <label class="field-label">Link with Product (Paste Product ID)</label>
-              <input id="newShortProductId" class="field" placeholder="Product ID (e.g. 101, 102)" />
-              <button id="addShortBtn" class="btn-primary sm-btn auth-submit">+ Add Short Video</button>
-            </div>
-          </section>
-      </div>
-
-      <div id="amShops" class="admin-section hidden">
-          <section class="card">
-            <h3>Shop Management</h3>
-            <p class="section-hint">Multiple shops add/edit karein jinki dynamic UPI use hogi.</p>
-            <div id="adminShopsList" style="margin-bottom: 10px;"></div>
-            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-              <input id="newShopName" class="field" placeholder="Shop Name (e.g. Trendy Boutique)" />
-              <input id="newShopCity" class="field" placeholder="City Name (e.g. Baran)" />
-              <input id="newShopType" class="field" placeholder="Product Type (e.g. Shoes, Clothes)" />
-              <input id="newShopImage" class="field" placeholder="Shop Logo URL" />
-              <input id="newShopUPI" class="field" placeholder="Shop's Real UPI ID" />
-              <input id="newShopQR" class="field" placeholder="Shop QR Code Image URL" />
-              <input id="newShopCodAmt" class="field" type="number" placeholder="COD Advance Amt (₹) e.g. 100" />
-              <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:6px;">
-                <span class="field-label">Enable C.O.D.</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="newShopCodStatus" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="stock-toggle-row" style="margin-bottom:12px; margin-top:6px;">
-                <span class="field-label">100% COD (No Advance)</span>
-                <label class="toggle-switch">
-                  <input type="checkbox" id="newShopFullCodStatus" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <button id="addShopBtn" class="btn-primary sm-btn auth-submit">+ Add Shop</button>
-            </div>
-          </section>
-      </div>
-
-      <div id="amOrders" class="admin-section hidden">
-          <section class="card">
-            <h3>Order Management</h3>
-            <p class="section-hint">Customer ke orders check aur manage karein.</p>
-            <div class="admin-tabs" id="adminOrderTabs">
-              <button class="admin-tab active" data-tab="Recent">Recent</button>
-              <button class="admin-tab" data-tab="Pending">Pending</button>
-              <button class="admin-tab" data-tab="Completed">Completed</button>
-            </div>
-            <div id="adminOrdersList">Loading orders...</div>
-          </section>
-      </div>
-
-      <div id="amCats" class="admin-section hidden">
-          <section class="card">
-            <h3>Category Management</h3>
-            <p class="section-hint">Har shop ki alag categories banayein aur delete karein.</p>
-            <div id="catMgmtList"></div>
-            <div class="field-group" style="margin-top:12px; border-top: 1px dashed var(--border); padding-top: 12px;">
-              <label class="field-label">Assign Category to Shop</label>
-              <select id="newCatShop" class="field small-field">
-                <option value="GLOBAL">Global (All Shops)</option>
-              </select>
-              <div class="inline-row" style="margin-top:8px;">
-                <input id="newCatName" class="field" placeholder="Nai category ka naam (e.g. SUMMER SALE)" />
-                <button id="addCatBtn" class="btn-primary sm-btn auth-submit">+ Add</button>
-              </div>
-            </div>
-          </section>
-      </div>
-
-      <div id="amProds" class="admin-section">
-          <section class="card">
-            <h3>Add Product</h3>
-            <input id="pUniqueId" class="field" placeholder="Product Unique ID (e.g. 101, 102)" style="margin-bottom: 12px;" />
-            <input id="pName" class="field" placeholder="Product name" />
-            
-            <div class="field-group" style="margin-bottom:12px;">
-              <label class="field-label">Upload Product Images (Direct from Gallery)</label>
-              <input id="pImageFile" type="file" class="field" accept="image/*" multiple style="padding: 8px; background: var(--card2);" />
-              <input id="pImage" type="hidden" /> 
-            </div>
-            
-            <div class="field-group" style="margin-bottom:12px;">
-              <label class="field-label">In-Stock Sizes (S, M, L)</label>
-              <input id="pSizesIn" class="field" placeholder="Comma separated available sizes" />
-            </div>
-            <div class="field-group" style="margin-bottom:12px;">
-              <label class="field-label">Out-of-Stock Sizes (XL, XXL)</label>
-              <input id="pSizesOut" class="field" placeholder="Comma separated disabled sizes" />
-            </div>
-            <div class="row2" style="margin-bottom:12px;">
-              <div class="field-group">
-                <label class="field-label">Color Name</label>
-                <input id="pColor" class="field" placeholder="e.g. Black" />
-              </div>
-              <div class="field-group">
-                <label class="field-label">Variant Group ID</label>
-                <input id="pGroupId" class="field" placeholder="Same ID for all colors of this item" />
-              </div>
-            </div>
-
-            <div class="row3" style="margin-bottom:12px;">
-              <div class="field-group">
-                <label class="field-label">Price (₹)</label>
-                <input id="pPrice" class="field" type="number" placeholder="Price" />
-              </div>
-              <div class="field-group">
-                <label class="field-label">Discount %</label>
-                <input id="pDiscount" class="field" type="number" placeholder="0" />
-              </div>
-              <div class="field-group">
-                <label class="field-label">Extra (₹)</label>
-                <input id="pExtra" class="field" type="number" placeholder="0" />
-              </div>
-            </div>
-            <div class="row2" style="margin-bottom:12px;">
-              <div class="field-group">
-                <label class="field-label">Assign to Shop</label>
-                <select id="pShop" class="field"></select>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Main Category</label>
-                <select id="pMainCat" class="field"></select>
-              </div>
-            </div>
-            
-            <div class="stock-toggle-row" style="margin-bottom:10px;">
-              <span class="field-label">Stock Status</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="pInStock" checked />
-                <span class="toggle-slider"></span>
-              </label>
-              <span id="pStockLabel" class="stock-label in">In Stock</span>
-            </div>
-
-            <div class="stock-toggle-row" style="margin-bottom:14px;">
-              <span class="field-label">Free Delivery Tag</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="pFreeDelivery" checked />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
-            <button id="addProductBtn" class="btn-primary full auth-submit">Add Product to Collection</button>
-          </section>
-
-          <section class="card">
-            <h3 id="adminProdTitle">Products List</h3>
-            <div class="admin-filter-row">
-              <select id="adminFilterCat" class="field small-field" onchange="renderAdmin()">
-                <option value="ALL">All Categories</option>
-              </select>
-            </div>
-            <div id="adminProducts"></div>
-          </section>
-      </div>
-
-      <div id="amSettings" class="admin-section hidden">
-          
-          <section class="card">
-            <h3>YouTube Subscribe Link</h3>
-            <p class="section-hint">Shorts/Reels page par dikhne wale Subscribe button ka link update karein.</p>
-            <div class="inline-row" style="margin-top:8px;">
-              <input id="adminYtLink" type="text" class="field" placeholder="https://youtube.com/@..." />
-              <button id="saveYtBtn" class="btn-primary sm-btn auth-submit">Save</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h3>WhatsApp Payment Number</h3>
-            <p class="section-hint">Jis number par customer screenshot bhejega.</p>
-            <div class="inline-row" style="margin-top:8px;">
-              <input id="adminWaNumber" type="number" class="field" placeholder="e.g. 8976073065" />
-              <button id="saveWaBtn" class="btn-primary sm-btn auth-submit">Save</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h3>Push Notifications 🔔</h3>
-            <p class="section-hint">Sabhi registered devices par alert bhejein.</p>
-            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-              <input id="notifTitle" class="field" placeholder="Notification Title (e.g. MEGA SALE!)" />
-              <textarea id="notifBody" class="field" rows="2" placeholder="Message Body..."></textarea>
-              <input id="notifImage" class="field" placeholder="Image URL (Optional)" />
-              <input id="fcmServerKey" type="password" class="field" placeholder="Firebase Legacy Server Key (Paste here)" />
-              <button id="sendNotifBtn" class="btn-primary sm-btn auth-submit">Send Notification</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h3>App Themes 🪄</h3>
-            <p class="section-hint">Website ka pura look change karein.</p>
-            <div class="theme-picker" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('dark')">Dark Gold (Default)</button>
-               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('light')">Light Pearl</button>
-               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('blue')">Midnight Blue</button>
-               <button class="btn-outline sm-btn auth-submit" onclick="setAppTheme('green')">Forest Green</button>
-            </div>
-          </section>
-          
-          <section class="card">
-            <h3>Home Page Banners</h3>
-            <p class="section-hint">Auto-sliding banners add/remove karein.</p>
-            <div id="adminBannersList" style="margin-bottom: 10px;"></div>
-            <div class="field-group" style="margin-top:8px; border-top: 1px dashed var(--border); padding-top: 10px;">
-              <label class="field-label" style="margin-bottom:4px;">Upload Banner (Direct from Gallery)</label>
-              <input id="newBannerFile" type="file" class="field" accept="image/*" style="padding: 8px; background: var(--card2);" />
-              <input id="newBannerImg" type="hidden" />
-              <input id="newBannerLink" class="field" placeholder="Target Link (Optional)" style="margin-top:10px;" />
-              <button id="addBannerBtn" class="btn-primary sm-btn auth-submit">+ Add Banner</button>
-            </div>
-          </section>
-
-          <section class="card">
-            <h3>Change Admin PIN</h3>
-            <div class="inline-row" style="margin-top:8px;">
-              <input id="newAdminPin" type="number" class="field" placeholder="Naya PIN daalein" />
-              <button id="updatePinBtn" class="btn-primary sm-btn auth-submit">Save</button>
-            </div>
-          </section>
-      </div>
-
-    </div>
-  </div>
-
   <div id="imageViewer" class="overlay center hidden" style="z-index: 200; background: rgba(0,0,0,0.95);">
     <button id="closeViewerBtn" class="icon-btn close-abs" style="color: #fff; background: rgba(255,255,255,0.2); z-index: 201; top: 16px; right: 16px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">✕</button>
     <img id="fullImage" src="" alt="Full View" style="max-width: 100vw; max-height: 100vh; transition: transform 0.3s ease;" />
   </div>
 
   <script defer src="app.js"></script>
-  <!-- Firebase Scripts -->
+  <!-- Firebase Scripts (Cleaned for Customers) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -886,7 +491,14 @@
 
     if(document.getElementById('initLoader')) document.getElementById('initLoader').style.display = 'none';
 
-    async function fetchShops() { try { const snap = await getDocs(collection(db, "shops")); const list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() })); if (window.updateShopsFromFirebase) window.updateShopsFromFirebase(list); } catch(e) {} }
+    async function fetchShops() { 
+      try { 
+        const snap = await getDocs(collection(db, "shops")); 
+        const list = []; 
+        snap.forEach(d => list.push({ id: d.id, ...d.data() })); 
+        if (window.updateShopsFromFirebase) window.updateShopsFromFirebase(list); 
+      } catch(e) {} 
+    }
     
     async function fetchSettings() { 
       try { 
@@ -902,7 +514,6 @@
         } else { 
           cats = [{ id: "cat_genz", name: "GEN-Z PREMIUM", shopId: "GLOBAL" }]; 
           bannersData = []; shortsData = []; couponsData = []; waData = "8976073065"; ytLink = "https://youtube.com/@uniquefashion-w3y?si=vQ5t7nVl6PRfLH6D";
-          await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats, banners: bannersData, shorts: shortsData, coupons: couponsData, waNumber: waData, youtubeLink: ytLink }, { merge: true }); 
         } 
         if (window.updateCategoriesFromFirebase) window.updateCategoriesFromFirebase(cats); 
         if (window.updateBannersFromFirebase) window.updateBannersFromFirebase(bannersData); 
@@ -943,22 +554,28 @@
       } catch(e) {} 
     }
     
-    window.saveOrderToFirebase = async function(orderData) { try { await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); return true; } catch (e) { return false; } };
-    window.fetchOrdersFromFirebase = async function() { try { const snap = await getDocs(collection(db, "orders")); const list = []; snap.forEach(d => list.push({ id: d.id, ...d.data() })); list.sort((a,b) => b.timestamp - a.timestamp); window.allFirebaseOrders = list; if (window.renderAdminOrders) window.renderAdminOrders(list); if (typeof window.renderMyOrders === "function") window.renderMyOrders(); } catch (e) {} };
-    window.updateOrderStatusInFirebase = async function(id, status) { try { await updateDoc(doc(db, "orders", id), { status }); } catch(e) {} };
-    window.deleteOrderFromFirebase = async function(id) { try { await deleteDoc(doc(db, "orders", id)); } catch(e) {} };
+    // Only allowing saving an order (for customers) and reading orders.
+    window.saveOrderToFirebase = async function(orderData) { 
+      try { 
+        await addDoc(collection(db, "orders"), { ...orderData, timestamp: new Date() }); 
+        return true; 
+      } catch (e) { 
+        return false; 
+      } 
+    };
+
+    window.fetchOrdersFromFirebase = async function() { 
+      try { 
+        const snap = await getDocs(collection(db, "orders")); 
+        const list = []; 
+        snap.forEach(d => list.push({ id: d.id, ...d.data() })); 
+        list.sort((a,b) => b.timestamp - a.timestamp); 
+        window.allFirebaseOrders = list; 
+        if (typeof window.renderMyOrders === "function") window.renderMyOrders(); 
+      } catch (e) {} 
+    };
 
     fetchShops(); fetchSettings(); fetchProducts(); window.fetchOrdersFromFirebase();
-
-    window.saveCategoriesToFirebase = async function(cats) { try { await setDoc(doc(db, "settings", "storeData"), { mainCategories: cats }, { merge: true }); } catch(e) {} };
-    window.saveBannersToFirebase = async function(bData) { try { await setDoc(doc(db, "settings", "storeData"), { banners: bData }, { merge: true }); } catch(e) {} };
-    window.saveShortsToFirebase = async function(sData) { try { await setDoc(doc(db, "settings", "storeData"), { shorts: sData }, { merge: true }); } catch(e) {} };
-    window.saveCouponsToFirebase = async function(cData) { try { await setDoc(doc(db, "settings", "storeData"), { coupons: cData }, { merge: true }); } catch(e) {} };
-    window.deleteProductFromFirebase = async function(id) { try { await deleteDoc(doc(db, "products", id)); } catch(e) {} };
-
-    window.fbAddDoc = addDoc; window.fbCollection = collection; window.fbDb = db; window.fbDeleteDoc = deleteDoc; window.fbDoc = doc; window.fbUpdateDoc = updateDoc; window.fbGetDocs = getDocs; window.fbSetDoc = setDoc;
-
-    window.updateProductInFirebase = async function(id, data) { try { await updateDoc(doc(db, "products", id), data); } catch(e) { alert("Error updating premium product!"); } };
 
   </script>
 </body>
