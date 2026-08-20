@@ -2,6 +2,8 @@
    UNIQUE FASHION — CUSTOMER ONLY JS (100% SECURE)
 ═══════════════════════════════════════════════════════ */
 
+// ⚠️ WARNING: TELEGRAM BOT TOKEN IN FRONTEND IS NOT 100% SECURE. 
+// WE WILL OBFUSCATE THIS LATER TO HIDE IT FROM NORMAL USERS.
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
 const TELEGRAM_CHAT_ID = "7503426190";
 
@@ -16,10 +18,10 @@ let mainCategories = [];
 let products = [];
 let shops = [];
 let homeBanners = [];
-let shortsData = []; 
 let couponsData = []; 
 let adminWaNumber = "8976073065"; 
 let likes = load("knk_likes", []); 
+let searchHistory = load("uf_search_history", []); // Flipkart Style Search History
 let currentCheckoutItem = null;    
 let appliedCoupon = null; 
 
@@ -67,15 +69,10 @@ window.addEventListener('popstate', (e) => {
 // Update data from Firebase
 window.updateBannersFromFirebase = function (fetchedBanners) { homeBanners = fetchedBanners || []; renderHomeBanners(); }
 window.updateShopsFromFirebase = function (fetchedShops) { shops = fetchedShops || []; };
-window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderMainCats(); renderProducts(); };
-window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderProducts(); };
-window.updateShortsFromFirebase = function (fbShorts) { shortsData = fbShorts || []; };
+window.updateCategoriesFromFirebase = function (cats) { mainCategories = cats || []; renderCategoryBubbles(); renderHomeProducts(); };
+window.updateProductsFromFirebase = function (fbProducts) { products = fbProducts; renderHomeProducts(); };
 window.updateCouponsFromFirebase = function (fbCoupons) { couponsData = fbCoupons || []; };
 window.updateWaNumberFromFirebase = function (waNum) { adminWaNumber = waNum; };
-
-window.updateYtLinkFromFirebase = function (link) { 
-  if($("ytSubscribeBtn")) $("ytSubscribeBtn").href = link; 
-};
 
 window.addEventListener("DOMContentLoaded", () => {
   if (!isAppInitialized) { showSplashAndStart(); isAppInitialized = true; }
@@ -123,28 +120,26 @@ async function showSplashAndStart() {
 window.switchNav = function (tab) {
   document.querySelectorAll('.nav-item, .nav-fab-wrap').forEach((el) => { el.classList.remove('active'); });
   
-  if (tab === 'Shorts') {
-      if ($("navOrderWrap")) $("navOrderWrap").classList.add("active"); 
-  } else if (tab === 'Order') {
-      if ($("navShorts")) $("navShorts").classList.add("active"); 
+  if (tab === 'Search') {
+      if ($("navSearchWrap")) $("navSearchWrap").classList.add("active"); 
   } else {
       if ($("nav" + tab)) $("nav" + tab).classList.add("active");
   }
 
-  ["homeContent", "newPage", "shortsPage", "orderPage", "likesPage"].forEach(id => {
+  ["homeContent", "searchPage", "newPage", "orderPage", "likesPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
-  if(tab !== 'Shorts' && $("shortsContainer")) {
-      document.querySelectorAll('.short-video-wrapper iframe').forEach(iframe => {
-          let src = iframe.src;
-          iframe.src = src; 
-      });
+  if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderCategoryBubbles(); renderHomeProducts(); }
+  if (tab === 'Search') { 
+      $("searchPage").classList.remove("hidden"); 
+      renderSearchHistory(); 
+      $("searchResults").innerHTML = ""; 
+      $("searchInput").value = ""; 
+      $("searchClear").classList.add("hidden"); 
+      setTimeout(() => $("searchInput").focus(), 100); 
   }
-
-  if (tab === 'Home') { $("homeContent").classList.remove("hidden"); initBannerAutoScroll(); renderMainCats(); renderProducts(); }
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
-  if (tab === 'Shorts') { $("shortsPage").classList.remove("hidden"); renderShortsPage(); } 
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
   if (tab === 'Likes') { $("likesPage").classList.remove("hidden"); renderLikesPageTab(); }
   
@@ -155,88 +150,6 @@ window.clearShopFilterAndGoHome = function() {
     activeShopId = null; activeMainCatId = null; searchQuery = "";
     if($("searchInput")) $("searchInput").value = "";
     switchNav('Home'); 
-}
-
-function renderShortsPage() {
-    const container = $("shortsContainer");
-    if(!container) return;
-    
-    container.innerHTML = "";
-    if(shortsData.length === 0) {
-        container.innerHTML = "<p class='empty' style='color:#fff; text-align:center; margin-top:50px;'>No reels or shorts added yet.</p>";
-        return;
-    }
-
-    shortsData.forEach((s, index) => {
-        const searchInput = s.productId ? s.productId.toString().toLowerCase().trim() : "";
-        const p = products.find(x => 
-            (x.uniqueId && x.uniqueId.toString().toLowerCase() === searchInput) || 
-            (x.name && x.name.toLowerCase().includes(searchInput)) ||
-            (x.id === s.productId)
-        );
-        
-        if(!p) return; 
-
-        let embedUrl = s.url.trim();
-        let finalIframeSrc = "";
-
-        if (embedUrl.includes("instagram.com")) {
-            const match = embedUrl.match(/(reel|p|reels)\/([A-Za-z0-9_-]+)/);
-            if (match) { finalIframeSrc = `https://www.instagram.com/p/${match[2]}/embed/?hidecaption=true`; } 
-            else { finalIframeSrc = embedUrl; }
-        } else if (embedUrl.includes("youtube.com") || embedUrl.includes("youtu.be")) {
-            let videoId = "";
-            if (embedUrl.includes("youtu.be/")) videoId = embedUrl.split("youtu.be/")[1].split("?")[0];
-            else if (embedUrl.includes("shorts/")) videoId = embedUrl.split("shorts/")[1].split("?")[0];
-            else if (embedUrl.includes("watch?v=")) videoId = embedUrl.split("watch?v=")[1].split("&")[0];
-            
-            if (videoId) finalIframeSrc = `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&playsinline=1&loop=1&playlist=${videoId}&controls=1&modestbranding=1&rel=0&enablejsapi=1`;
-            else finalIframeSrc = embedUrl;
-        } else {
-            finalIframeSrc = embedUrl;
-        }
-
-        const price = finalPrice(p);
-        const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "short-video-wrapper";
-        wrapper.id = "short-wrap-" + index; 
-        wrapper.innerHTML = `
-            <iframe id="iframe-${index}" class="short-iframe" src="${finalIframeSrc}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-            
-            <div class="short-buy-card">
-                <img src="${mainImg}" class="short-buy-img" alt="${p.name}">
-                <div class="short-buy-info">
-                    <div class="short-buy-title">${p.name}</div>
-                    <div class="short-buy-price">₹${price}</div>
-                </div>
-                <button class="short-buy-btn" onclick="openProductDetailById('${p.id}')">Buy Now</button>
-            </div>
-        `;
-        container.appendChild(wrapper);
-    });
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const iframe = entry.target.querySelector('iframe');
-            if (iframe && iframe.src.includes('youtube.com')) {
-                if (!entry.isIntersecting) {
-                    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-                } else {
-                    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
-                }
-            } else if (iframe && iframe.src.includes('instagram.com')) {
-                if (!entry.isIntersecting) {
-                    let currentSrc = iframe.src;
-                    iframe.src = '';
-                    setTimeout(() => { iframe.src = currentSrc; }, 50);
-                }
-            }
-        });
-    }, { root: container, threshold: 0.5 });
-
-    document.querySelectorAll('.short-video-wrapper').forEach(wrapper => { observer.observe(wrapper); });
 }
 
 if ($("logoBtn")) {
@@ -270,76 +183,66 @@ function initBannerAutoScroll() {
     }, 3000);
 }
 
-function renderMainCats() {
-  const wrapDiv = $("mainCatsWrap"); const wrap = $("mainCats"); 
-  if(!wrapDiv || !wrap) return;
-  wrap.innerHTML = ""; let visibleCats = mainCategories;
-  if(visibleCats.length === 0) { wrapDiv.classList.add("hidden"); return; }
-  
-  wrapDiv.classList.remove("hidden");
-  visibleCats.forEach((cat, i) => {
-    const btn = document.createElement("button");
-    btn.className = "main-cat-btn" + (cat.id === activeMainCatId && !searchQuery ? " active" : "");
-    btn.style.animationDelay = (i * 0.07) + "s"; btn.style.animation = "fadeUp 0.4s ease both";
-    btn.innerHTML = `<span class="mc-label">${cat.name}</span>`;
-    btn.onclick = () => selectMainCat(cat.id);
-    wrap.appendChild(btn);
-  });
+// 🌟 DYNAMIC CATEGORY BUBBLES 🌟
+function renderCategoryBubbles() {
+    const wrap = $("imageCategoryWrap");
+    if(!wrap) return;
+    wrap.innerHTML = "";
+    if(mainCategories.length === 0) { wrap.classList.add("hidden"); return; }
+    wrap.classList.remove("hidden");
+    
+    mainCategories.forEach(cat => {
+        const catImg = cat.image || "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=150&q=80"; // Default
+        const box = document.createElement("div");
+        box.className = "img-cat-box" + (cat.id === activeMainCatId ? " active" : "");
+        box.onclick = () => { selectMainCat(cat.id); };
+        box.innerHTML = `<img src="${catImg}" alt="${cat.name}"><span>${cat.name}</span>`;
+        wrap.appendChild(box);
+    });
 }
 
 window.selectMainCat = function (id) {
-  if (searchQuery) { searchQuery = ""; $("searchInput").value = ""; $("searchClear").classList.add("hidden"); }
-  if (activeMainCatId === id) activeMainCatId = null; else activeMainCatId = id; 
-  renderMainCats(); renderProducts();
+    if (activeMainCatId === id) activeMainCatId = null; 
+    else activeMainCatId = id; 
+    renderCategoryBubbles(); 
+    renderHomeProducts();
 };
 
-function searchMatches(p, q) {
-  if (!q) return false; const cat = getCat(p.mainCategoryId); const haystack = [p.name || "", cat ? cat.name : ""].join(" ").toLowerCase();
-  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => haystack.includes(w));
+// 🌟 RECENTLY UPLOADED / CATEGORY PRODUCTS 🌟
+function renderHomeProducts() {
+    const grid = document.querySelector("#homeContent .grid");
+    if(!grid) return;
+    grid.innerHTML = "";
+    
+    let list = [...products];
+    
+    if (activeMainCatId) {
+        list = list.filter(p => p.mainCategoryId === activeMainCatId);
+        const cat = getCat(activeMainCatId);
+        document.querySelector("#homeContent .section-title").textContent = cat ? cat.name.toUpperCase() : "COLLECTIONS";
+    } else {
+        list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        document.querySelector("#homeContent .section-title").textContent = "NEW ARRIVALS";
+    }
+    
+    if(list.length === 0) { grid.innerHTML = "<p class='empty' style='grid-column: 1/-1;'>No products found.</p>"; return; }
+    
+    list.forEach((p, i) => {
+        grid.appendChild(createProductCard(p, i));
+    });
 }
 
-let searchDebounce = null;
-if($("searchInput")) {
-  $("searchInput").addEventListener("input", function () {
-    const v = this.value.trim(); $("searchClear").classList.toggle("hidden", !v);
-    clearTimeout(searchDebounce);
-    searchDebounce = setTimeout(() => { searchQuery = v; renderMainCats(); renderProducts(); }, 120);
-  });
-}
-
-if($("searchClear")) {
-  $("searchClear").addEventListener("click", () => {
-    $("searchInput").value = ""; $("searchClear").classList.add("hidden"); searchQuery = "";
-    renderMainCats(); renderProducts(); $("searchInput").focus();
-  });
-}
-
-function renderProducts() {
-  const title = $("activeTitle"); let list = products;
-
-  if (searchQuery) {
-    list = list.filter((p) => searchMatches(p, searchQuery));
-    title.innerHTML = `Search: "<span style="color:var(--primary)">${searchQuery}</span>" <span class="search-count">${list.length} results</span>`;
-  } else {
-      if (activeMainCatId) { const cat = getCat(activeMainCatId); title.textContent = cat ? cat.name : "PREMIUM COLLECTIONS"; list = list.filter(p => p.mainCategoryId === activeMainCatId); } 
-      else { title.textContent = "ALL PREMIUM COLLECTIONS"; }
-      if (activeShopId) list = list.filter(p => p.shopId === activeShopId);
-  }
-
-  if (activeShopId) $("activeShopBanner").classList.add("hidden"); else $("activeShopBanner").classList.add("hidden");
-
-  const grid = $("products"); if(!grid) return;
-  if (list.length === 0) { grid.innerHTML = searchQuery ? `<p class="empty">Koi product nahi mila.</p>` : `<p class="empty">Loading products...</p>`; return; }
-  grid.innerHTML = "";
-
-  if(!activeShopId && !searchQuery) { list = [...list].sort(() => Math.random() - 0.5); }
-
-  list.forEach((p, i) => {
-    const price = finalPrice(p); const inStock = p.inStock !== false; const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
+// 🌟 PRODUCT CARD CREATOR 🌟
+function createProductCard(p, i) {
+    const price = finalPrice(p); 
+    const inStock = p.inStock !== false; 
+    const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : "placeholder.jpg";
     const isLiked = likes.some(l => l.id === p.id);
     const freeDel = p.freeDelivery !== false ? '<div style="color:#388e3c; font-size:10px; font-weight:800; letter-spacing:0.05em; margin-top:3px; text-transform:uppercase;">FREE Delivery</div>' : '';
 
-    const el = document.createElement("div"); el.className = "product"; el.style.animationDelay = (i * 0.05) + "s";
+    const el = document.createElement("div"); 
+    el.className = "product"; 
+    el.style.animationDelay = (i * 0.05) + "s";
     el.innerHTML = `
       <div style="position:relative;">
           <img src="${mainImg}" alt="${p.name}" loading="lazy" />
@@ -352,10 +255,102 @@ function renderProducts() {
         <span class="stock-badge ${inStock ? 'in' : 'out'}">${inStock ? '● In Stock' : '● Out of Stock'}</span>
         <div class="btn-row"><button class="btn-primary btn-buy-grid full" ${!inStock ? 'disabled' : ''} style="grid-column: 1 / -1;">💳 Buy Now</button></div>
       </div>`;
-    el.querySelector("img").onclick = () => openProductDetail(p); el.querySelector(".name").onclick = () => openProductDetail(p);
+    el.querySelector("img").onclick = () => openProductDetail(p); 
+    el.querySelector(".name").onclick = () => openProductDetail(p);
     if (inStock) { el.querySelector(".btn-buy-grid").onclick = (e) => { e.stopPropagation(); openProductDetail(p); }; }
-    grid.appendChild(el);
+    return el;
+}
+
+// 🌟 PREMIUM FLIPKART STYLE SEARCH 🌟
+let searchDebounce = null;
+if($("searchInput")) {
+  $("searchInput").addEventListener("input", function () {
+    const v = this.value.trim(); 
+    $("searchClear").classList.toggle("hidden", !v);
+    
+    if(!v) {
+        $("searchHistoryWrap").classList.remove("hidden");
+        $("searchResults").innerHTML = "";
+        return;
+    }
+    $("searchHistoryWrap").classList.add("hidden");
+    
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => { performSearch(v, false); }, 300);
   });
+  
+  $("searchInput").addEventListener("keypress", function (e) {
+      if(e.key === 'Enter') {
+          const v = this.value.trim();
+          if(v) performSearch(v, true);
+      }
+  });
+}
+
+if($("searchClear")) {
+  $("searchClear").addEventListener("click", () => {
+    $("searchInput").value = ""; 
+    $("searchClear").classList.add("hidden"); 
+    $("searchHistoryWrap").classList.remove("hidden");
+    $("searchResults").innerHTML = "";
+    $("searchInput").focus();
+  });
+}
+
+if($("clearHistoryBtn")) {
+    $("clearHistoryBtn").onclick = () => {
+        searchHistory = [];
+        save("uf_search_history", searchHistory);
+        renderSearchHistory();
+    };
+}
+
+function renderSearchHistory() {
+    const list = $("searchHistoryList");
+    if(!list) return;
+    list.innerHTML = "";
+    if(searchHistory.length === 0) {
+        list.innerHTML = "<span style='color:var(--muted); font-size:12px;'>No recent searches</span>";
+        return;
+    }
+    searchHistory.forEach(h => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+        item.innerHTML = `🕒 ${h}`;
+        item.onclick = () => {
+            $("searchInput").value = h;
+            $("searchClear").classList.remove("hidden");
+            performSearch(h, false);
+        };
+        list.appendChild(item);
+    });
+}
+
+function performSearch(query, saveHistory = true) {
+    if(saveHistory && query) {
+        searchHistory = searchHistory.filter(h => h.toLowerCase() !== query.toLowerCase());
+        searchHistory.unshift(query);
+        if(searchHistory.length > 10) searchHistory.pop();
+        save("uf_search_history", searchHistory);
+        renderSearchHistory();
+    }
+    
+    $("searchHistoryWrap").classList.add("hidden");
+    const grid = $("searchResults");
+    
+    let list = products.filter(p => {
+        const cat = getCat(p.mainCategoryId); 
+        const haystack = [p.name || "", cat ? cat.name : "", p.source || ""].join(" ").toLowerCase();
+        return query.toLowerCase().split(/\s+/).filter(Boolean).every((w) => haystack.includes(w));
+    });
+    
+    if(list.length === 0) {
+        grid.innerHTML = "<p class='empty' style='grid-column: 1/-1;'>Koi product nahi mila.</p>";
+        return;
+    }
+    
+    grid.innerHTML = "";
+    list.forEach((p, i) => { grid.appendChild(createProductCard(p, i)); });
 }
 
 function renderNewCollection() {
@@ -418,6 +413,10 @@ function openProductDetail(p) {
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
   
+  // 🌟 FLIPKART SOURCE TAG 🌟
+  if(p.source && p.source.toLowerCase() === 'flipkart') { $("pdSourceTag").classList.remove("hidden"); } 
+  else { $("pdSourceTag").classList.add("hidden"); }
+
   const existFreeDel = document.getElementById("pdFreeDelText"); if(existFreeDel) existFreeDel.remove();
   if(p.freeDelivery !== false) { const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj; $("pdName").parentNode.insertBefore(d, $("pdColorsWrap")); }
 
@@ -906,7 +905,7 @@ window.toggleLike = function(pid) {
     const p = products.find(x => x.id === pid); if(!p) return;
     const idx = likes.findIndex(l => l.id === pid);
     if(idx > -1) { likes.splice(idx, 1); } else { likes.push(p); }
-    save("knk_likes", likes); renderLikesCount(); renderProducts(); 
+    save("knk_likes", likes); renderLikesCount(); renderHomeProducts(); 
     if($("newPage") && !$("newPage").classList.contains("hidden")) renderNewCollection();
     if($("likesPage") && !$("likesPage").classList.contains("hidden")) renderLikesPageTab();
 }
