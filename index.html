@@ -84,12 +84,13 @@
         </div>
 
         <!-- Category Bubbles (Between Banner & Products) -->
-        <div id="mainCatsWrap" class="image-cats-wrapper hidden" id="imageCategoryWrap">
+        <div class="image-cats-wrapper hidden" id="imageCategoryWrap">
           <!-- Populated by JS -->
         </div>
 
         <main class="main">
-          <h2 class="section-title">New Arrivals</h2>
+          <!-- Title changed to All Products -->
+          <h2 id="homeSectionTitle" class="section-title">All Products</h2>
           <div id="products" class="grid recently-uploaded-grid">
             <!-- Populated by JS -->
           </div>
@@ -100,14 +101,14 @@
       <div id="searchPage" class="nav-page hidden">
         <div class="search-header-wrap">
           <div class="search-box premium-search">
-            <!-- Search icon fixed to be bright yellow directly in SVG stroke -->
+            <!-- Search icon -->
             <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" cy="21" x2="16.65" y2="16.65"/></svg>
             <input id="searchInput" class="search-input" type="text" placeholder="Search shoes, combos, baggy jeans..." autocomplete="off" />
             <button id="searchClear" class="search-clear hidden">✕</button>
           </div>
         </div>
         
-        <!-- Search Quick Categories (Combos, Electronics, Shoes, etc.) -->
+        <!-- Search Quick Categories -->
         <div id="searchCategoriesWrap" class="search-cats-wrap" style="display: flex; gap: 12px; overflow-x: auto; padding: 15px 5px; scrollbar-width: none;">
             <!-- Populated by JS -->
         </div>
@@ -127,8 +128,8 @@
 
       <!-- 3. TRENDING / NEW COLLECTION PAGE -->
       <div id="newPage" class="nav-page hidden">
-        <h2 class="page-heading">TRENDING</h2>
-        <p class="page-sub">Latest exclusive premium drops.</p>
+        <h2 class="page-heading">NEW ARRIVALS</h2>
+        <p class="page-sub">Latest exclusive premium drops sorted by time.</p>
         <div id="newCollectionList" style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;"></div>
       </div>
 
@@ -216,7 +217,6 @@
 
     <div class="pd-scroll" id="pdScroll">
       <div class="pd-img-wrap" style="position:relative;">
-        <!-- Top Right Like Button Added -->
         <button id="pdLikeBtn" onclick="toggleLikeFromDetail()" style="position:absolute; top:15px; right:15px; z-index:10; background:rgba(255,255,255,0.9); border:none; border-radius:50%; width:42px; height:42px; font-size:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.3); cursor:pointer;">🤍</button>
         
         <div class="pd-img-slider" id="pdImageSlider"></div>
@@ -227,7 +227,6 @@
       <div class="pd-info">
         <div id="pdBreadcrumb" class="pd-breadcrumb"></div>
         <h1 id="pdName" class="pd-name"></h1>
-        <!-- FLIPKART TAG CONTAINER WITH ORIGINAL LOGO -->
         <div id="pdSourceTag" class="hidden" style="margin-bottom: 10px;">
            <span style="font-size: 11px; font-weight: 700; background: #047BD5; color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
                <img src="https://rukminim1.flixcart.com/www/200/200/promos/20/07/2022/410bad52-f673-455b-8664-df8203b5b7c8.png?q=90" alt="Flipkart" style="width:14px; height:14px; border-radius:50%; background: #fff;">
@@ -280,7 +279,7 @@
             </div>
           </div>
     
-          <!-- CHECKOUT STEP 1: ONLY NAME, MOBILE, ADDRESS -->
+          <!-- CHECKOUT STEP 1 -->
           <div class="checkout-body" id="checkoutStep1">
               <div class="field-group" style="margin-bottom:12px;">
                   <label class="field-label">Full Name</label>
@@ -297,7 +296,7 @@
               </div>
           </div>
     
-          <!-- CHECKOUT STEP 2: COUPON REMOVED -->
+          <!-- CHECKOUT STEP 2 -->
           <div class="checkout-body hidden" id="checkoutStep2">
             <div class="checkout-step2-grid" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
               <div class="chk-s2-left" style="margin-bottom: 15px; text-align: center;">
