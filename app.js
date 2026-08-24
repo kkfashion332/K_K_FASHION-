@@ -235,7 +235,6 @@ window.selectMainCat = function (id) {
     renderHomeProducts();
 };
 
-// Array Shuffle Helper Function for Randomizing Products
 function shuffleArray(array) {
     let curId = array.length;
     while (0 !== curId) {
@@ -248,7 +247,7 @@ function shuffleArray(array) {
     return array;
 }
 
-// 🌟 RECENTLY UPLOADED / CATEGORY PRODUCTS (Random Sorting applied) 🌟
+// 🌟 RECENTLY UPLOADED / CATEGORY PRODUCTS 🌟
 function renderHomeProducts() {
     const grid = document.querySelector("#homeContent .grid");
     if(!grid) return;
@@ -261,7 +260,6 @@ function renderHomeProducts() {
         const cat = getCat(activeMainCatId);
         document.querySelector("#homeContent .section-title").textContent = cat ? cat.name.toUpperCase() : "COLLECTIONS";
     } else {
-        // Here we randomize the list instead of sorting by time for the Home page
         list = shuffleArray(list);
         document.querySelector("#homeContent .section-title").textContent = "RECOMMENDED";
     }
@@ -410,8 +408,6 @@ function performSearch(query, saveHistory = true) {
 function renderNewCollection() {
     const list = $("newCollectionList"); if(!list) return; list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
-    
-    // New page sorts strictly by timeline
     const sorted = [...products].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
     
     sorted.forEach(p => {
@@ -463,7 +459,7 @@ function openProductDetail(p) {
   currentDetailProduct = p; 
   currentSelectedSize = null; 
   
-  updateDetailLikeBtn(); // Update new Top Right Like Button
+  updateDetailLikeBtn(); 
 
   const price = finalPrice(p); const inStock = p.inStock !== false; const cat = getCat(p.mainCategoryId);
   const slider = $("pdImageSlider"); const dotsWrap = $("pdImageDots");
@@ -487,31 +483,17 @@ function openProductDetail(p) {
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
   
-  // 🌟 FLIPKART SOURCE TAG 🌟
   if(p.source && p.source.toLowerCase() === 'flipkart') { $("pdSourceTag").classList.remove("hidden"); } 
   else { $("pdSourceTag").classList.add("hidden"); }
 
   const existFreeDel = document.getElementById("pdFreeDelText"); if(existFreeDel) existFreeDel.remove();
   if(p.freeDelivery !== false) { const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj; $("pdName").parentNode.insertBefore(d, $("pdColorsWrap")); }
 
-  if(p.groupId) {
-      const variants = products.filter(x => x.groupId === p.groupId);
-      if(variants.length > 1) {
-          let html = '<div class="field-label" style="margin-bottom:8px; font-size:13px; font-weight:600; color:var(--fg);">Colours</div><div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px; scrollbar-width:none;">';
-          variants.forEach(v => {
-              const vImg = (Array.isArray(v.image) && v.image.length > 0) ? v.image[0] : "placeholder.jpg";
-              const isActive = v.id === p.id ? 'border: 2px solid var(--primary); transform: scale(1.05);' : 'border: 1px solid var(--border); opacity: 0.7;';
-              html += `<div onclick="openProductDetailById('${v.id}')" style="display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; flex-shrink:0;"><img src="${vImg}" style="width:48px;height:48px;border-radius:50%;object-fit:cover; padding:2px; ${isActive} transition:all 0.2s;"><span style="font-size:10px;font-weight:600;color:var(--fg); text-transform:uppercase;">${v.color || 'VAR'}</span></div>`;
-          });
-          html += '</div>'; $("pdColorsWrap").innerHTML = html; $("pdColorsWrap").classList.remove("hidden");
-      } else { $("pdColorsWrap").classList.add("hidden"); }
-  } else { $("pdColorsWrap").classList.add("hidden"); }
-
   const sizesIn = p.sizesIn ? p.sizesIn.split(',').map(s=>s.trim()).filter(Boolean) : [];
   const sizesOut = p.sizesOut ? p.sizesOut.split(',').map(s=>s.trim()).filter(Boolean) : [];
 
   if(sizesIn.length > 0 || sizesOut.length > 0) {
-      let html = '<div class="field-label" style="margin-bottom:10px; margin-top:10px; font-size:13px; font-weight:600; color:var(--fg);">Sizes</div><div style="display:flex;gap:10px;flex-wrap:wrap;">';
+      let html = '<div class="field-label" style="margin-bottom:10px; margin-top:10px; font-size:13px; font-weight:600; color:var(--fg);">Select Size</div><div style="display:flex;gap:10px;flex-wrap:wrap;">';
       sizesIn.forEach(s => { html += `<button class="size-box in" data-size="${s}">${s}</button>`; });
       sizesOut.forEach(s => { html += `<button class="size-box out" disabled>${s}</button>`; });
       html += '</div>'; $("pdSizesWrap").innerHTML = html; $("pdSizesWrap").classList.remove("hidden");
@@ -526,7 +508,19 @@ function openProductDetail(p) {
   if (inStock) {
     buyBtn.disabled = false;
     buyBtn.onclick = () => { 
-        if(p.sizesIn && p.sizesIn.trim() !== "" && !currentSelectedSize) { alert("Please select a size first!"); return; }
+        // 🔥 BUG FIX: REQUIRE SIZE SELECTION IF SIZES ARE AVAILABLE
+        if(sizesIn.length > 0 && !currentSelectedSize) { 
+            alert("Please select a size before buying!"); 
+            // Highlight the size box to get user attention
+            $("pdSizesWrap").style.border = "2px dashed #C9A84C";
+            $("pdSizesWrap").style.padding = "5px";
+            $("pdSizesWrap").style.borderRadius = "8px";
+            setTimeout(() => {
+                $("pdSizesWrap").style.border = "none";
+                $("pdSizesWrap").style.padding = "0";
+            }, 2000);
+            return; 
+        }
         directBuyCheckout(p, currentSelectedSize); 
     };
   } else { buyBtn.disabled = true; }
