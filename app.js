@@ -235,7 +235,20 @@ window.selectMainCat = function (id) {
     renderHomeProducts();
 };
 
-// 🌟 RECENTLY UPLOADED / CATEGORY PRODUCTS 🌟
+// Array Shuffle Helper Function for Randomizing Products
+function shuffleArray(array) {
+    let curId = array.length;
+    while (0 !== curId) {
+        let randId = Math.floor(Math.random() * curId);
+        curId -= 1;
+        let tmp = array[curId];
+        array[curId] = array[randId];
+        array[randId] = tmp;
+    }
+    return array;
+}
+
+// 🌟 RECENTLY UPLOADED / CATEGORY PRODUCTS (Random Sorting applied) 🌟
 function renderHomeProducts() {
     const grid = document.querySelector("#homeContent .grid");
     if(!grid) return;
@@ -248,8 +261,9 @@ function renderHomeProducts() {
         const cat = getCat(activeMainCatId);
         document.querySelector("#homeContent .section-title").textContent = cat ? cat.name.toUpperCase() : "COLLECTIONS";
     } else {
-        list.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        document.querySelector("#homeContent .section-title").textContent = "NEW ARRIVALS";
+        // Here we randomize the list instead of sorting by time for the Home page
+        list = shuffleArray(list);
+        document.querySelector("#homeContent .section-title").textContent = "RECOMMENDED";
     }
     
     if(list.length === 0) { grid.innerHTML = "<p class='empty' style='grid-column: 1/-1;'>No products found.</p>"; return; }
@@ -396,6 +410,8 @@ function performSearch(query, saveHistory = true) {
 function renderNewCollection() {
     const list = $("newCollectionList"); if(!list) return; list.innerHTML = "";
     if(products.length === 0) { list.innerHTML = "<p class='empty'>No new collection yet.</p>"; return; }
+    
+    // New page sorts strictly by timeline
     const sorted = [...products].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
     
     sorted.forEach(p => {
