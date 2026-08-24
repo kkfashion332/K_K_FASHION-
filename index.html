@@ -83,13 +83,12 @@
            <div class="home-banners-slider" id="homeBannersSlider"></div>
         </div>
 
-        <!-- Category Bubbles (Between Banner & Products) -->
+        <!-- Category Grid (Updated CSS will handle 5 columns) -->
         <div class="image-cats-wrapper hidden" id="imageCategoryWrap">
           <!-- Populated by JS -->
         </div>
 
         <main class="main">
-          <!-- Title changed to All Products -->
           <h2 id="homeSectionTitle" class="section-title">All Products</h2>
           <div id="products" class="grid recently-uploaded-grid">
             <!-- Populated by JS -->
@@ -148,8 +147,8 @@
       </div>
     </div>
 
-    <!-- BOTTOM NAV BAR -->
-    <nav class="bottom-nav" id="bottomNavMenu">
+    <!-- BOTTOM NAV BAR (Fixed strictly to bottom) -->
+    <nav class="bottom-nav" id="bottomNavMenu" style="position: fixed; bottom: 0; left: 0; right: 0; width: 100%; z-index: 99999;">
       <button class="nav-item active" id="navHome" onclick="clearShopFilterAndGoHome()">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span class="nav-text">Home</span>
@@ -162,10 +161,10 @@
         <span class="nav-text">New</span>
       </button>
       
-      <!-- SEARCH FAB -->
+      <!-- SEARCH FAB (Golden Glowing Design) -->
       <div class="nav-fab-wrap" id="navSearchWrap" onclick="switchNav('Search')">
-        <div class="nav-fab search-fab" style="border: 2px solid #000; box-shadow: 0px 4px 15px rgba(201,168,76,0.5);">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px;">
+        <div class="nav-fab search-fab" style="border: 2px solid #D4AF37; box-shadow: 0px 0px 20px rgba(212,175,55,0.7); background: #000;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 26px; height: 26px;">
              <circle cx="11" cy="11" r="8"></circle>
              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
@@ -229,7 +228,6 @@
         <h1 id="pdName" class="pd-name"></h1>
         <div id="pdSourceTag" class="hidden" style="margin-bottom: 10px;">
            <span style="font-size: 11px; font-weight: 700; background: #047BD5; color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
-               <!-- UPDATED LOGO PATH HERE -->
                <img src="flipkart.png" alt="Flipkart" style="width:14px; height:14px; border-radius:50%; background: #fff;">
                By Flipkart
            </span>
@@ -421,6 +419,9 @@
           cats = snap.data().mainCategories || []; 
           bannersData = snap.data().banners || []; 
           waData = snap.data().waNumber || "8976073065"; 
+          if(snap.data().brightThemeEnabled && window.setAppTheme) {
+              window.setAppTheme('light'); 
+          }
         } else { 
           cats = []; bannersData = []; waData = "8976073065"; 
         } 
