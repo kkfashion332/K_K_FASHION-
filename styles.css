@@ -167,9 +167,10 @@ body.no-scroll { overflow: hidden !important; }
 .btn-primary.full, .full { width: 100%; }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* 🌟 SIZE SELECTION UPDATE 🌟 */
 .size-box { display: inline-flex; justify-content: center; align-items: center; min-width: 44px; height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--border); font-weight: 600; font-size: 14px; font-family: var(--font-body); background: var(--card2); color: var(--fg); cursor: pointer; transition: all 0.2s; margin-bottom: 8px; }
-.size-box.in:hover { border-color: var(--primary); color: var(--primary); }
-.size-box.in.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); transform: scale(1.05); }
+.size-box.in:hover { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 10px rgba(201,168,76,0.3); }
+.size-box.in.active { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); transform: scale(1.05); box-shadow: 0 0 15px rgba(201,168,76,0.5); }
 .size-box.out { opacity: 0.5; cursor: not-allowed; background: transparent; color: var(--muted); background-image: linear-gradient(to top right, transparent calc(50% - 1px), var(--border), transparent calc(50% + 1px)); }
 
 .pd-back-enhanced { display: flex; align-items: center; gap: 6px; background: var(--card2); border: 1px solid var(--border); color: var(--fg); font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 14px; border-radius: 999px; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
