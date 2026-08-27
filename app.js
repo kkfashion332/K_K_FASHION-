@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════
-   UNIQUE FASHION — CUSTOMER ONLY JS (100% SECURE & COMBO ADDED)
+   UNIQUE FASHION — CUSTOMER ONLY JS (100% SECURE)
 ═══════════════════════════════════════════════════════ */
 
 const TELEGRAM_BOT_TOKEN = "8940208467:AAHP26sJGndZ28k8u-osJcSs2PGvLEuP91o"; 
@@ -23,9 +23,6 @@ let adminQrCodeUrl = "62673.png";
 let likes = load("knk_likes", []); 
 let searchHistory = load("uf_search_history", []); 
 let currentCheckoutItem = null;    
-
-// 🔥 COMBO STATE 🔥
-let customCombo = { top: null, bottom: null, shoe: null };
 
 let activeMainCatId = null;
 let activeShopId = null;
@@ -57,16 +54,14 @@ function pushModalState() { history.pushState({ modal: true }, "", window.locati
 
 // BACK BUTTON LOGIC
 window.addEventListener('popstate', (e) => {
-  if ($("comboSelectorModal") && !$("comboSelectorModal").classList.contains("hidden")) {
-      $("comboSelectorModal").classList.add("hidden"); unlockScroll();
-  } else if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
-      $("imageViewer").classList.add("hidden"); preventZoom();
+  if ($("imageViewer") && !$("imageViewer").classList.contains("hidden")) {
+    $("imageViewer").classList.add("hidden"); preventZoom();
   } else if ($("checkoutOverlay") && !$("checkoutOverlay").classList.contains("hidden")) {
-      $("checkoutOverlay").classList.add("hidden"); unlockScroll(); 
+    $("checkoutOverlay").classList.add("hidden"); unlockScroll(); 
   } else if ($("prodDetail") && !$("prodDetail").classList.contains("hidden")) {
-      closeProductDetail();
+    closeProductDetail();
   } else if ($("myOrderDetailModal") && !$("myOrderDetailModal").classList.contains("hidden")) {
-      $("myOrderDetailModal").classList.add("hidden"); unlockScroll();
+    $("myOrderDetailModal").classList.add("hidden"); unlockScroll();
   }
 });
 
@@ -108,7 +103,19 @@ async function showSplashAndStart() {
 
   const audio = $("bg-audio"); if (audio) audio.play().catch(() => {});
 
-  await delay(1000); addClass('outro-overlay', 'show'); 
+  await delay(100); addClass('coin-scene', 'appear');
+  await delay(200); addClass('coin-scene', 'spinning');
+  await delay(800); removeClass('coin-scene', 'spinning'); addClass('coin-scene', 'stopping');
+  await delay(300); addClass('flash', 'pop'); addClass('s1', 'fire'); addClass('s2', 'fire'); addClass('s3', 'fire');
+  await delay(60); addClass('wave1', 'blast'); addClass('wave2', 'blast'); addClass('logo-glow', 'on');
+  await delay(200); removeClass('coin-scene', 'stopping');
+  await delay(300); addClass('coin-scene', 'move-up');
+  await delay(150); addClass('welcome', 'show'); addClass('welcome-line', 'show');
+  await delay(1000); addClass('welcome', 'hide'); removeClass('welcome-line', 'show');
+  await delay(400); removeClass('welcome', 'show');
+  if($('welcome')) $('welcome').style.display = 'none'; if($('welcome-line')) $('welcome-line').style.display = 'none';
+  await delay(100); addClass('shield-glow', 'show'); addClass('trusted', 'show');
+  await delay(1000); addClass('outro-overlay', 'show'); addClass('trusted', 'hide'); removeClass('shield-glow', 'show');
   await delay(600); addClass('outro-overlay', 'fadeout');
   await delay(400);
 
@@ -122,11 +129,11 @@ window.switchNav = function (tab) {
   
   if (tab === 'Search') {
       if ($("navSearchWrap")) $("navSearchWrap").classList.add("active"); 
-  } else if (tab !== 'Combo') {
+  } else {
       if ($("nav" + tab)) $("nav" + tab).classList.add("active");
   }
 
-  ["homeContent", "searchPage", "newPage", "orderPage", "likesPage", "comboPage"].forEach(id => {
+  ["homeContent", "searchPage", "newPage", "orderPage", "likesPage"].forEach(id => {
       if($(id)) $(id).classList.add("hidden");
   });
 
@@ -142,7 +149,6 @@ window.switchNav = function (tab) {
   if (tab === 'New') { $("newPage").classList.remove("hidden"); renderNewCollection(); }
   if (tab === 'Order') { $("orderPage").classList.remove("hidden"); window.renderMyOrders(); }
   if (tab === 'Likes') { $("likesPage").classList.remove("hidden"); renderLikesPageTab(); }
-  if (tab === 'Combo') { $("comboPage").classList.remove("hidden"); } // SHOW COMBO PAGE
   
   window.scrollTo(0, 0);
 };
@@ -153,7 +159,9 @@ window.clearShopFilterAndGoHome = function() {
     switchNav('Home'); 
 }
 
-if ($("logoBtn")) { $("logoBtn").onclick = () => { clearShopFilterAndGoHome(); }; }
+if ($("logoBtn")) {
+  $("logoBtn").onclick = () => { clearShopFilterAndGoHome(); };
+}
 
 function renderHomeBanners() {
     const wrap = $("homeBannersWrap"); const slider = $("homeBannersSlider");
@@ -180,6 +188,7 @@ function initBannerAutoScroll() {
     }, 3000);
 }
 
+// 🌟 DYNAMIC CATEGORY BUBBLES 🌟
 function renderCategoryBubbles() {
     const wrap = $("imageCategoryWrap");
     if(!wrap) return;
@@ -188,7 +197,7 @@ function renderCategoryBubbles() {
     wrap.classList.remove("hidden");
     
     mainCategories.forEach(cat => {
-        const catImg = cat.image || "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=150&q=80";
+        const catImg = cat.image || "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=150&q=80"; // Default
         const box = document.createElement("div");
         box.className = "img-cat-box" + (cat.id === activeMainCatId ? " active" : "");
         box.onclick = () => { selectMainCat(cat.id); };
@@ -237,6 +246,7 @@ function shuffleArray(array) {
     return array;
 }
 
+// 🌟 RECENTLY UPLOADED / CATEGORY PRODUCTS 🌟
 function renderHomeProducts() {
     const grid = document.querySelector("#homeContent .grid");
     if(!grid) return;
@@ -255,9 +265,12 @@ function renderHomeProducts() {
     
     if(list.length === 0) { grid.innerHTML = "<p class='empty' style='grid-column: 1/-1;'>No products found.</p>"; return; }
     
-    list.forEach((p, i) => { grid.appendChild(createProductCard(p, i)); });
+    list.forEach((p, i) => {
+        grid.appendChild(createProductCard(p, i));
+    });
 }
 
+// 🌟 PRODUCT CARD CREATOR 🌟
 function createProductCard(p, i) {
     const price = finalPrice(p); 
     const inStock = p.inStock !== false; 
@@ -286,6 +299,7 @@ function createProductCard(p, i) {
     return el;
 }
 
+// 🌟 PREMIUM SEARCH LOGIC WITH HISTORY 🌟
 let searchDebounce = null;
 if($("searchInput")) {
   $("searchInput").addEventListener("input", function () {
@@ -309,7 +323,10 @@ if($("searchInput")) {
   $("searchInput").addEventListener("keypress", function (e) {
       if(e.key === 'Enter') {
           const v = this.value.trim();
-          if(v) { $("searchInput").blur(); performSearch(v, true); }
+          if(v) {
+              $("searchInput").blur();
+              performSearch(v, true);
+          }
       }
   });
 }
@@ -339,16 +356,27 @@ function renderSearchHistory() {
     list.innerHTML = "";
     
     let validHistory = searchHistory.filter(h => h.trim() !== "");
-    if(validHistory.length === 0) { list.innerHTML = "<span style='color:var(--muted); font-size:12px;'>No recent searches</span>"; return; }
+    
+    if(validHistory.length === 0) {
+        list.innerHTML = "<span style='color:var(--muted); font-size:12px;'>No recent searches</span>";
+        return;
+    }
     validHistory.forEach(h => {
-        const item = document.createElement("div"); item.className = "history-item"; item.innerHTML = `🕒 ${h}`;
-        item.onclick = () => { $("searchInput").value = h; $("searchClear").classList.remove("hidden"); performSearch(h, false); };
+        const item = document.createElement("div");
+        item.className = "history-item";
+        item.innerHTML = `🕒 ${h}`;
+        item.onclick = () => {
+            $("searchInput").value = h;
+            $("searchClear").classList.remove("hidden");
+            performSearch(h, false);
+        };
         list.appendChild(item);
     });
 }
 
 function performSearch(query, saveHistory = true) {
     if(!query.trim()) return;
+    
     if(saveHistory) {
         searchHistory = searchHistory.filter(h => h.toLowerCase() !== query.toLowerCase());
         searchHistory.unshift(query);
@@ -356,7 +384,9 @@ function performSearch(query, saveHistory = true) {
         save("uf_search_history", searchHistory);
         renderSearchHistory();
     }
-    $("searchHistoryWrap").classList.add("hidden"); $("searchCategoriesWrap").style.display = "none";
+    
+    $("searchHistoryWrap").classList.add("hidden");
+    $("searchCategoriesWrap").style.display = "none";
     const grid = $("searchResults");
     
     let list = products.filter(p => {
@@ -365,7 +395,10 @@ function performSearch(query, saveHistory = true) {
         return query.toLowerCase().split(/\s+/).filter(Boolean).every((w) => haystack.includes(w));
     });
     
-    if(list.length === 0) { grid.innerHTML = "<p class='empty' style='grid-column: 1/-1;'>Koi product nahi mila.</p>"; return; }
+    if(list.length === 0) {
+        grid.innerHTML = "<p class='empty' style='grid-column: 1/-1;'>Koi product nahi mila.</p>";
+        return;
+    }
     
     grid.innerHTML = "";
     list.forEach((p, i) => { grid.appendChild(createProductCard(p, i)); });
@@ -449,8 +482,7 @@ function openProductDetail(p) {
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
   
-  // 🔥 UPDATE: Flipkart source tag check is REMOVED from Frontend display to hide it from users.
-
+  // Tag explicitly removed from display
   const existFreeDel = document.getElementById("pdFreeDelText"); if(existFreeDel) existFreeDel.remove();
   if(p.freeDelivery !== false) { const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj; $("pdName").parentNode.insertBefore(d, $("pdColorsWrap")); }
 
@@ -537,142 +569,15 @@ function buildHorizSection(title, list) {
   section.appendChild(row); return section;
 }
 
-// =====================================================
-// 🔥 NEW: CUSTOM COMBO MAKER LOGIC 🔥
-// =====================================================
-
-window.openComboSelector = function(type) {
-    $("comboSelectorTitle").textContent = "Select " + type.toUpperCase();
-    const grid = $("comboSelectorBody");
-    grid.innerHTML = "";
-    
-    // Filter products based on slot type (Top, Bottom, Shoe)
-    let list = products.filter(p => {
-        if(p.inStock === false) return false;
-        
-        let text = (p.name + " " + (getCat(p.mainCategoryId)?.name || "")).toLowerCase();
-        
-        if(type === 'top') return text.includes('shirt') || text.includes('top') || text.includes('t-shirt');
-        if(type === 'bottom') return text.includes('jeans') || text.includes('pant') || text.includes('cargo') || text.includes('trouser') || text.includes('lower');
-        if(type === 'shoe') return text.includes('shoe') || text.includes('sneaker') || text.includes('boot');
-        return true; 
-    });
-
-    if(list.length === 0) list = products; // Fallback if no keywords match
-
-    list.forEach(p => {
-        let mainImg = Array.isArray(p.image) ? p.image[0] : p.image;
-        let price = finalPrice(p);
-        let el = document.createElement("div");
-        el.className = "combo-select-card";
-        el.style.cssText = "background:var(--card2); border:1px solid var(--border); border-radius:12px; padding:10px; cursor:pointer;";
-        el.innerHTML = `
-            <img src="${mainImg}" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; margin-bottom:8px;">
-            <div style="font-size:12px; font-weight:600; color:var(--fg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</div>
-            <div style="font-size:14px; font-weight:700; color:var(--primary);">₹${price}</div>
-        `;
-        el.onclick = () => window.selectComboItem(type, p.id);
-        grid.appendChild(el);
-    });
-    
-    $("comboSelectorModal").classList.remove("hidden");
-    document.body.classList.add("no-scroll");
-}
-
-window.selectComboItem = function(type, id) {
-    const p = products.find(x => x.id === id);
-    customCombo[type] = p;
-    let mainImg = Array.isArray(p.image) ? p.image[0] : p.image;
-    let slot = $("comboSlot" + type.charAt(0).toUpperCase() + type.slice(1));
-    
-    slot.innerHTML = `
-        <img src="${mainImg}" style="width:60px; height:60px; object-fit:cover; border-radius:8px;">
-        <div style="flex:1;">
-            <div style="font-size:14px; font-weight:600; color:var(--fg);">${p.name}</div>
-            <div style="font-size:14px; font-weight:700; color:var(--primary);">₹${finalPrice(p)}</div>
-        </div>
-        <button onclick="event.stopPropagation(); window.removeComboItem('${type}')" style="background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--destructive); font-size:16px; padding:6px 10px; box-shadow:0 2px 5px rgba(0,0,0,0.2);">✕</button>
-    `;
-    slot.classList.add("selected");
-    
-    $("comboSelectorModal").classList.add("hidden");
-    document.body.classList.remove("no-scroll");
-    updateComboPrice();
-}
-
-window.removeComboItem = function(type) {
-    customCombo[type] = null;
-    let slot = $("comboSlot" + type.charAt(0).toUpperCase() + type.slice(1));
-    let icons = {top: '👕', bottom: '👖', shoe: '👟'};
-    let texts = {top: 'Tap to Select Shirt/T-Shirt', bottom: 'Tap to Select Baggy Jeans', shoe: 'Tap to Select Shoes'};
-    
-    slot.innerHTML = `
-        <div class="combo-slot-icon">${icons[type]}</div>
-        <div class="combo-slot-text">${texts[type]}</div>
-    `;
-    slot.classList.remove("selected");
-    updateComboPrice();
-}
-
-function updateComboPrice() {
-    let total = 0;
-    let count = 0;
-    
-    if(customCombo.top) { total += finalPrice(customCombo.top); count++; }
-    if(customCombo.bottom) { total += finalPrice(customCombo.bottom); count++; }
-    if(customCombo.shoe) { total += finalPrice(customCombo.shoe); count++; }
-
-    if(count > 0) {
-        $("comboPriceWrap").classList.remove("hidden");
-        $("comboOriginalPrice").textContent = total;
-        
-        if(count === 3) {
-            // Apply 10% Flat Discount if all 3 are selected
-            let finalTot = Math.round(total * 0.90);
-            $("comboDiscountedPrice").textContent = finalTot;
-            $("comboPriceWrap").querySelector('div:last-child').classList.remove("hidden");
-            $("buyComboBtn").classList.remove("hidden");
-        } else {
-            $("comboDiscountedPrice").textContent = total;
-            $("comboPriceWrap").querySelector('div:last-child').classList.add("hidden");
-            $("buyComboBtn").classList.add("hidden");
-        }
-    } else {
-        $("comboPriceWrap").classList.add("hidden");
-        $("buyComboBtn").classList.add("hidden");
-    }
-}
-
-window.proceedWithComboCheckout = function() {
-    preventZoom();
-    let total = finalPrice(customCombo.top) + finalPrice(customCombo.bottom) + finalPrice(customCombo.shoe);
-    let finalTot = Math.round(total * 0.90);
-
-    currentCheckoutItem = {
-        isCombo: true,
-        comboPrice: finalTot,
-        items: [
-            { product: customCombo.top, qty: 1, size: "Default" },
-            { product: customCombo.bottom, qty: 1, size: "Default" },
-            { product: customCombo.shoe, qty: 1, size: "Default" }
-        ]
-    };
-    
-    $("comboPage").classList.add("hidden");
-    pushModalState();
-    openCheckout();
-}
-
 // ----------------------------------------------------
 // CHECKOUT & PAYMENTS
 // ----------------------------------------------------
-let currentDynamicUpi = adminUpiId;
 
 if ($("copyUpiBtn")) {
   $("copyUpiBtn").onclick = function () {
-    navigator.clipboard.writeText(currentDynamicUpi).then(() => {
-      this.innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
-      setTimeout(() => { this.innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`; }, 2000);
+    navigator.clipboard.writeText(adminUpiId).then(() => {
+      this.innerHTML = `${adminUpiId} <span style="font-size:12px; background:#4cc968; color:#fff; padding:3px 8px; border-radius:4px;">✅ Copied!</span>`;
+      setTimeout(() => { this.innerHTML = `${adminUpiId} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`; }, 2000);
     }).catch(err => alert("Copy nahi ho paya, manually type karein."));
   };
 }
@@ -680,7 +585,7 @@ if ($("copyUpiBtn")) {
 if ($("waScreenshotBtn")) {
     $("waScreenshotBtn").onclick = () => {
         let amountPaid = $("qrAmountDisplay").textContent;
-        let pName = currentCheckoutItem.isCombo ? "Custom 3-Piece Combo" : currentCheckoutItem.product.name;
+        let pName = currentCheckoutItem ? currentCheckoutItem.product.name : "Products";
         let message = `Hello Unique Fashion! \nHere is my payment screenshot for the order of *${pName}*. \nAmount Paid: *${amountPaid}*`;
         let waUrl = `https://wa.me/91${adminWaNumber}?text=${encodeURIComponent(message)}`;
         window.open(waUrl, '_blank');
@@ -690,12 +595,7 @@ if ($("waScreenshotBtn")) {
 function directBuyCheckout(p, size) { 
     preventZoom(); 
     const s = size || "Default"; 
-    currentCheckoutItem = { 
-        isCombo: false,
-        product: p, 
-        qty: 1, 
-        size: s 
-    }; 
+    currentCheckoutItem = { product: p, qty: 1, size: s }; 
     $("prodDetail").classList.add("hidden"); 
     $("prodDetail").classList.remove("closing"); 
     currentDetailProduct = null; 
@@ -721,23 +621,8 @@ function openCheckout() {
   
   $("checkoutOverlay").classList.remove("hidden");
   
-  // 🔥 UPDATE: Setup Dynamic UPI & QR for Flipkart Special Products 🔥
-  currentDynamicUpi = adminUpiId;
   $("chkQrImage").src = adminQrCodeUrl;
-
-  if(!currentCheckoutItem.isCombo && currentCheckoutItem.product) {
-      if(currentCheckoutItem.product.specificUpi) currentDynamicUpi = currentCheckoutItem.product.specificUpi;
-      if(currentCheckoutItem.product.specificQr) $("chkQrImage").src = currentCheckoutItem.product.specificQr;
-  } else if (currentCheckoutItem.isCombo) {
-      // If it's a combo, and ANY item has a specific UPI (like Flipkart item), use that specific UPI
-      let specItem = currentCheckoutItem.items.find(i => i.product.specificUpi || i.product.specificQr);
-      if(specItem) {
-          if(specItem.product.specificUpi) currentDynamicUpi = specItem.product.specificUpi;
-          if(specItem.product.specificQr) $("chkQrImage").src = specItem.product.specificQr;
-      }
-  }
-  
-  $("copyUpiBtn").innerHTML = `${currentDynamicUpi} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`;
+  $("copyUpiBtn").innerHTML = `${adminUpiId} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`;
 
   // COD Logic
   $("payCODLabel").classList.remove("hidden");
@@ -765,28 +650,18 @@ $("step1NextBtn").onclick = () => {
 function renderStep2() {
   if (!currentCheckoutItem) return;
   
-  if(currentCheckoutItem.isCombo) {
-      // Combo Mode Setup
-      $("chkStep2Img").src = "logo.png"; // Show logo for combo 
-      $("qtySelectorWrap").classList.add("hidden"); // No qty selector for combo
-  } else {
-      // Single Item Setup
-      const p = currentCheckoutItem.product;
-      const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
-      $("chkStep2Img").src = mainImg; 
-      $("chkStep2Qty").value = currentCheckoutItem.qty > 7 ? 7 : currentCheckoutItem.qty;
-      $("qtySelectorWrap").classList.remove("hidden");
-  }
+  const p = currentCheckoutItem.product;
+  const mainImg = (Array.isArray(p.image) && p.image.length > 0) ? p.image[0] : (typeof p.image === 'string' ? p.image : "placeholder.jpg");
+  $("chkStep2Img").src = mainImg; 
+  $("chkStep2Qty").value = currentCheckoutItem.qty > 7 ? 7 : currentCheckoutItem.qty;
   
   updateStep2Summary();
   
   $("chkStep2Qty").onchange = (e) => { 
-      if(!currentCheckoutItem.isCombo) {
-          currentCheckoutItem.qty = parseInt(e.target.value); 
-          updateStep2Summary(); 
-          const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
-          if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
-      }
+      currentCheckoutItem.qty = parseInt(e.target.value); 
+      updateStep2Summary(); 
+      const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
+      if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
   };
   
   const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
@@ -796,22 +671,13 @@ function renderStep2() {
 function updateStep2Summary() {
   if (!currentCheckoutItem) return;
   
-  let actualTotal = 0;
-  let finalTotal = 0;
-
-  if (currentCheckoutItem.isCombo) {
-      finalTotal = currentCheckoutItem.comboPrice;
-      actualTotal = Math.round(finalTotal / 0.9); // Show original before 10%
-  } else {
-      actualTotal = currentCheckoutItem.product.price * currentCheckoutItem.qty; 
-      finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
-  }
+  let actualTotal = currentCheckoutItem.product.price * currentCheckoutItem.qty; 
+  let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   
   $("billActual").textContent = "₹" + actualTotal; 
   $("billFinal").textContent = "₹" + finalTotal;
   $("chkTotalAmt").textContent = "₹" + finalTotal;
   
-  // Default COD Advance logic (25%)
   let advance = Math.round(finalTotal * 0.25);
   if(advance > finalTotal) advance = finalTotal;
   const balance = finalTotal - advance;
@@ -828,7 +694,7 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
     
     if (e.target.value === "COD") { 
         $("codWarningBox").classList.remove("hidden"); 
-        let finalTotal = currentCheckoutItem.isCombo ? currentCheckoutItem.comboPrice : (finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty);
+        let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
         let defaultAdv = Math.round(finalTotal * 0.25);
         if(defaultAdv > finalTotal) defaultAdv = finalTotal;
         $("step2PayBtn").textContent = `Pay ₹${defaultAdv} Advance`;
@@ -842,7 +708,7 @@ document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
 $("step2PayBtn").onclick = () => {
   if(!currentCheckoutItem) return;
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
-  let finalTotal = currentCheckoutItem.isCombo ? currentCheckoutItem.comboPrice : (finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty);
+  let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
@@ -866,11 +732,29 @@ $("step2PayBtn").onclick = () => {
   }, 1000);
 };
 
+async function sendTelegramAlert(orderData) {
+    if (!TELEGRAM_BOT_TOKEN || TELEGRAM_BOT_TOKEN === "YOUR_TELEGRAM_BOT_TOKEN_HERE") return;
+    let itemsList = "";
+    if (orderData.items && orderData.items.length > 0) {
+        itemsList = orderData.items.map(i => `${i.product.name} (x${i.qty}) ${i.size && i.size !== 'Default' ? '['+i.size+']' : ''}`).join(', ');
+    } else { itemsList = "Unknown Items"; }
+
+    let text = `🛍️ *NEW ELITE ORDER ALERT!* 🛍️\n\n👤 *Name:* ${orderData.name}\n📱 *Mobile:* ${orderData.mobile}\n\n🏠 *FULL DELIVERY ADDRESS:*\n${orderData.address}\n`;
+    text += `\n📦 *Items:* ${itemsList}\n🛒 *Store:* ${orderData.shopName}\n💰 *Total Amount:* ₹${orderData.totalAmount}\n💳 *Payment Mode:* ${orderData.paymentMethod}\n`;
+    
+    if(orderData.paymentMethod === "COD") { text += `💸 *Advance Paid:* ₹${orderData.amountPaid}\n🛑 *Balance Due (COD):* ₹${orderData.balanceDue}\n`; }
+    
+    if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *WhatsApp Screenshot Expected*\n`;
+
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
+}
+
 $("confirmOrderBtn").onclick = async () => {
   if(!currentCheckoutItem) return;
   
   const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
-  let finalTotal = currentCheckoutItem.isCombo ? currentCheckoutItem.comboPrice : (finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty);
+  let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
   
   let amountPaid = finalTotal;
   if(payMethod === "COD") {
@@ -893,14 +777,11 @@ $("confirmOrderBtn").onclick = async () => {
   
   const userEmail = window.fbAuth && window.fbAuth.currentUser ? window.fbAuth.currentUser.email : autoEmail;
 
-  // Handle Items array whether combo or single
-  let orderItems = currentCheckoutItem.isCombo ? currentCheckoutItem.items : [currentCheckoutItem];
-
   const orderData = { 
       name: $("chkName").value.trim(), 
       mobile: chkMobile, 
       address: $("chkAddress").value.trim(), 
-      items: orderItems, 
+      items: [currentCheckoutItem], 
       totalAmount: finalTotal, 
       paymentMethod: payMethod, 
       amountPaid: amountPaid, 
@@ -908,7 +789,7 @@ $("confirmOrderBtn").onclick = async () => {
       utrNumber: utrValue, 
       status: "Recent", 
       userEmail: userEmail, 
-      shopName: currentCheckoutItem.isCombo ? "Combo Package" : "Unique Fashion", 
+      shopName: "Unique Fashion", 
       savedAt: Date.now() 
   };
 
@@ -917,13 +798,13 @@ $("confirmOrderBtn").onclick = async () => {
       btn.disabled = false;
       if (success) {
         let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
-        showStep3Success(payMethod, amountPaid, balanceDue);
+        sendTelegramAlert(orderData); showStep3Success(payMethod, amountPaid, balanceDue);
       } else { alert("Server error. Please try again."); btn.textContent = "Verify Payment & Confirm"; }
     });
   } else {
     btn.disabled = false;
     let localUserOrders = load("knk_my_orders_" + userEmail, []); localUserOrders.unshift(orderData); save("knk_my_orders_" + userEmail, localUserOrders);
-    showStep3Success(payMethod, amountPaid, balanceDue);
+    sendTelegramAlert(orderData); showStep3Success(payMethod, amountPaid, balanceDue);
   }
 };
 
