@@ -224,6 +224,7 @@
       <div class="pd-info">
         <div id="pdBreadcrumb" class="pd-breadcrumb"></div>
         <h1 id="pdName" class="pd-name"></h1>
+        
         <div class="pd-price-row">
           <span id="pdPrice" class="pd-price"></span>
           <span id="pdStrike" class="pd-strike hidden"></span>
@@ -293,7 +294,7 @@
             <div class="checkout-step2-grid" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
               <div class="chk-s2-left" style="margin-bottom: 15px; text-align: center;">
                 <img id="chkStep2Img" src="" alt="Product Image" style="width: 55%; max-width: 250px; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);" />
-                <div class="field-group" style="margin-top: 10px; max-width: 160px; margin-left: auto; margin-right: auto; text-align: left;">
+                <div class="field-group" style="margin-top: 10px; max-width: 160px; margin-left: auto; margin-right: auto; text-align: left;" id="qtySelectorWrap">
                   <label class="field-label">Quantity (Max 7 Units)</label>
                   <select id="chkStep2Qty" class="field" style="margin-bottom: 0;">
                     <option value="1">1 Unit</option><option value="2">2 Units</option><option value="3">3 Units</option><option value="4">4 Units</option><option value="5">5 Units</option><option value="6">6 Units</option><option value="7">7 Units</option>
@@ -309,28 +310,16 @@
             </div>
     
             <div id="paymentOptionsWrap" class="payment-options-wrap">
-              <h3 style="color: var(--fg); margin-bottom: 12px; font-size: 15px; font-weight: 600;">Select Payment Method</h3>
-              <label class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
-                <input type="radio" name="payMethod" value="Prepaid" id="payPrepaid" checked style="margin-top: 3px; accent-color: var(--primary);" />
+              <h3 style="color: var(--fg); margin-bottom: 12px; font-size: 15px; font-weight: 600;">Payment Method</h3>
+              <!-- ONLY SECURE ONLINE PAYMENT SHOWN NOW -->
+              <label class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--primary); border-radius: 12px; background: rgba(201,168,76,0.05); margin-bottom: 10px; cursor: default;">
                 <div class="pay-option-info" style="font-size: 13px; line-height: 1.4;">
-                  <strong style="color: var(--fg); font-weight: 600; display: block; margin-bottom: 2px;">Prepaid (Full Online Pay)</strong>
-                  <span style="color: var(--muted2); font-size: 12px;">Pay 100% online securely via any UPI App</span>
+                  <strong style="color: var(--primary); font-weight: 600; display: block; margin-bottom: 2px;">✅ 100% Secure Online Payment</strong>
+                  <span style="color: var(--fg); font-size: 12px;">Pay securely via any UPI App (PhonePe, GPay, Paytm)</span>
                 </div>
               </label>
-              <label id="payCODLabel" class="pay-option-card" style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--card); margin-bottom: 10px; cursor: pointer;">
-                <input type="radio" name="payMethod" value="COD" id="payCOD" style="margin-top: 3px; accent-color: var(--primary);" />
-                <div class="pay-option-info" style="font-size: 13px; line-height: 1.4;">
-                  <strong style="color: var(--fg); font-weight: 600; display: block; margin-bottom: 2px;">Cash on Delivery (C.O.D)</strong>
-                  <span id="codTextDesc" style="color: var(--muted2); font-size: 12px;">Safety Deposit online required.</span>
-                </div>
-              </label>
-              <div id="codWarningBox" class="cod-warning-box hidden" style="margin-top: 12px; padding: 12px; border: 1px dashed var(--primary); background: rgba(201,168,76,0.04); border-radius: 10px;">
-                <span style="color: var(--destructive); font-weight: 700; font-size: 12px; display: block; margin-bottom: 4px; letter-spacing: 0.03em;">⚠️ SAFETY DEPOSIT REQUIRED</span>
-                <p style="font-size: 12px; color: var(--fg); line-height: 1.5;">Fake orders ko rokne ke liye aapko abhi <strong id="codAdvanceAmt" style="color:var(--primary);">₹0</strong> online pay karna hoga. Baaki ka <strong id="codBalanceAmt" style="color:var(--primary);">₹0</strong> order milne par dena hoga.</p>
-              </div>
             </div>
     
-            <!-- CLEAN SINGLE UPI & QR SECTION -->
             <div id="qrScanSection" class="hidden" style="background:var(--card); padding:20px; border-radius:16px; margin-top:15px; text-align:center; border: 1px solid var(--border);">
               <h4 style="color:var(--fg); margin-top:5px; margin-bottom:5px; font-size:16px;">Scan To Pay: <span id="qrAmountDisplay" style="color:var(--primary); font-weight:900; font-size:22px;">₹0</span></h4>
               <div id="paymentTimer" style="color:#d9534f; font-weight:bold; font-size:14px; margin-bottom:15px; background:rgba(217,83,79,0.1); padding:6px 12px; border-radius:8px; display:inline-block;">Time left: 05:00</div><br>
@@ -360,7 +349,7 @@
           <div class="checkout-footer" id="checkoutFooter">
             <div class="total" id="chkFooterTotalRow" style="margin-bottom:8px;"><span>Order Total:</span><span id="chkTotalAmt">₹0</span></div>
             <button id="step1NextBtn" class="btn-primary full auther-submit">Save Address & Place Order</button>
-            <button id="step2PayBtn" class="btn-primary full hidden auth-submit">Verify Details & Pay</button>
+            <button id="step2PayBtn" class="btn-primary full hidden auth-submit">Pay Online (Prepaid)</button>
             <button id="confirmOrderBtn" class="btn-primary full hidden auth-submit">Verify Payment & Confirm</button>
           </div>
       </div>
