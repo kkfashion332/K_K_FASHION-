@@ -35,7 +35,6 @@ body.no-scroll { overflow: hidden !important; }
 /* ----------------------------------------------------
    GEN-Z 3D SPINNING COIN SPLASH ANIMATION
 ---------------------------------------------------- */
-/* 🔥 FIX: Splash Z-index bumped to always stay on top */
 .splash { position: fixed; inset: 0; z-index: 100006 !important; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #000; animation: splashFadeIn 0.6s ease; }
 #stage { position: absolute; inset: 0; width: 100vw; height: 100vh; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center; perspective: 1200px; }
 #bg-glow { display: none !important; } 
@@ -147,7 +146,6 @@ body.no-scroll { overflow: hidden !important; }
 
 .main { padding: 16px 14px; padding-bottom: 120px; } 
 .section-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--fg); letter-spacing: 0.05em; margin-bottom: 14px; text-transform: uppercase; }
-.section-title .search-count { font-size: 13px; font-weight: 500; color: var(--primary); font-family: var(--font-body); letter-spacing: 0.04em; margin-left: 8px; }
 
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .empty { text-align: center; color: var(--muted); margin-top: 60px; font-size: 14px; grid-column: 1 / -1; }
@@ -177,7 +175,6 @@ body.no-scroll { overflow: hidden !important; }
 .pd-back-enhanced { display: flex; align-items: center; gap: 6px; background: var(--card2); border: 1px solid var(--border); color: var(--fg); font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 14px; border-radius: 999px; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .pd-back-enhanced:hover { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }
 
-/* 🔥 FIX: Increased Overlay Z-Index so it appears ABOVE the Bottom Nav 🔥 */
 .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: flex-end; animation: overlayFade 0.25s ease; backdrop-filter: blur(2px); z-index: 100005 !important; }
 .overlay.center { align-items: center; justify-content: center; }
 .drawer { width: 100%; max-width: 360px; height: 100%; background: var(--card); display: flex; flex-direction: column; animation: drawerSlide 0.3s cubic-bezier(0.16,1,0.3,1); border-left: 1px solid var(--border); }
@@ -203,7 +200,6 @@ body.no-scroll { overflow: hidden !important; }
 .field-group .field { margin-bottom: 0; }
 .field-label { font-size: 12px; color: var(--muted2); font-weight: 500; letter-spacing: 0.03em; display: block; margin-bottom: 4px; }
 
-/* 🔥 FIX: Increased Product Detail Z-Index so it covers Bottom Nav 🔥 */
 .prod-detail { position: fixed; inset: 0; z-index: 100000 !important; background: var(--bg); display: flex; flex-direction: column; animation: slideFromRight 0.32s cubic-bezier(0.16,1,0.3,1); overflow: hidden; }
 .prod-detail.closing { animation: slideToRight 0.28s cubic-bezier(0.7,0,0.84,0) forwards; }
 .pd-header { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(10,10,10,0.94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); }
@@ -226,7 +222,6 @@ body.no-scroll { overflow: hidden !important; }
 .pd-strike { font-size: 16px; color: var(--muted); text-decoration: line-through; }
 .pd-off { font-size: 13px; color: var(--primary); font-weight: 700; background: rgba(201,168,76,0.13); padding: 2px 10px; border-radius: 6px; }
 
-/* 🔥 FIX: Increased Action Bar Z-Index so Buy button is perfectly visible 🔥 */
 .pd-action-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100001 !important; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: rgba(10,10,10,0.97); backdrop-filter: blur(6px); border-top: 1px solid var(--border2); user-select: none; -webkit-user-select: none; }
 .pd-action-bar .btn-primary { padding: 14px 8px; font-size: 14px; border-radius: 12px; }
 
@@ -308,3 +303,40 @@ body.no-scroll { overflow: hidden !important; }
 
 /* Success Bounce Animation */
 @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+
+/* 🌟 NEW: COMBO BUILDER STYLES 🌟 */
+.combo-slot {
+  background: var(--card2);
+  border: 1px dashed var(--primary);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.combo-slot:active {
+  transform: scale(0.98);
+}
+.combo-slot-icon {
+  font-size: 30px;
+  background: var(--card);
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.combo-slot-text {
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 14px;
+}
+/* Selected State for Combo Slots */
+.combo-slot.selected {
+  border: 1px solid var(--primary);
+  background: rgba(201, 168, 76, 0.05);
+}
