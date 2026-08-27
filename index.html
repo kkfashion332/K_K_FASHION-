@@ -83,6 +83,17 @@
            <div class="home-banners-slider" id="homeBannersSlider"></div>
         </div>
 
+        <!-- NEW: COMBO BANNER BUTTON ON HOME PAGE -->
+        <div class="px-4 mb-4 mt-2">
+            <div onclick="switchNav('Combo')" style="background: linear-gradient(135deg, #1a1a1a, #0a0a0a); border: 1px solid var(--primary); border-radius: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 4px 15px rgba(201,168,76,0.15);">
+                <div>
+                    <h3 style="color: var(--primary); font-family: var(--font-display); font-size: 18px; font-weight: bold; margin-bottom: 2px;">Build Custom Combo</h3>
+                    <p style="color: var(--muted2); font-size: 11px;">Shirt + Jeans + Shoe = <span style="color:#4cc968; font-weight:bold;">10% OFF</span></p>
+                </div>
+                <div style="font-size: 28px;">🎁</div>
+            </div>
+        </div>
+
         <!-- Category Grid (5 columns) -->
         <div class="image-cats-wrapper hidden" id="imageCategoryWrap">
           <!-- Populated by JS -->
@@ -145,6 +156,38 @@
         <p class="page-sub">Tap on an order to view full luxury details.</p>
         <div id="myOrdersList" class="orders-list"></div>
       </div>
+
+      <!-- 6. NEW: CUSTOM COMBO BUILDER PAGE -->
+      <div id="comboPage" class="nav-page hidden" style="display:flex; flex-direction:column; min-height:80vh;">
+        <h2 class="page-heading">Combo Maker</h2>
+        <p class="page-sub">Select 1 Top, 1 Bottom & 1 Shoe to unlock your <strong style="color:var(--primary);">Flat 10% Discount!</strong></p>
+        
+        <div id="comboBuilderWrap" style="display:flex; flex-direction:column; gap:15px; margin-bottom: 20px;">
+            <!-- Top Slot -->
+            <div class="combo-slot" id="comboSlotTop" onclick="window.openComboSelector('top')">
+                <div class="combo-slot-icon">👕</div>
+                <div class="combo-slot-text">Tap to Select Shirt/T-Shirt</div>
+            </div>
+            <!-- Bottom Slot -->
+            <div class="combo-slot" id="comboSlotBottom" onclick="window.openComboSelector('bottom')">
+                <div class="combo-slot-icon">👖</div>
+                <div class="combo-slot-text">Tap to Select Baggy Jeans</div>
+            </div>
+            <!-- Shoe Slot -->
+            <div class="combo-slot" id="comboSlotShoe" onclick="window.openComboSelector('shoe')">
+                <div class="combo-slot-icon">👟</div>
+                <div class="combo-slot-text">Tap to Select Shoes</div>
+            </div>
+        </div>
+
+        <div id="comboPriceWrap" class="hidden" style="background:var(--card); padding:20px; border-radius:12px; border:1px dashed var(--primary); text-align:center; margin-bottom:15px;">
+            <div style="text-decoration:line-through; color:var(--muted); font-size:14px; margin-bottom:4px;">Individual Total: ₹<span id="comboOriginalPrice">0</span></div>
+            <div style="font-size:22px; font-weight:bold; color:var(--primary);">Combo Price: ₹<span id="comboDiscountedPrice">0</span></div>
+            <div style="font-size:12px; color:#4cc968; font-weight:bold; margin-top:8px; padding: 4px 8px; background: rgba(76,201,104,0.1); border-radius: 4px; display:inline-block;">🎉 10% Extra Discount Applied!</div>
+        </div>
+
+        <button id="buyComboBtn" class="btn-primary full hidden" style="padding:15px; font-size:16px; margin-bottom:30px;" onclick="window.proceedWithComboCheckout()">🛒 BUY CUSTOM COMBO</button>
+      </div>
     </div>
 
     <!-- BOTTOM NAV BAR (Fixed strictly to bottom) -->
@@ -194,6 +237,19 @@
   </div>
 
   <!-- Modal Overlays -->
+  <!-- NEW: Combo Selector Modal -->
+  <div id="comboSelectorModal" class="overlay hidden" style="z-index: 160;">
+    <div class="drawer" style="max-width: 100%; border-radius: 16px 16px 0 0; margin-top: 15vh; height: 85vh; border-left:none;">
+        <div class="drawer-head" style="border-bottom: 1px solid var(--border);">
+            <h2 id="comboSelectorTitle" style="color:var(--primary);">Select Item</h2>
+            <button onclick="document.getElementById('comboSelectorModal').classList.add('hidden'); document.body.classList.remove('no-scroll');" class="icon-btn">✕</button>
+        </div>
+        <div class="drawer-body grid" id="comboSelectorBody" style="padding: 15px; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y:auto; padding-bottom:100px;">
+            <!-- Items populated by JS -->
+        </div>
+    </div>
+  </div>
+
   <div id="myOrderDetailModal" class="overlay hidden" style="z-index: 150;">
     <div class="drawer">
       <div class="drawer-head">
@@ -226,12 +282,8 @@
       <div class="pd-info">
         <div id="pdBreadcrumb" class="pd-breadcrumb"></div>
         <h1 id="pdName" class="pd-name"></h1>
-        <div id="pdSourceTag" class="hidden" style="margin-bottom: 10px;">
-           <span style="font-size: 11px; font-weight: 700; background: #047BD5; color: #fff; padding: 3px 8px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
-               <img src="flipkart.png" alt="Flipkart" style="width:14px; height:14px; border-radius:50%; background: #fff;">
-               By Flipkart
-           </span>
-        </div>
+        <!-- FLIPKART BADGE REMOVED AS REQUESTED -->
+        
         <div class="pd-price-row">
           <span id="pdPrice" class="pd-price"></span>
           <span id="pdStrike" class="pd-strike hidden"></span>
@@ -303,7 +355,7 @@
             <div class="checkout-step2-grid" style="border-bottom: 1px solid var(--border); padding-bottom: 15px; margin-bottom: 15px;">
               <div class="chk-s2-left" style="margin-bottom: 15px; text-align: center;">
                 <img id="chkStep2Img" src="" alt="Product Image" style="width: 55%; max-width: 250px; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; border: 1px solid var(--border);" />
-                <div class="field-group" style="margin-top: 10px; max-width: 160px; margin-left: auto; margin-right: auto; text-align: left;">
+                <div class="field-group" style="margin-top: 10px; max-width: 160px; margin-left: auto; margin-right: auto; text-align: left;" id="qtySelectorWrap">
                   <label class="field-label">Quantity (Max 7 Units)</label>
                   <select id="chkStep2Qty" class="field" style="margin-bottom: 0;">
                     <option value="1">1 Unit</option><option value="2">2 Units</option><option value="3">3 Units</option><option value="4">4 Units</option><option value="5">5 Units</option><option value="6">6 Units</option><option value="7">7 Units</option>
@@ -423,7 +475,6 @@
           bannersData = snap.data().banners || []; 
           waData = snap.data().waNumber || "8976073065"; 
           
-          // 🔥 BUG FIX: FORCE THEME OVERRIDE BASED ON FIREBASE
           if(snap.data().brightThemeEnabled) {
               localStorage.setItem("knk_app_theme", "light");
               if(window.setAppTheme) window.setAppTheme('light');
@@ -464,6 +515,8 @@
             groupId: data.groupId || "", 
             freeDelivery: data.freeDelivery !== false, 
             source: data.source || "Unique Fashion",
+            specificUpi: data.specificUpi || "", // NEW: Product specific UPI
+            specificQr: data.specificQr || "",   // NEW: Product specific QR
             timestamp: data.timestamp ? (data.timestamp.seconds || 0) : 0 
           }); 
         }); 
