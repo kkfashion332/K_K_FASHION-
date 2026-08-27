@@ -197,7 +197,7 @@ function renderCategoryBubbles() {
     wrap.classList.remove("hidden");
     
     mainCategories.forEach(cat => {
-        const catImg = cat.image || "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=150&q=80"; // Default
+        const catImg = cat.image || "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=150&q=80";
         const box = document.createElement("div");
         box.className = "img-cat-box" + (cat.id === activeMainCatId ? " active" : "");
         box.onclick = () => { selectMainCat(cat.id); };
@@ -482,7 +482,6 @@ function openProductDetail(p) {
   if (p.discount > 0) { $("pdStrike").textContent = "₹" + p.price; $("pdStrike").classList.remove("hidden"); $("pdOff").textContent = p.discount + "% off"; $("pdOff").classList.remove("hidden"); } 
   else { $("pdStrike").classList.add("hidden"); $("pdOff").classList.add("hidden"); }
   
-  // Tag explicitly removed from display
   const existFreeDel = document.getElementById("pdFreeDelText"); if(existFreeDel) existFreeDel.remove();
   if(p.freeDelivery !== false) { const d = document.createElement('div'); d.id = "pdFreeDelText"; d.innerHTML = freeDelObj; $("pdName").parentNode.insertBefore(d, $("pdColorsWrap")); }
 
@@ -570,7 +569,7 @@ function buildHorizSection(title, list) {
 }
 
 // ----------------------------------------------------
-// CHECKOUT & PAYMENTS
+// CHECKOUT & PAYMENTS (Prepaid Only)
 // ----------------------------------------------------
 
 if ($("copyUpiBtn")) {
@@ -623,11 +622,6 @@ function openCheckout() {
   
   $("chkQrImage").src = adminQrCodeUrl;
   $("copyUpiBtn").innerHTML = `${adminUpiId} <span style="font-size:12px; background:var(--primary); color:#000; padding:4px 8px; border-radius:4px;">📋 Copy</span>`;
-
-  // COD Logic
-  $("payCODLabel").classList.remove("hidden");
-  $("codTextDesc").innerHTML = `Safety Deposit online required.`;
-  $("step2PayBtn").textContent = "Pay Online (Prepaid)";
 }
 
 $("closeCheckout").onclick = () => { history.back(); }; 
@@ -660,12 +654,7 @@ function renderStep2() {
   $("chkStep2Qty").onchange = (e) => { 
       currentCheckoutItem.qty = parseInt(e.target.value); 
       updateStep2Summary(); 
-      const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
-      if(selectedRadio) selectedRadio.dispatchEvent(new Event('change'));
   };
-  
-  const selectedRadio = document.querySelector('input[name="payMethod"]:checked');
-  if(selectedRadio) { selectedRadio.dispatchEvent(new Event('change')); }
 }
 
 function updateStep2Summary() {
@@ -677,46 +666,12 @@ function updateStep2Summary() {
   $("billActual").textContent = "₹" + actualTotal; 
   $("billFinal").textContent = "₹" + finalTotal;
   $("chkTotalAmt").textContent = "₹" + finalTotal;
-  
-  let advance = Math.round(finalTotal * 0.25);
-  if(advance > finalTotal) advance = finalTotal;
-  const balance = finalTotal - advance;
-  
-  $("codAdvanceAmt").textContent = "₹" + advance; 
-  $("codBalanceAmt").textContent = "₹" + balance;
 }
-
-document.querySelectorAll('input[name="payMethod"]').forEach(radio => {
-  radio.addEventListener("change", (e) => {
-    $("qrScanSection").classList.add("hidden"); $("paymentOptionsWrap").classList.remove("hidden");
-    $("confirmOrderBtn").classList.add("hidden"); $("step2PayBtn").classList.remove("hidden");
-    if (window.paymentInterval) clearInterval(window.paymentInterval);
-    
-    if (e.target.value === "COD") { 
-        $("codWarningBox").classList.remove("hidden"); 
-        let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
-        let defaultAdv = Math.round(finalTotal * 0.25);
-        if(defaultAdv > finalTotal) defaultAdv = finalTotal;
-        $("step2PayBtn").textContent = `Pay ₹${defaultAdv} Advance`;
-    } else { 
-        $("codWarningBox").classList.add("hidden"); 
-        $("step2PayBtn").textContent = "Pay Online (Prepaid)"; 
-    }
-  });
-});
 
 $("step2PayBtn").onclick = () => {
   if(!currentCheckoutItem) return;
-  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
-  
   let amountPaid = finalTotal;
-  if(payMethod === "COD") {
-      amountPaid = Math.round(finalTotal * 0.25); 
-      if(amountPaid > finalTotal) amountPaid = finalTotal; 
-  }
-
-  if (amountPaid === 0 && payMethod === "COD") { $("confirmOrderBtn").click(); return; }
   
   $("qrAmountDisplay").textContent = "₹" + amountPaid;
   $("paymentOptionsWrap").classList.add("hidden"); $("qrScanSection").classList.remove("hidden");
@@ -741,10 +696,7 @@ async function sendTelegramAlert(orderData) {
 
     let text = `🛍️ *NEW ELITE ORDER ALERT!* 🛍️\n\n👤 *Name:* ${orderData.name}\n📱 *Mobile:* ${orderData.mobile}\n\n🏠 *FULL DELIVERY ADDRESS:*\n${orderData.address}\n`;
     text += `\n📦 *Items:* ${itemsList}\n🛒 *Store:* ${orderData.shopName}\n💰 *Total Amount:* ₹${orderData.totalAmount}\n💳 *Payment Mode:* ${orderData.paymentMethod}\n`;
-    
-    if(orderData.paymentMethod === "COD") { text += `💸 *Advance Paid:* ₹${orderData.amountPaid}\n🛑 *Balance Due (COD):* ₹${orderData.balanceDue}\n`; }
-    
-    if(orderData.utrNumber && orderData.utrNumber !== "FULL_COD") text += `🧾 *WhatsApp Screenshot Expected*\n`;
+    text += `🧾 *WhatsApp Screenshot Expected*\n`;
 
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     try { await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: text, parse_mode: "Markdown" }) }); } catch(e) {}
@@ -753,17 +705,11 @@ async function sendTelegramAlert(orderData) {
 $("confirmOrderBtn").onclick = async () => {
   if(!currentCheckoutItem) return;
   
-  const payMethod = $("payPrepaid").checked ? "Prepaid" : "COD";
   let finalTotal = finalPrice(currentCheckoutItem.product) * currentCheckoutItem.qty;
-  
   let amountPaid = finalTotal;
-  if(payMethod === "COD") {
-      amountPaid = Math.round(finalTotal * 0.25); 
-      if(amountPaid > finalTotal) amountPaid = finalTotal; 
-  }
-
-  let utrValue = (amountPaid > 0) ? "WA_SCREENSHOT" : "FULL_COD";
-  let balanceDue = finalTotal - amountPaid;
+  let balanceDue = 0;
+  let payMethod = "Prepaid";
+  let utrValue = "WA_SCREENSHOT";
   
   const btn = $("confirmOrderBtn"); btn.textContent = "Placing Order..."; btn.disabled = true;
   if (window.paymentInterval) clearInterval(window.paymentInterval);
@@ -813,9 +759,7 @@ function showStep3Success(payMethod, paid, due) {
   $("step2Indicator").classList.remove("active"); $("step2Indicator").classList.add("completed"); $("step2Circle").innerHTML = "✔";
   $("line2").classList.add("completed"); $("step3Indicator").classList.add("active");
   let sumHtml = `<strong style="font-size:14px; color:var(--primary);">Payment Mode: ${payMethod}</strong><br><br>`;
-  if (payMethod === "COD" && paid > 0) { sumHtml += `<strong>Safety Deposit Paid:</strong> ₹${paid}<br><strong style="color:var(--destructive)">Balance Cash on Delivery:</strong> ₹${due}`; } 
-  else if (payMethod === "COD" && paid === 0) { sumHtml += `<strong>Total Amount to Pay on Delivery:</strong> ₹${due}`; }
-  else { sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br><strong style="color:#4cc968">No pending dues!</strong>`; }
+  sumHtml += `<strong>Total Paid Online:</strong> ₹${paid}<br><strong style="color:#4cc968">No pending dues!</strong>`;
   $("successOrderSummary").innerHTML = sumHtml;
 }
 
@@ -870,7 +814,7 @@ window.openMyOrderModal = function (idStr) {
   }).join("");
 
   const dateStr = o.timestamp && o.timestamp.seconds ? new Date(o.timestamp.seconds * 1000).toLocaleString() : new Date(o.savedAt || Date.now()).toLocaleString();
-  const payMode = o.paymentMethod === "COD" ? "Cash on Delivery" : "Prepaid Online";
+  const payMode = "Prepaid Online";
 
   $("myOrderDetailBody").innerHTML = `
     <div style="margin-bottom:15px; background:var(--bg2); padding:12px; border-radius:10px; border:1px solid var(--border);">
@@ -886,7 +830,6 @@ window.openMyOrderModal = function (idStr) {
     </div>
     <div style="margin-top:20px; border-top:1px dashed var(--border); padding-top:15px;">
        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Paid Online:</span> <span>₹${o.amountPaid}</span></div>
-       <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;"><span>Balance Due (COD):</span> <span style="color:var(--destructive);">₹${o.balanceDue}</span></div>
        <div style="display:flex; justify-content:space-between; margin-top:10px; font-size:16px; font-weight:700; color:var(--primary);"><span>Total Amount:</span> <span>₹${o.totalAmount}</span></div>
     </div>
   `;
