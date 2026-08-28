@@ -303,3 +303,32 @@ body.no-scroll { overflow: hidden !important; }
 
 /* Success Bounce Animation */
 @keyframes bounceIn { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.1); opacity: 1; } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+
+/* 🌟 FLOATING WHATSAPP CUSTOMER HELP BUTTON STYLES 🌟 */
+.floating-wa-btn {
+  position: fixed;
+  bottom: 82px; /* Bottom Nav ke theek upar */
+  right: 18px;
+  background-color: #25D366;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(37, 211, 102, 0.6);
+  z-index: 99998;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: pulse-wa 2s infinite;
+}
+
+.floating-wa-btn:active {
+  transform: scale(0.92);
+}
+
+@keyframes pulse-wa {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+  70% { box-shadow: 0 0 0 12px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
