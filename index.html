@@ -354,7 +354,7 @@
       </div>
   </div>
 
-  <!-- 🌟 OFFICIAL WHATSAPP HELP BUTTON WITH ICON & HELP TEXT 🌟 -->
+  <!-- 🌟 OFFICIAL WHATSAPP HELP BUTTON 🌟 -->
   <a href="https://wa.me/918058660048?text=Hello%20Unique%20Fashion,%20I%20need%20help!" target="_blank" class="floating-wa-btn">
     <svg viewBox="0 0 30 30" width="26" height="26" fill="#ffffff">
       <path d="M 15 3 C 8.373 3 3 8.373 3 15 C 3 17.215914 3.6017838 19.284346 4.6308594 21.087891 L 3.2988281 26.070312 L 8.4238281 24.726562 C 10.183374 25.722668 12.239611 26.25 14.451172 26.25 C 21.077172 26.25 26.451172 20.876 26.451172 14.25 C 26.451172 7.624 21.077172 3 14.451172 3 Z M 14.451172 5.25 C 19.832172 5.25 24.201172 9.619 24.201172 15 C 24.201172 20.381 19.832172 24.75 14.451172 24.75 C 12.518172 24.75 10.742375 24.195391 9.2304688 23.230469 L 8.7890625 22.951172 L 5.5136719 23.810546 L 6.4023438 20.640625 L 6.0996094 20.177734 C 5.0116094 18.537734 4.35 16.541 4.35 14.25 C 4.35 8.869 8.719 5.25 14.099609 5.25 Z M 10.59375 9.1875 C 10.40625 9.1875 10.125 9.2578125 9.9375 9.46875 C 9.75 9.6796875 9.21875 10.1875 9.21875 11.21875 C 9.21875 12.25 9.96875 13.25 10.0625 13.375 C 10.15625 13.5 11.53125 15.75 13.78125 16.71875 C 15.65625 17.53125 16.03125 17.375 16.4375 17.34375 C 16.84375 17.3125 17.78125 16.78125 17.96875 16.21875 C 18.15625 15.65625 18.15625 15.1875 18.09375 15.09375 C 18.03125 15 17.84375 14.9375 17.53125 14.78125 C 17.21875 14.625 15.65625 13.84375 15.375 13.75 C 15.09375 13.65625 14.90625 13.625 14.71875 13.90625 C 14.53125 14.1875 14 14.78125 13.84375 14.96875 C 13.6875 15.15625 13.53125 15.1875 13.21875 15.03125 C 12.90625 14.875 11.875 14.53125 10.65625 13.4375 C 9.71875 12.59375 9.09375 11.5625 8.90625 11.25 C 8.71875 10.9375 8.875 10.78125 9.03125 10.625 C 9.1875 10.46875 9.375 10.21875 9.5625 10.03125 C 9.75 9.84375 9.8125 9.71875 9.9375 9.53125 C 10.0625 9.34375 10 9.21875 9.9375 9.1875 Z"/>
@@ -381,7 +381,7 @@
 
     const fbApp = initializeApp(firebaseConfig);
     getAnalytics(fbApp);
-    const db = getFirestore(app);
+    const db = getFirestore(fbApp);
     window.fbAuth = getAuth(fbApp);
     window.GoogleAuthProvider = GoogleAuthProvider;
     window.signInWithPopup = signInWithPopup;
@@ -390,6 +390,18 @@
     window.signInWithEmailAndPassword = signInWithEmailAndPassword;
     window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
     window.updateProfile = updateProfile;
+
+    // 🔥 SAFETY TIMEOUT: Agar 2.5 second mein bhi loader nahi hata, toh forcefully hata dega taaki app kabhi na atke!
+    setTimeout(() => {
+        const loader = document.getElementById('initLoader');
+        if (loader && !loader.style.display.includes('none')) {
+            loader.style.display = 'none';
+            const splash = document.getElementById('splash');
+            if (splash) splash.classList.add('hidden');
+            const appDiv = document.getElementById('app');
+            if (appDiv) appDiv.classList.remove('hidden');
+        }
+    }, 2500);
 
     if(document.getElementById('initLoader')) document.getElementById('initLoader').style.display = 'none';
 
