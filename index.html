@@ -78,6 +78,7 @@
                 </div>
             </div>
 
+            <!-- FIX: Download Icon Added Next to Cart -->
             <div class="flex items-center gap-4 text-white text-[18px] flex-shrink-0 z-10">
                 <a href="https://drive.google.com/file/d/19aXGs4Ka9KkSOlyom6qbCN1zvaFqsn39/view?usp=drivesdk" target="_blank" class="relative cursor-pointer hover:text-yellow-500 transition drop-shadow-md">
                     <i class="fa-solid fa-download"></i>
@@ -197,7 +198,7 @@
             bottomNav.classList.add('hidden');
         }
 
-        // --- REALTIME DATABASE SYNC ---
+        // --- REALTIME DATABASE SYNC (CACHE REMOVED FOR IMMEDIATE UPDATES) ---
         async function initApp() {
             if (!db) {
                 appDiv.innerHTML = `
@@ -291,7 +292,7 @@
                 return `
                 <div onclick="filterCategory('${safeCatName}')" class="flex flex-col items-center gap-1.5 cursor-pointer w-full">
                     <div class="w-14 h-14 rounded-full overflow-hidden border-[2.5px] ${activeCategory === cat.name ? 'border-yellow-500 shadow-md scale-105' : 'border-gray-200'} transition-all mx-auto flex-shrink-0 bg-white">
-                        <img src="${cat.img}" class="w-full h-full object-cover">
+                        <img src="${cat.img}" loading="lazy" class="w-full h-full object-cover">
                     </div>
                     <span class="text-[9px] md:text-[10px] ${activeCategory === cat.name ? 'text-yellow-600 font-extrabold' : 'text-gray-600 font-bold'} text-center w-full uppercase break-words line-clamp-2 leading-tight">${cat.name}</span>
                 </div>
@@ -307,7 +308,7 @@
                         <i class="fa-solid fa-heart"></i>
                     </button>
                     <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden">
-                        <img src="${item.img}" class="w-full h-44 object-cover transform group-hover:scale-105 transition duration-500">
+                        <img src="${item.img}" loading="lazy" class="w-full h-44 object-cover transform group-hover:scale-105 transition duration-500">
                     </div>
                     <div class="p-3 flex flex-col flex-grow border-t border-gray-100">
                         <h3 onclick="viewProduct('${item.id}')" class="text-sm font-bold truncate text-gray-800 cursor-pointer hover:text-yellow-600 transition tracking-tight">${item.name}</h3>
@@ -335,7 +336,7 @@
             let bannerHTML = banners.map(b => `
                 <div class="w-full min-w-full flex-shrink-0 snap-center px-3 pt-4 pb-2 box-border">
                     <a href="${b.target_link || '#'}" class="block w-full">
-                        <img src="${b.img}" class="w-full h-48 object-cover rounded-2xl shadow-sm border border-gray-200">
+                        <img src="${b.img}" loading="lazy" class="w-full h-48 object-cover rounded-2xl shadow-sm border border-gray-200">
                     </a>
                 </div>
             `).join('');
@@ -404,7 +405,7 @@
                         <i class="fa-solid fa-heart"></i>
                     </button>
                     <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden">
-                        <img src="${item.img}" class="w-full h-[400px] object-cover transform group-hover:scale-105 transition duration-500">
+                        <img src="${item.img}" loading="lazy" class="w-full h-[400px] object-cover transform group-hover:scale-105 transition duration-500">
                     </div>
                     <div class="p-5 flex flex-col flex-grow border-t border-gray-100">
                         <h3 onclick="viewProduct('${item.id}')" class="text-xl font-extrabold truncate text-gray-900 cursor-pointer hover:text-yellow-600 transition tracking-tight">${item.name}</h3>
@@ -473,7 +474,7 @@
                     return `
                     <div class="bg-white border border-gray-200 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.04)] relative flex flex-col justify-between overflow-hidden group">
                         <button onclick="event.stopPropagation(); toggleLike(this, '${item.id}'); setTimeout(_showLikes, 300);" class="absolute top-2 right-2 text-red-500 z-10 text-xl bg-white/80 rounded-full w-8 h-8 flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors hover:scale-110"><i class="fa-solid fa-heart"></i></button>
-                        <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden"><img src="${item.img}" class="w-full h-44 object-cover transform group-hover:scale-105 transition duration-500"></div>
+                        <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden"><img src="${item.img}" loading="lazy" class="w-full h-44 object-cover transform group-hover:scale-105 transition duration-500"></div>
                         <div class="p-3 flex flex-col flex-grow border-t border-gray-100">
                             <h3 class="text-sm font-bold truncate text-gray-800">${item.name}</h3>
                             <div class="mt-2 flex items-center gap-1.5">
@@ -549,7 +550,7 @@
                             ${names.map((n, idx) => {
                                 let safeName = n.replace(/'/g, "\\'");
                                 return `<div onclick="selectColor(${idx}, '${safeName}', '${images[idx]}')" id="colorThumb-${idx}" class="w-16 h-20 flex-shrink-0 border-2 ${idx === 0 ? 'border-gray-800 shadow-md' : 'border-gray-200 opacity-70'} rounded-lg overflow-hidden cursor-pointer transition hover:border-gray-800 hover:opacity-100">
-                                    <img src="${images[idx]}" class="w-full h-full object-cover">
+                                    <img src="${images[idx]}" loading="lazy" class="w-full h-full object-cover">
                                 </div>`;
                             }).join('')}
                         </div>
@@ -583,7 +584,7 @@
             let moreProducts = products.filter(p => p.id !== id).sort(() => 0.5 - Math.random()).slice(0, 4);
             let moreProdHTML = moreProducts.map(item => `
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm relative flex flex-col justify-between overflow-hidden cursor-pointer" onclick="viewProduct('${item.id}')">
-                    <img src="${item.img}" class="w-full h-40 object-cover hover:scale-105 transition duration-300">
+                    <img src="${item.img}" loading="lazy" class="w-full h-40 object-cover hover:scale-105 transition duration-300">
                     <div class="p-3 flex flex-col flex-grow border-t border-gray-100 bg-gray-50">
                         <h3 class="text-[11px] font-bold truncate text-gray-800">${item.name}</h3>
                         <span class="font-extrabold text-gray-900 text-sm mt-1">₹${item.price}</span>
@@ -673,7 +674,7 @@
                 const discountVal = item.discount ? String(item.discount).replace(/OFF/gi, '').trim() : '';
                 return `
                     <div class="flex gap-4 items-center bg-white p-3 rounded-xl border border-gray-200 mb-3 shadow-sm relative">
-                        <img src="${item.img}" class="w-20 h-20 object-cover rounded-lg border border-gray-100">
+                        <img src="${item.img}" loading="lazy" class="w-20 h-20 object-cover rounded-lg border border-gray-100">
                         <div class="flex-grow pr-8">
                             <p class="font-bold text-gray-800 text-sm leading-tight mb-1">${item.name}</p>
                             <p class="text-[11px] text-gray-500 font-medium mb-1.5">Size: <span class="text-yellow-600 font-bold bg-yellow-50 px-1 rounded">${item.size}</span> ${item.color ? `| Color: <span class="text-gray-800 font-bold">${item.color}</span>` : ''}</p>
@@ -1089,7 +1090,7 @@
                         if (order.items && order.items.length > 0) {
                             itemsHTML = `<div class="mt-3 flex flex-col gap-2">` + order.items.map(item => `
                                 <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                                    <img src="${item.img}" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white">
+                                    <img src="${item.img}" loading="lazy" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white">
                                     <div class="flex-grow overflow-hidden">
                                         <p class="font-bold text-gray-800 text-[11px] leading-tight break-words">${item.name}</p>
                                         <p class="text-[10px] text-gray-500 mt-1 font-medium">Size: <span class="text-yellow-600 font-bold">${item.size}</span> ${item.color ? `| Color: <span class="text-gray-800 font-bold">${item.color}</span>` : ''} | ₹${item.price}</p>
@@ -1097,31 +1098,7 @@
                                 </div>
                             `).join('') + `</div>`;
                         } else {
-                            itemsHTML = `<div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 mt-3"><img src="${order.img}" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white"><div class="flex-grow overflow-hidden"><p class="font-bold text-gray-800 text-[11px] leading-tight break-words">${order.product_name}</p></div></div>`;
-                        }
-
-                        let trackingHTML = "";
-                        if (order.status === "Confirmed") {
-                            if (order.tracking_id && order.tracking_link) {
-                                trackingHTML = `
-                                    <div class="mt-3 bg-blue-50 border border-blue-200 p-3 rounded-lg flex flex-col gap-2 shadow-sm">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-[10px] font-extrabold text-blue-800 uppercase tracking-wide"><i class="fa-solid fa-truck-fast mr-1"></i> Order Dispatched</span>
-                                            <span class="text-[11px] font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-blue-100 shadow-sm uppercase">ID: ${order.tracking_id}</span>
-                                        </div>
-                                        <a href="${order.tracking_link}" target="_blank" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2 rounded-md text-[10px] text-center shadow-md transition transform active:scale-95 flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-location-crosshairs"></i> TRACK MY ORDER
-                                        </a>
-                                    </div>
-                                `;
-                            } else {
-                                trackingHTML = `
-                                    <div class="mt-3 bg-gray-100 border border-gray-200 p-2.5 rounded-lg flex items-center justify-between shadow-sm">
-                                        <span class="text-[10px] font-bold text-gray-600"><i class="fa-solid fa-box-packing mr-1"></i> Packing in progress...</span>
-                                        <span class="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Tracking Info Soon</span>
-                                    </div>
-                                `;
-                            }
+                            itemsHTML = `<div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 mt-3"><img src="${order.img}" loading="lazy" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white"><div class="flex-grow overflow-hidden"><p class="font-bold text-gray-800 text-[11px] leading-tight break-words">${order.product_name}</p></div></div>`;
                         }
 
                         myOrdersHTML += `
@@ -1132,7 +1109,6 @@
                                         <div class="text-right flex flex-col items-end">${statusBadge}<span class="inline-block mt-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-[9px] font-bold rounded uppercase w-max">${order.payment}</span></div>
                                     </div>
                                     ${itemsHTML}
-                                    ${trackingHTML}
                                 </div>
                                 <div class="mb-3"><p class="text-xs text-gray-800 font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-yellow-500"></i> Deliver To</p><p class="text-[11px] text-gray-600 ml-5 font-semibold">${order.name}</p><p class="text-[11px] text-gray-500 ml-5 leading-relaxed">${order.address}</p></div>
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100"><p class="text-xs text-gray-800 font-bold mb-2 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-yellow-500"></i> Payment Details</p>${paymentStatus}</div>
