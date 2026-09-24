@@ -787,7 +787,7 @@
             const finalColor = currentSelectedColor ? currentSelectedColor.name : null;
             const finalImg = currentSelectedColor ? currentSelectedColor.img : product.img;
 
-            cart.push({ ...product, size: finalSize, color: finalColor, img: finalImg, cartId: Date.now(), isFlipkart: product.isFlipkart });
+            cart.push({ ...product, size: finalSize, color: finalColor || '', img: finalImg || '', cartId: Date.now(), isFlipkart: product.isFlipkart || 'false' });
             localStorage.setItem('uf_cart', JSON.stringify(cart));
             updateCartBadge();
             
@@ -882,14 +882,14 @@
                 total = cart.reduce((sum, item) => sum + item.price, 0);
                 productNames = cart.map(i => `${i.name} (Size: ${i.size}${i.color ? `, Color: ${i.color}` : ''})`).join(", ");
                 primaryImg = cart[0].img;
-                orderItems = cart.map(i => ({ name: i.name, size: i.size, color: i.color || '', price: i.price, img: i.img, isFlipkart: i.isFlipkart }));
+                orderItems = cart.map(i => ({ name: i.name || '', size: i.size || '', color: i.color || '', price: i.price || 0, img: i.img || '', isFlipkart: i.isFlipkart || 'false' }));
             } else {
                 const product = products.find(p => p.id === source);
                 total = product.price;
                 const finalColorName = currentSelectedColor ? currentSelectedColor.name : '';
                 productNames = `${product.name} (Size: ${currentSelectedSize}${finalColorName ? `, Color: ${finalColorName}` : ''})`;
                 primaryImg = currentSelectedColor ? currentSelectedColor.img : product.img;
-                orderItems = [{ name: product.name, size: currentSelectedSize, color: finalColorName, price: product.price, img: primaryImg, isFlipkart: product.isFlipkart }];
+                orderItems = [{ name: product.name || '', size: currentSelectedSize || '', color: finalColorName || '', price: product.price || 0, img: primaryImg || '', isFlipkart: product.isFlipkart || 'false' }];
             }
 
             let hasFlipkart = orderItems.some(item => item.isFlipkart === 'true' || item.isFlipkart === true);
@@ -1028,11 +1028,11 @@
             const paymentType = "Prepaid";
             const newOrder = {
                 id: Date.now().toString(), date: new Date().toLocaleString(),
-                name: tempCheckoutData.name, phone: tempCheckoutData.phone,
-                address: tempCheckoutData.address, payment: paymentType,
-                product_name: tempCheckoutData.names, price: tempCheckoutData.price,
-                img: tempCheckoutData.img, 
-                items: tempCheckoutData.items, 
+                name: tempCheckoutData.name || '', phone: tempCheckoutData.phone || '',
+                address: tempCheckoutData.address || '', payment: paymentType || 'Prepaid',
+                product_name: tempCheckoutData.names || '', price: tempCheckoutData.price || 0,
+                img: tempCheckoutData.img || '', 
+                items: tempCheckoutData.items || [], 
                 status: "Pending Verification" 
             };
             appDiv.innerHTML = `<div class="min-h-[70vh] flex flex-col items-center justify-center text-yellow-500 bg-gray-50"><i class="fa-solid fa-spinner fa-spin text-5xl mb-4"></i><p class="font-bold tracking-widest text-gray-800">PLACING ORDER...</p></div>`;
@@ -1064,7 +1064,7 @@
                         <button onclick="goHome()" class="mt-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3.5 rounded-xl font-extrabold shadow-sm transition-all w-full max-w-xs uppercase text-sm">Continue Shopping</button>
                     </div>
                 `;
-            } catch (error) { alert("Database Error!"); goHome(); }
+            } catch (error) { alert("Database Error! " + (error.message || "")); goHome(); }
         }
 
         // --- MY ORDERS PAGE ---
