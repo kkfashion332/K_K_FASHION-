@@ -214,8 +214,6 @@
 
             try {
                 // Fetch fresh data from Firebase EVERY TIME to ensure Admin updates show instantly
-                const setupCheck = await db.ref('settings/payment').once('value');
-                if (!setupCheck.exists()) await seedInitialData();
 
                 const catSnap = await db.ref('categories').once('value');
                 categories = []; 
@@ -253,21 +251,6 @@
             } catch (error) {
                 appDiv.innerHTML = `<div class="text-center mt-20 text-red-500 font-bold">Network Error. Please check Firebase Rules.</div>`;
             }
-        }
-
-        async function seedInitialData() {
-            await db.ref('settings/payment').set({ 
-                qr_url: "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=dummy@upi&pn=UNIQUEFASHION", 
-                upi_id: "dummy@upi", 
-                whatsapp: "919999999999",
-                flipkart_qr_url: "",
-                flipkart_upi_id: ""
-            });
-            await db.ref('banners').set({ b1: { id: "b1", img: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800&q=80", target_link: "#" } });
-            await db.ref('categories').set({ c1: { id: "c1", name: "T-Shirts", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=150&q=80" }, c2: { id: "c2", name: "Jeans", img: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=150&q=80" }});
-            await db.ref('products').set({ 
-                p1: { id: "p1", name: "Premium Black T-Shirt", price: 499, mrp: 999, discount: "50% OFF", category: "T-Shirts", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&q=80", shirtSizes: "S, M, L, XL, XXL", jeansSizes: "" }
-            });
         }
 
         // --- ROUTE WRAPPERS ---
