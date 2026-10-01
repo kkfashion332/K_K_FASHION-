@@ -1009,8 +1009,10 @@
         async function confirmOrder(event) {
             event.preventDefault();
             
-            // Order Payload Without ID and Status (these will be added by the Python backend)
+            const newOrderId = Date.now().toString(); // Direct ID generation
+            
             const orderPayload = {
+                id: newOrderId,
                 date: new Date().toLocaleString(),
                 name: tempCheckoutData.name || '', 
                 phone: tempCheckoutData.phone || '',
@@ -1019,29 +1021,17 @@
                 product_name: tempCheckoutData.names || '', 
                 price: tempCheckoutData.price || 0,
                 img: tempCheckoutData.img || '', 
-                items: tempCheckoutData.items || []
+                items: tempCheckoutData.items || [],
+                status: "Pending Verification"
             };
 
             appDiv.innerHTML = `<div class="min-h-[70vh] flex flex-col items-center justify-center text-yellow-500 bg-gray-50"><i class="fa-solid fa-spinner fa-spin text-5xl mb-4"></i><p class="font-bold tracking-widest text-gray-800">PLACING ORDER...</p></div>`;
             window.scrollTo(0,0);
             
             try {
-                // IMPORTANT: Replace the URL below with your actual Python Backend API endpoint URL 
-                // e.g., 'https://your-flask-app.pythonanywhere.com/place-order'
-                const response = await fetch('https://YOUR_PYTHON_BACKEND_URL/place-order', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderPayload)
-                });
+                // Direct Firebase par data save kar rahe hain
+                await db.ref('orders/' + newOrderId).set(orderPayload);
                 
-                const result = await response.json();
-                
-                if (!response.ok || !result.success) {
-                    throw new Error(result.error || "Failed to place order.");
-                }
-
-                const newOrderId = result.order_id; // Backend returns this
-
                 cart = []; 
                 localStorage.setItem('uf_cart', JSON.stringify(cart)); 
                 updateCartBadge();
