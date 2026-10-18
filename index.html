@@ -3,60 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Admin Panel</title>
+    <title>AI Admin Panel - Bulk Upload</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-<body class="bg-gray-100 p-4">
+<body class="bg-slate-50 text-gray-800">
 
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-xl font-bold text-gray-800">Add Product</h1>
-            <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2 py-1 rounded">Admin Mode</span>
+    <div class="max-w-4xl mx-auto p-4 mt-5">
+        <!-- Header -->
+        <div class="bg-slate-900 text-white p-6 rounded-t-xl flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-teal-400"></i> Bulk AI Product Listing
+                </h1>
+                <p class="text-sm text-gray-300 mt-1">Auto-extract catalog specs and prices</p>
+            </div>
+            <div class="bg-slate-800 px-4 py-2 rounded-lg text-sm border border-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-key text-teal-400"></i> API Key Connected
+            </div>
         </div>
 
-        <form id="addProductForm" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Product Title</label>
-                <input type="text" id="title" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="e.g. Women's High-Waist Jeans">
-            </div>
+        <!-- Main Workspace -->
+        <div class="bg-white p-6 rounded-b-xl shadow-md border border-gray-200">
             
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Selling Price (₹)</label>
-                    <input type="number" id="sellingPrice" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="899">
+            <!-- Upload Section -->
+            <div id="uploadSection" class="border-2 border-dashed border-teal-300 bg-teal-50 rounded-xl p-8 text-center">
+                <div class="text-teal-600 text-4xl mb-3"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                <h3 class="text-lg font-bold text-gray-800">Select Multiple Product Photos</h3>
+                <p class="text-sm text-gray-500 mb-4">Upload images to automatically improvise and extract details.</p>
+                
+                <input type="file" id="imageInput" multiple accept="image/*" class="hidden">
+                <button onclick="document.getElementById('imageInput').click()" class="bg-teal-600 text-white px-6 py-2 rounded-full font-bold shadow hover:bg-teal-700 transition">
+                    + Choose Images
+                </button>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingSection" class="hidden text-center p-10">
+                <i class="fa-solid fa-spinner fa-spin text-3xl text-teal-600 mb-2"></i>
+                <p class="text-gray-600 font-semibold" id="loadingText">AI is analyzing your products...</p>
+            </div>
+
+            <!-- Review Section (Staging) -->
+            <div id="reviewSection" class="hidden mt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-gray-800">Review & Publish</h2>
+                    <button id="publishAllBtn" class="bg-green-600 text-white px-4 py-2 rounded font-bold shadow hover:bg-green-700 hidden">
+                        <i class="fa-solid fa-check"></i> Publish All Items
+                    </button>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">MRP (₹)</label>
-                    <input type="number" id="mrp" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="1299">
-                </div>
+                <!-- AI Generated Products will appear here -->
+                <div id="stagedProducts" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Image URL</label>
-                <input type="url" id="imageUrl" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="https://link-to-image.jpg">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Shop Name</label>
-                <input type="text" id="shopName" class="mt-1 w-full border border-gray-300 rounded-md p-2" value="WOW COLLECTION PVR CINEMALL">
-            </div>
-            
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Sizes / Specs</label>
-                <input type="text" id="sizes" class="mt-1 w-full border border-gray-300 rounded-md p-2" value="S, M, L, XL">
-            </div>
-
-            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 mt-4">
-                Publish Product to Firestore
-            </button>
-        </form>
+        </div>
     </div>
 
-    <!-- Firebase Script -->
+    <!-- Firebase & Logic Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // Firebase Config (Yahi tumhari actual key hai)
         const firebaseConfig = {
             apiKey: "AIzaSyBEp2fwJmNajreNUcXqGTY_sYhzWryxAUY",
             authDomain: "fully-ai-website.firebaseapp.com",
@@ -65,43 +73,148 @@
             messagingSenderId: "494758463985",
             appId: "1:494758463985:web:fce9c3b0a25280ba999c50"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const btn = e.target.querySelector('button');
-            btn.innerHTML = 'Publishing...';
+        // Yahan apni Gemini API Key daali hai jo tumne di thi
+        const GEMINI_API_KEY = "AQ.Ab8RN6JJd3tqFUijHJwchA2AHwa3WZ2J-F5nkZBNYmU4cICgJQ"; 
+        
+        let stagedItems = []; // List to hold AI generated data before publishing
+
+        document.getElementById('imageInput').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if(files.length === 0) return;
+
+            document.getElementById('uploadSection').classList.add('hidden');
+            document.getElementById('loadingSection').classList.remove('hidden');
+            document.getElementById('reviewSection').classList.remove('hidden');
+
+            for (let i = 0; i < files.length; i++) {
+                document.getElementById('loadingText').innerText = `AI is analyzing product ${i + 1} of${files.length}...`;
+                const file = files[i];
+                const base64Image = await fileToBase64(file);
+                const base64Data = base64Image.split(',')[1]; 
+                
+                await analyzeImageWithGemini(base64Data, base64Image);
+            }
+
+            document.getElementById('loadingSection').classList.add('hidden');
+            document.getElementById('publishAllBtn').classList.remove('hidden');
+        });
+
+        // Helper: Convert File to Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // Call Gemini API
+        async function analyzeImageWithGemini(base64Data, fullImageUrl) {
+            const prompt = `Analyze this product image. Provide a JSON response with ONLY the following keys and realistic Indian e-commerce values: 
+            "title" (A good SEO friendly name), 
+            "mrp" (integer, maximum retail price in INR), 
+            "sellingPrice" (integer, discounted attractive price in INR), 
+            "category" (e.g. Shirts, Jeans, Accessories), 
+            "sizes" (e.g. S, M, L, XL), 
+            "shopName" (default it to 'WOW COLLECTION'). 
+            Output strictly valid JSON without any markdown formatting like \`\`\`json.`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                { inline_data: { mime_type: "image/jpeg", data: base64Data } }
+                            ]
+                        }]
+                    })
+                });
+
+                const result = await response.json();
+                
+                // Parse AI response
+                let aiText = result.candidates[0].content.parts[0].text;
+                aiText = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
+                const productData = JSON.parse(aiText);
+                
+                // Calculate discount
+                productData.discount = Math.round(((productData.mrp - productData.sellingPrice) / productData.mrp) * 100);
+                productData.imageUrl = fullImageUrl; // Store image temporarily
+
+                stagedItems.push(productData);
+                renderStagedProduct(productData, stagedItems.length - 1);
+
+            } catch (error) {
+                console.error("Gemini AI Error:", error);
+                alert("Error analyzing an image. Check console or API key.");
+            }
+        }
+
+        // Show AI extracted data on screen before publishing
+        function renderStagedProduct(data, index) {
+            const container = document.getElementById('stagedProducts');
+            const card = document.createElement('div');
+            card.className = "bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex gap-4 relative";
+            card.innerHTML = `
+                <span class="absolute top-2 right-2 bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded">AI Ready <i class="fa-solid fa-check"></i></span>
+                <img src="${data.imageUrl}" class="w-24 h-24 object-cover rounded-lg">
+                <div class="flex-1">
+                    <p class="text-xs text-teal-600 font-bold uppercase">${data.category}</p>
+                    <h3 class="font-bold text-gray-800 text-sm leading-tight mt-1">${data.title}</h3>
+                    <div class="flex gap-4 mt-2">
+                        <div>
+                            <p class="text-xs text-gray-500">Selling Price</p>
+                            <p class="font-bold text-teal-600">₹${data.sellingPrice}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">MRP</p>
+                            <p class="font-bold text-gray-400 line-through">₹${data.mrp}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Stock</p>
+                            <p class="font-bold text-gray-800">20</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+
+        // Publish all to Firebase
+        document.getElementById('publishAllBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('publishAllBtn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
             btn.disabled = true;
 
             try {
-                // Calculate discount automatically
-                const sp = Number(document.getElementById('sellingPrice').value);
-                const mrp = Number(document.getElementById('mrp').value);
-                const discount = Math.round(((mrp - sp) / mrp) * 100);
-
-                await addDoc(collection(db, "products"), {
-                    title: document.getElementById('title').value,
-                    sellingPrice: sp,
-                    mrp: mrp,
-                    discount: discount,
-                    imageUrl: document.getElementById('imageUrl').value,
-                    shopName: document.getElementById('shopName').value,
-                    sizes: document.getElementById('sizes').value,
-                    rating: '5.0',
-                    reviews: '0',
-                    timestamp: new Date()
-                });
-
-                alert("Product Published Successfully!");
-                e.target.reset();
+                for(let item of stagedItems) {
+                    await addDoc(collection(db, "products"), {
+                        title: item.title,
+                        sellingPrice: item.sellingPrice,
+                        mrp: item.mrp,
+                        discount: item.discount,
+                        imageUrl: item.imageUrl, // WARNING: In production, upload to Firebase Storage first!
+                        shopName: item.shopName,
+                        sizes: item.sizes || 'S, M, L',
+                        rating: '5.0',
+                        reviews: '0',
+                        timestamp: new Date()
+                    });
+                }
+                alert("All Products Published Successfully!");
+                window.location.reload();
             } catch (error) {
-                console.error("Error adding document: ", error);
-                alert("Error: Check console");
+                console.error("Firebase Error: ", error);
+                alert("Error saving to database.");
             } finally {
-                btn.innerHTML = 'Publish Product to Firestore';
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Publish All Items';
                 btn.disabled = false;
             }
         });
