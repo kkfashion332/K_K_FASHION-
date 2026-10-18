@@ -2,1177 +2,135 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Unique Fashion</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Shop Frontend</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-database-compat.js"></script>
-
     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .content-padding { padding-bottom: 90px; }
-        .size-radio:checked + label {
-            background-color: #eab308;
-            color: #fff;
-            border-color: #eab308;
-        }
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus, 
-        input:-webkit-autofill:active{
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
-        }
-
-        /* --- FLIPKART STYLE ANIMATIONS --- */
-        .strike-anim {
-            position: relative;
-            display: inline-block;
-            color: #878787;
-        }
-        .strike-anim::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 100%;
-            height: 1.5px;
-            background-color: #878787;
-            transform-origin: left;
-            animation: strikethrough 0.6s ease-out forwards;
-        }
-        @keyframes strikethrough {
-            0% { transform: scaleX(0); }
-            100% { transform: scaleX(1); }
-        }
-
-        .discount-text {
-            color: #16a34a;
-            animation: pulseText 1.2s infinite alternate ease-in-out;
-        }
-        @keyframes pulseText {
-            0% { transform: scale(1); text-shadow: 0 0 0 rgba(22, 163, 74, 0); }
-            100% { transform: scale(1.02); text-shadow: 0 0 4px rgba(22, 163, 74, 0.3); }
-        }
+        .banner-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+        .banner-container::-webkit-scrollbar { display: none; }
+        .banner-slide { scroll-snap-align: center; flex: none; width: 100%; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="bg-gray-50">
 
-    <!-- Top Navbar -->
-    <nav id="topNav" class="hidden bg-[#0a0a0a] py-2.5 px-3 flex justify-between items-center relative z-50 shadow-md border-b-[1.5px] border-yellow-500 rounded-b-[1.5rem]">
-        <div class="flex items-center w-full justify-between relative px-1">
-            <div class="flex-shrink-0 z-10">
-                <img id="secretLogo" src="logo.png" onerror="this.src='https://ui-avatars.com/api/?name=UF&background=000&color=D4AF37'" alt="Unique Fashion" class="h-10 w-auto max-w-[80px] cursor-pointer object-contain drop-shadow-[0_0_8px_rgba(212,175,55,0.5)]">
-            </div>
-            
-            <div class="flex flex-col items-center justify-center cursor-pointer absolute left-1/2 transform -translate-x-1/2" onclick="goHome()">
-                <span class="font-black text-[20px] tracking-[0.08em] text-white leading-none mt-0.5 whitespace-nowrap">UNIQUE FASHION</span>
-                <div class="flex items-center gap-1.5 mt-1 w-full justify-center opacity-90">
-                    <div class="w-5 h-[1px] bg-yellow-500"></div>
-                    <span class="text-[6.5px] tracking-[0.2em] text-yellow-500 uppercase whitespace-nowrap font-bold">Style Your Story</span>
-                    <div class="w-5 h-[1px] bg-yellow-500"></div>
-                </div>
-            </div>
-
-            <!-- Download Icon Added Next to Cart -->
-            <div class="flex items-center gap-4 text-white text-[18px] flex-shrink-0 z-10">
-                <a href="https://drive.google.com/file/d/19aXGs4Ka9KkSOlyom6qbCN1zvaFqsn39/view?usp=drivesdk" target="_blank" class="relative cursor-pointer hover:text-yellow-500 transition drop-shadow-md">
-                    <i class="fa-solid fa-download"></i>
-                </a>
-                <div class="relative cursor-pointer hover:text-yellow-500 transition drop-shadow-md" onclick="showCart()">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                    <span id="topCartBadge" class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden border border-black shadow-sm">0</span>
-                </div>
-            </div>
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md p-4 sticky top-0 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <img src="https://via.placeholder.com/40" alt="Logo" class="rounded-full w-10 h-10">
+            <span class="font-bold text-lg">My Shop</span>
+        </div>
+        <div class="flex gap-4 text-sm font-semibold text-gray-700 overflow-x-auto">
+            <a href="#" class="hover:text-blue-600">Home</a>
+            <a href="#" class="hover:text-blue-600">Products</a>
+            <a href="#" class="hover:text-blue-600">Order</a>
+            <a href="#" class="hover:text-blue-600">Support</a>
         </div>
     </nav>
 
-    <!-- Main App Container -->
-    <div id="app" class="max-w-md mx-auto bg-gray-50 min-h-screen shadow-2xl content-padding relative">
-        <div class="min-h-screen flex flex-col items-center justify-center text-yellow-500">
-            <i class="fa-solid fa-spinner fa-spin text-5xl mb-4"></i>
-            <p class="font-bold tracking-widest text-gray-800">LOADING STORE...</p>
+    <!-- Auto Swiping Main Banner -->
+    <div class="w-full mt-2 relative">
+        <div class="banner-container" id="mainBanner">
+            <img src="https://via.placeholder.com/800x300/ff7f7f/333333?text=Main+Banner+1" class="banner-slide h-48 object-cover">
+            <img src="https://via.placeholder.com/800x300/7f7fff/333333?text=Main+Banner+2" class="banner-slide h-48 object-cover">
         </div>
     </div>
 
-    <!-- Bottom Navigation Bar -->
-    <div id="bottomNav" class="hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-2 max-w-md mx-auto z-[60] flex justify-around items-center h-16 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
-        <div onclick="showLikes()" class="flex flex-col items-center w-1/5 text-gray-400 hover:text-yellow-500 cursor-pointer transition-colors"><i class="fa-solid fa-heart text-[20px]"></i><span class="text-[9px] mt-1 font-bold">Likes</span></div>
-        
-        <div onclick="showCollection()" class="flex flex-col items-center w-1/5 text-gray-400 hover:text-yellow-500 cursor-pointer transition-colors"><i class="fa-solid fa-fire text-[20px]"></i><span class="text-[9px] mt-1 font-bold">New</span></div>
-        
-        <div class="w-1/5 flex justify-center relative">
-            <div onclick="goHome()" class="absolute -top-10 w-14 h-14 bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-full flex items-center justify-center text-white text-2xl shadow-[0_0_15px_rgba(212,175,55,0.4)] border-[3px] border-white cursor-pointer z-50 transition-transform active:scale-95"><i class="fa-solid fa-house drop-shadow-md"></i></div>
-        </div>
-        
-        <div onclick="showCart()" class="flex flex-col items-center w-1/5 text-gray-400 hover:text-yellow-500 cursor-pointer relative transition-colors"><i class="fa-solid fa-cart-shopping text-[20px]"></i><span class="text-[9px] mt-1 font-bold">Cart</span><span id="bottomCartCount" class="absolute -top-1 right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden border border-white">0</span></div>
-        
-        <div onclick="showMyOrders()" class="flex flex-col items-center w-1/5 text-gray-400 hover:text-yellow-500 cursor-pointer transition-colors"><i class="fa-solid fa-box text-[20px]"></i><span class="text-[9px] mt-1 font-bold">Orders</span></div>
+    <!-- Two Vertical Banners Side by Side -->
+    <div class="grid grid-cols-2 gap-2 p-2 mt-2">
+        <img src="https://via.placeholder.com/400x500/7fff7f/333333?text=Ad+Banner+1" class="w-full h-40 object-cover rounded-lg shadow">
+        <img src="https://via.placeholder.com/400x500/ffff7f/333333?text=Ad+Banner+2" class="w-full h-40 object-cover rounded-lg shadow">
     </div>
 
-    <div id="imageModalContainer"></div>
+    <!-- Products Section -->
+    <div class="p-2">
+        <h2 class="text-gray-500 text-xs font-bold mb-3 uppercase tracking-wider">Strictly Matches Found</h2>
+        
+        <!-- Product Grid -->
+        <div class="grid grid-cols-2 gap-3" id="productGrid">
+            <!-- Products will be injected here by Firebase -->
+        </div>
+    </div>
 
-    <script>
-        // --- FIREBASE INITIALIZATION ---
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
         const firebaseConfig = {
-            apiKey: "AIzaSyASPAURqgDQWu-jQaj5_tPjuIhZNtWzUqo",
-            authDomain: "ai-calling-agent-7caac.firebaseapp.com",
-            databaseURL: "https://ai-calling-agent-7caac-default-rtdb.firebaseio.com",
-            projectId: "ai-calling-agent-7caac",
-            storageBucket: "ai-calling-agent-7caac.firebasestorage.app",
-            messagingSenderId: "414705823578",
-            appId: "1:414705823578:web:d7d84cd62dc04bcffd8d63"
+            apiKey: "AIzaSyBEp2fwJmNajreNUcXqGTY_sYhzWryxAUY",
+            authDomain: "fully-ai-website.firebaseapp.com",
+            projectId: "fully-ai-website",
+            storageBucket: "fully-ai-website.firebasestorage.app",
+            messagingSenderId: "494758463985",
+            appId: "1:494758463985:web:fce9c3b0a25280ba999c50"
         };
-        
-        let db = null;
-        try {
-            if(firebaseConfig.apiKey !== "YOUR_API_KEY" && firebaseConfig.apiKey.trim() !== "") {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database();
-            }
-        } catch(e) {
-            console.error("Firebase init failed:", e);
-        }
 
-        // --- DYNAMIC DATA STATE ---
-        let categories = []; 
-        let products = [];
-        let banners = [];
-        let paymentSettings = { qr_url: "", upi_id: "", whatsapp: "", flipkart_qr_url: "", flipkart_upi_id: "" };
-        
-        let currentUser = JSON.parse(localStorage.getItem('uf_currentUser')) || null;
-        let cart = JSON.parse(localStorage.getItem('uf_cart')) || [];
-        let likedItems = JSON.parse(localStorage.getItem('uf_likes')) || [];
-        let activeCategory = ""; 
-        let tempCheckoutData = null; 
-        
-        let currentSelectedSize = null; 
-        let currentComboSize1 = null; 
-        let currentComboSize2 = null; 
-        let currentSelectedColor = null; 
-        let currentColorSizesArr = [];
-        
-        const appDiv = document.getElementById('app');
-        const topNav = document.getElementById('topNav');
-        const bottomNav = document.getElementById('bottomNav');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        // --- SMART NAVIGATION & HARDWARE BACK BUTTON LOGIC ---
-        let isNavigatingBack = false;
-
-        function pushHistory(page, param = null) {
-            if (isNavigatingBack) return;
-            const stateObj = { page, param };
-            const hashUrl = `#${page}${param ? '-' + param : ''}`;
-            if (history.state && history.state.page === page && history.state.param === param) return;
-            history.pushState(stateObj, '', hashUrl);
-        }
-
-        window.addEventListener('popstate', (event) => {
-            isNavigatingBack = true;
-            if (event.state) {
-                const { page, param } = event.state;
-                if(page === 'home') _goHome();
-                else if(page === 'product') _viewProduct(param);
-                else if(page === 'cart') _showCart();
-                else if(page === 'likes') _showLikes();
-                else if(page === 'orders') _showMyOrders();
-                else if(page === 'collection') _showCollection();
-                else if(page === 'address') _goToAddress(param);
-                else if(page === 'payment') _renderPaymentScreen();
+        // Auto Banner Swipe Logic
+        const banner = document.getElementById('mainBanner');
+        setInterval(() => {
+            if(banner.scrollLeft >= (banner.scrollWidth - banner.clientWidth)) {
+                banner.scrollLeft = 0;
             } else {
-                _goHome();
+                banner.scrollLeft += banner.clientWidth;
             }
-            setTimeout(() => { isNavigatingBack = false; }, 100);
-        });
+        }, 3000);
 
-        function showNavs() {
-            topNav.classList.remove('hidden');
-            bottomNav.classList.remove('hidden');
-        }
-
-        function hideNavs() {
-            topNav.classList.add('hidden');
-            bottomNav.classList.add('hidden');
-        }
-
-        // --- REALTIME DATABASE SYNC (CACHE REMOVED FOR IMMEDIATE UPDATES) ---
-        async function initApp() {
-            if (!db) {
-                appDiv.innerHTML = `
-                    <div class="flex flex-col items-center justify-center min-h-[80vh] p-6 text-center bg-gray-50">
-                        <i class="fa-solid fa-triangle-exclamation text-6xl text-red-500 mb-5"></i>
-                        <h2 class="text-2xl font-black text-gray-900 tracking-wide uppercase">Database Error</h2>
-                        <p class="text-gray-600 mt-2 font-medium">Failed to connect to Firebase Realtime Database.</p>
+        // Fetch Products from Firebase
+        async function fetchProducts() {
+            const productGrid = document.getElementById('productGrid');
+            const querySnapshot = await getDocs(collection(db, "products"));
+            
+            productGrid.innerHTML = ''; // Clear loading state
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                // Creating exact card structure as your reference image
+                const cardHtml = `
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative pb-2">
+                    <div class="absolute top-2 left-2 bg-[#1a237e] text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">IN STOCK</div>
+                    <button class="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow z-10">
+                        <i class="fa-regular fa-heart text-gray-500 text-sm"></i>
+                    </button>
+                    <img src="${data.imageUrl || 'https://via.placeholder.com/150'}" class="w-full h-40 object-cover" alt="Product">
+                    
+                    <div class="px-2 mt-2">
+                        <div class="flex items-center gap-1 mb-1">
+                            <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
+                            <span class="text-xs font-bold">${data.rating || '5.0'}</span>
+                            <span class="text-xs text-gray-400">(${data.reviews || '0'})</span>
+                        </div>
+                        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">${data.title}</h3>
+                        <div class="flex items-center gap-1 mt-1">
+                            <span class="font-bold text-base">₹${data.sellingPrice}.00</span>
+                            <span class="text-xs text-gray-400 line-through">₹${data.mrp}</span>
+                        </div>
+                        <div class="mt-1">
+                            <span class="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded">-${data.discount || '10'}%</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2 text-[10px] text-gray-500 font-semibold border-b pb-2">
+                            <span>${data.sizes || 'S, M, L, XL'}</span>
+                            <span class="text-teal-500 flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-teal-500"></div> INSTOCK</span>
+                        </div>
+                        <div class="flex items-center gap-1 mt-2 text-[10px] text-gray-600 font-bold">
+                            <i class="fa-solid fa-shop text-teal-500"></i> ${data.shopName || 'WOW COLLECTION'}
+                        </div>
                     </div>
+                </div>
                 `;
-                return;
-            }
-
-            try {
-                // Fetch fresh data from Firebase EVERY TIME to ensure Admin updates show instantly
-
-                const catSnap = await db.ref('categories').once('value');
-                categories = []; 
-                if(catSnap.exists()) {
-                    catSnap.forEach(child => {
-                        if(child.val() && typeof child.val() === 'object') categories.push(child.val());
-                    });
-                }
-
-                const pSnap = await db.ref('products').once('value');
-                products = [];
-                if(pSnap.exists()) {
-                    pSnap.forEach(child => {
-                        if(child.val() && typeof child.val() === 'object') products.push(child.val());
-                    });
-                }
-
-                const bSnap = await db.ref('banners').once('value');
-                banners = [];
-                if(bSnap.exists()) {
-                    bSnap.forEach(child => {
-                        if(child.val() && typeof child.val() === 'object') banners.push(child.val());
-                    });
-                }
-
-                const paySnap = await db.ref('settings/payment').once('value');
-                if(paySnap.exists()) paymentSettings = paySnap.val();
-
-                if (!history.state) {
-                    history.replaceState({ page: 'home', param: null }, '', '#home');
-                }
-                
-                _goHome();
-                updateCartBadge();
-            } catch (error) {
-                appDiv.innerHTML = `<div class="text-center mt-20 text-red-500 font-bold">Network Error. Please check Firebase Rules.</div>`;
-            }
-        }
-
-        // --- ROUTE WRAPPERS ---
-        function goHome() { pushHistory('home'); _goHome(); }
-        function showLikes() { pushHistory('likes'); _showLikes(); }
-        function showMyOrders() { pushHistory('orders'); _showMyOrders(); }
-        function showCollection() { pushHistory('collection'); _showCollection(); }
-        function showCart() { pushHistory('cart'); _showCart(); }
-        function viewProduct(id) { pushHistory('product', id); _viewProduct(id); }
-        function goToAddress(source) { pushHistory('address', source); _goToAddress(source); }
-        function goToPaymentScreen() { pushHistory('payment'); _renderPaymentScreen(); }
-
-        function handleLikeClick(btn, id) {
-            toggleLike(btn, id);
-        }
-
-        // --- VIEWS ---
-
-        // 1. HOME PAGE
-        function _goHome() {
-            showNavs();
-            
-            let displayProducts = products;
-            if(activeCategory !== "") {
-                displayProducts = products.filter(p => p.category === activeCategory);
-            }
-
-            let catHTML = categories.map(cat => {
-                let safeCatName = cat.name.replace(/'/g, "\\'");
-                return `
-                <div onclick="filterCategory('${safeCatName}')" class="flex flex-col items-center gap-1.5 cursor-pointer w-full">
-                    <div class="w-14 h-14 rounded-full overflow-hidden border-[2.5px] ${activeCategory === cat.name ? 'border-yellow-500 shadow-md scale-105' : 'border-gray-200'} transition-all mx-auto flex-shrink-0 bg-white">
-                        <img src="${cat.img}" loading="lazy" class="w-full h-full object-cover">
-                    </div>
-                    <span class="text-[9px] md:text-[10px] ${activeCategory === cat.name ? 'text-yellow-600 font-extrabold' : 'text-gray-600 font-bold'} text-center w-full uppercase break-words line-clamp-2 leading-tight">${cat.name}</span>
-                </div>
-            `}).join('');
-            
-            let prodHTML = displayProducts.map(item => {
-                const isLiked = likedItems.includes(item.id);
-                const discountVal = item.discount ? String(item.discount).replace(/OFF/gi, '').trim() : '';
-                
-                return `
-                <div class="bg-white border border-gray-200 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.04)] relative flex flex-col justify-between overflow-hidden group">
-                    <button onclick="event.stopPropagation(); handleLikeClick(this, '${item.id}')" class="absolute top-2 right-2 ${isLiked ? 'text-red-500' : 'text-gray-300'} z-10 text-xl bg-white/80 rounded-full w-8 h-8 flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors hover:scale-110">
-                        <i class="fa-solid fa-heart"></i>
-                    </button>
-                    <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden">
-                        <img src="${item.img}" loading="lazy" class="w-full h-44 object-cover transform group-hover:scale-105 transition duration-500">
-                    </div>
-                    <div class="p-3 flex flex-col flex-grow border-t border-gray-100">
-                        <h3 onclick="viewProduct('${item.id}')" class="text-sm font-bold truncate text-gray-800 cursor-pointer hover:text-yellow-600 transition tracking-tight">${item.name}</h3>
-                        
-                        <div class="mt-1.5 flex items-center gap-1.5">
-                            <span class="discount-text text-[10px] font-extrabold flex items-center tracking-tight"><i class="fa-solid fa-arrow-down text-[8px] mr-0.5"></i>${discountVal}</span>
-                            <span class="text-gray-400 font-bold text-[10px] strike-anim tracking-tight">₹${item.mrp}</span>
-                            <span class="font-black text-gray-900 text-[15px] ml-0.5 tracking-tight">₹${item.price}</span>
-                        </div>
-                        
-                        <div class="flex justify-between gap-1 mt-3">
-                            <button onclick="event.stopPropagation(); viewProduct('${item.id}')" class="flex-1 bg-white border border-yellow-500 text-yellow-600 font-extrabold py-1.5 rounded-[6px] text-[8px] shadow-sm hover:bg-yellow-50 hover:shadow transition flex items-center justify-center gap-1 whitespace-nowrap">
-                                <i class="fa-solid fa-cart-plus"></i> ADD TO CART
-                            </button>
-                            <button onclick="event.stopPropagation(); handleBuyNow('${item.id}')" class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-1.5 rounded-[6px] shadow-sm hover:shadow-md transition text-[8px] whitespace-nowrap">
-                                BUY NOW
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `}).join('');
-
-            if(displayProducts.length === 0) { prodHTML = `<div class="col-span-2 text-center text-gray-500 py-10 font-semibold w-full">No products found.</div>`; }
-
-            let bannerHTML = banners.map(b => `
-                <div class="w-full min-w-full flex-shrink-0 snap-center px-3 pt-4 pb-2 box-border">
-                    <a href="${b.target_link || '#'}" class="block w-full">
-                        <img src="${b.img}" loading="lazy" class="w-full h-48 object-cover rounded-2xl shadow-sm border border-gray-200">
-                    </a>
-                </div>
-            `).join('');
-
-            appDiv.innerHTML = `
-                <div id="homeView" class="fade-in bg-gray-50 min-h-screen pb-6">
-                    <div id="bannerSlider" class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar w-full" style="scroll-behavior: smooth;">
-                        ${bannerHTML}
-                    </div>
-                    <div class="grid grid-cols-5 gap-y-4 gap-x-2 py-5 px-3 bg-white border-b border-gray-200 justify-items-center items-start shadow-sm mb-2 rounded-b-2xl">
-                        ${catHTML}
-                    </div>
-                    
-                    <div class="p-4 bg-gray-50 rounded-t-2xl">
-                        <div class="flex items-center gap-3 mb-6 mt-2 ml-1">
-                            <div class="w-1.5 h-6 bg-yellow-500 rounded"></div>
-                            <h2 class="font-extrabold text-lg text-gray-900 tracking-wider uppercase">${activeCategory !== "" ? activeCategory : "LATEST COLLECTION"}</h2>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            ${prodHTML}
-                        </div>
-                    </div>
-                </div>
-            `;
-            window.scrollTo(0,0);
-
-            if(window.bannerScrollInterval) clearInterval(window.bannerScrollInterval);
-            if(banners.length > 1) {
-                setTimeout(() => {
-                    window.bannerScrollInterval = setInterval(() => {
-                        const slider = document.getElementById('bannerSlider');
-                        if(!slider) {
-                            clearInterval(window.bannerScrollInterval);
-                            return;
-                        }
-                        const maxScrollLeft = slider.scrollWidth - slider.clientWidth;
-                        if(slider.scrollLeft >= maxScrollLeft - 5) {
-                            slider.scrollTo({ left: 0, behavior: 'smooth' });
-                        } else {
-                            slider.scrollBy({ left: slider.clientWidth, behavior: 'smooth' });
-                        }
-                    }, 3000); 
-                }, 500);
-            }
-        }
-
-        function filterCategory(catName) {
-            if(activeCategory === catName) activeCategory = "";
-            else activeCategory = catName;
-            goHome();
-        }
-
-        // NEW COLLECTION (TIMELINE VIEW)
-        function _showCollection() {
-            showNavs();
-            
-            let displayProducts = [...products].reverse();
-            
-            let prodHTML = displayProducts.map(item => {
-                const isLiked = likedItems.includes(item.id);
-                const discountVal = item.discount ? String(item.discount).replace(/OFF/gi, '').trim() : '';
-                
-                return `
-                <div class="bg-white border border-gray-200 rounded-[20px] shadow-[0_6px_20px_rgba(0,0,0,0.06)] relative flex flex-col justify-between overflow-hidden group">
-                    <button onclick="event.stopPropagation(); handleLikeClick(this, '${item.id}')" class="absolute top-4 right-4 ${isLiked ? 'text-red-500' : 'text-gray-300'} z-10 text-2xl bg-white/90 rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm shadow-md transition-colors hover:scale-110">
-                        <i class="fa-solid fa-heart"></i>
-                    </button>
-                    <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden">
-                        <img src="${item.img}" loading="lazy" class="w-full h-[400px] object-cover transform group-hover:scale-105 transition duration-500">
-                    </div>
-                    <div class="p-5 flex flex-col flex-grow border-t border-gray-100">
-                        <h3 onclick="viewProduct('${item.id}')" class="text-xl font-extrabold truncate text-gray-900 cursor-pointer hover:text-yellow-600 transition tracking-tight">${item.name}</h3>
-                        
-                        <div class="mt-3 flex items-center gap-2">
-                            <span class="discount-text text-[15px] font-extrabold flex items-center tracking-tight"><i class="fa-solid fa-arrow-down text-[11px] mr-0.5"></i>${discountVal}</span>
-                            <span class="text-gray-400 font-bold text-[15px] strike-anim tracking-tight">₹${item.mrp}</span>
-                            <span class="font-black text-gray-900 text-[26px] ml-1 tracking-tight">₹${item.price}</span>
-                        </div>
-                        
-                        <div class="flex justify-between gap-3 mt-5">
-                            <button onclick="event.stopPropagation(); viewProduct('${item.id}')" class="flex-1 bg-white border-2 border-yellow-500 text-yellow-600 font-extrabold py-3.5 rounded-xl text-xs shadow-sm hover:bg-yellow-50 hover:shadow transition flex items-center justify-center gap-2">
-                                <i class="fa-solid fa-cart-plus text-base"></i> ADD TO CART
-                            </button>
-                            <button onclick="event.stopPropagation(); handleBuyNow('${item.id}')" class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-3.5 rounded-xl shadow-md hover:shadow-lg transition text-xs flex items-center justify-center gap-2">
-                                BUY NOW <i class="fa-solid fa-arrow-right text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `}).join('');
-
-            if(displayProducts.length === 0) { prodHTML = `<div class="text-center text-gray-500 py-10 font-semibold w-full">No products found.</div>`; }
-
-            appDiv.innerHTML = `
-                <div class="fade-in bg-gray-50 min-h-screen pb-6">
-                    <div class="bg-white p-4 shadow-sm border-b border-gray-200 sticky top-0 z-40 flex items-center gap-3">
-                        <button onclick="history.back()" class="text-gray-600 text-xl"><i class="fa-solid fa-arrow-left"></i></button>
-                        <div class="w-1.5 h-6 bg-yellow-500 rounded"></div>
-                        <h1 class="text-lg font-black text-gray-900 uppercase tracking-wide">New Arrivals</h1>
-                    </div>
-                    
-                    <div class="p-4 mt-2">
-                        <div class="grid grid-cols-1 gap-8">
-                            ${prodHTML}
-                        </div>
-                    </div>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-
-        // 2. LIKES PAGE
-        function toggleLike(btn, id) {
-            const index = likedItems.indexOf(id);
-            if (index > -1) {
-                likedItems.splice(index, 1);
-                btn.classList.remove('text-red-500'); btn.classList.add('text-gray-300');
-            } else {
-                likedItems.push(id);
-                btn.classList.remove('text-gray-300'); btn.classList.add('text-red-500');
-            }
-            localStorage.setItem('uf_likes', JSON.stringify(likedItems));
-        }
-
-        function _showLikes() {
-            showNavs();
-            let likedProducts = products.filter(p => likedItems.includes(p.id));
-            let html = "";
-
-            if (likedProducts.length === 0) {
-                html = `<div class="text-center p-10 mt-10"><i class="fa-solid fa-heart-crack text-5xl text-gray-300 mb-4"></i><h2 class="text-gray-600 font-bold text-lg">No Liked Items</h2><p class="text-xs text-gray-500 mt-2">Heart your favorite products to see them here.</p><button onclick="history.back()" class="mt-6 bg-white border border-yellow-500 text-yellow-600 px-6 py-2 rounded-lg font-bold shadow-sm hover:bg-yellow-50">Explore Collection</button></div>`;
-            } else {
-                html = `<div class="grid grid-cols-2 gap-4">` + likedProducts.map(item => {
-                    const discountVal = item.discount ? String(item.discount).replace(/OFF/gi, '').trim() : '';
-                    return `
-                    <div class="bg-white border border-gray-200 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.04)] relative flex flex-col justify-between overflow-hidden group">
-                        <button onclick="event.stopPropagation(); toggleLike(this, '${item.id}'); setTimeout(_showLikes, 300);" class="absolute top-2 right-2 text-red-500 z-10 text-xl bg-white/80 rounded-full w-8 h-8 flex items-center justify-center backdrop-blur-sm shadow-sm transition-colors hover:scale-110"><i class="fa-solid fa-heart"></i></button>
-                        <div onclick="viewProduct('${item.id}')" class="cursor-pointer relative overflow-hidden"><img src="${item.img}" loading="lazy" class="w-full h-44 object-cover transform group-hover:scale-105 transition duration-500"></div>
-                        <div class="p-3 flex flex-col flex-grow border-t border-gray-100">
-                            <h3 class="text-sm font-bold truncate text-gray-800">${item.name}</h3>
-                            <div class="mt-2 flex items-center gap-1.5">
-                                <span class="discount-text text-[10px] font-extrabold flex items-center tracking-tight"><i class="fa-solid fa-arrow-down text-[8px] mr-0.5"></i>${discountVal}</span>
-                                <span class="text-gray-400 font-bold text-[10px] strike-anim tracking-tight">₹${item.mrp}</span>
-                                <span class="font-black text-gray-900 text-[16px] tracking-tight">₹${item.price}</span>
-                            </div>
-                            <div class="flex justify-between gap-1.5 mt-3">
-                                <button onclick="event.stopPropagation(); viewProduct('${item.id}')" class="flex-1 bg-white border border-yellow-500 text-yellow-600 font-bold py-1.5 rounded-[6px] text-[9px] shadow-sm flex items-center justify-center gap-1"><i class="fa-solid fa-cart-plus"></i> CART</button>
-                                <button onclick="event.stopPropagation(); handleBuyNow('${item.id}')" class="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-1.5 rounded-[6px] shadow-sm text-[9px]">BUY NOW</button>
-                            </div>
-                        </div>
-                    </div>
-                `}).join('') + `</div>`;
-            }
-
-            appDiv.innerHTML = `
-                <div class="fade-in p-5 pb-24 bg-gray-50 min-h-screen">
-                    <button onclick="history.back()" class="mb-4 text-gray-600 text-xl"><i class="fa-solid fa-arrow-left"></i></button>
-                    <div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3">
-                        <div class="w-1.5 h-6 bg-red-500 rounded"></div>
-                        <h1 class="text-xl font-extrabold text-gray-800 uppercase tracking-wide">My Likes</h1>
-                    </div>
-                    ${html}
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-
-        // --- PRODUCT PAGE & COLOR SELECTOR ---
-        function selectSize(size) { currentSelectedSize = size; }
-        function selectComboSize1(size) { currentComboSize1 = size; }
-        function selectComboSize2(size) { currentComboSize2 = size; }
-        
-        function selectColor(index, name, imgUrl) {
-            currentSelectedColor = { name: name, img: imgUrl };
-            document.getElementById('mainProductImage').src = imgUrl;
-            document.getElementById('selectedColorText').innerText = name;
-            document.getElementById('mainImageWrapper').setAttribute('onclick', `openImage('${imgUrl}')`);
-            
-            const thumbs = document.querySelectorAll('[id^="colorThumb-"]');
-            thumbs.forEach(t => {
-                t.classList.remove('border-gray-800', 'shadow-md');
-                t.classList.add('border-gray-200', 'opacity-70');
+                productGrid.innerHTML += cardHtml;
             });
-            
-            let activeThumb = document.getElementById(`colorThumb-${index}`);
-            if (activeThumb) {
-                activeThumb.classList.remove('border-gray-200', 'opacity-70');
-                activeThumb.classList.add('border-gray-800', 'shadow-md');
-            }
 
-            if (currentColorSizesArr.length > index && currentColorSizesArr[index]) {
-                let szs = currentColorSizesArr[index].split(',').map(s=>s.trim()).filter(s=>s);
-                if (szs.length > 0) {
-                    currentSelectedSize = null; 
-                    let dHtml = `<div class="flex flex-wrap gap-2 mb-3">` + szs.map(s => {
-                        let safeId = s.replace(/\s+/g, '-');
-                        return `<div><input type="radio" name="productSize" id="size-${safeId}" value="${s}" class="hidden size-radio" onchange="selectSize('${s}')"><label for="size-${safeId}" class="cursor-pointer border border-gray-300 text-gray-700 bg-white font-bold px-3 py-1.5 text-xs rounded-md shadow-sm hover:border-yellow-500 transition block text-center min-w-[40px]">${s}</label></div>`;
-                    }).join('') + `</div>`;
-                    let container = document.getElementById('dynamicSizeContainer');
-                    if (container) container.innerHTML = dHtml;
-                }
+            // If no data, show placeholder
+            if(querySnapshot.empty) {
+                productGrid.innerHTML = '<p class="text-sm text-gray-500 col-span-2 text-center mt-5">No products found. Add from Admin.</p>';
             }
         }
 
-        function _viewProduct(id) {
-            showNavs();
-            const product = products.find(p => p.id === id);
-            if(!product) { goHome(); return; }
-            
-            currentSelectedSize = null; currentComboSize1 = null; currentComboSize2 = null; currentSelectedColor = null;
-            currentColorSizesArr = [];
-            
-            let colorHTML = "";
-            let hasColors = !!product.colorNames && !!product.colorImages && product.colorNames.trim() !== "";
-            
-            if (hasColors && product.colorSizes && product.colorSizes.trim() !== "") {
-                currentColorSizesArr = product.colorSizes.split('|').map(s => s.trim());
-            }
-            
-            if (hasColors) {
-                let names = product.colorNames.split(',').map(n => n.trim());
-                let images = product.colorImages.split(',').map(i => i.trim());
-                
-                if (names.length > 0 && images.length > 0 && names.length === images.length) {
-                    currentSelectedColor = { name: names[0], img: images[0] };
-                    
-                    colorHTML = `
-                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
-                        <p class="font-bold text-gray-800 text-sm mb-3">Selected Color: <span id="selectedColorText" class="font-medium text-gray-600">${names[0]}</span></p>
-                        <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
-                            ${names.map((n, idx) => {
-                                let safeName = n.replace(/'/g, "\\'");
-                                return `<div onclick="selectColor(${idx}, '${safeName}', '${images[idx]}')" id="colorThumb-${idx}" class="w-16 h-20 flex-shrink-0 border-2 ${idx === 0 ? 'border-gray-800 shadow-md' : 'border-gray-200 opacity-70'} rounded-lg overflow-hidden cursor-pointer transition hover:border-gray-800 hover:opacity-100">
-                                    <img src="${images[idx]}" loading="lazy" class="w-full h-full object-cover">
-                                </div>`;
-                            }).join('')}
-                        </div>
-                    </div>
-                    `;
-                }
-            }
-
-            let sizeHTML = "";
-            
-            if (hasColors && currentColorSizesArr.length > 0 && currentColorSizesArr[0]) {
-                let szs = currentColorSizesArr[0].split(',').map(s=>s.trim()).filter(s=>s);
-                if(szs.length > 0) {
-                    sizeHTML += `<div class="flex flex-wrap gap-2 mb-3">` + szs.map(s => {
-                        let safeId = s.replace(/\s+/g, '-');
-                        return `<div><input type="radio" name="productSize" id="size-${safeId}" value="${s}" class="hidden size-radio" onchange="selectSize('${s}')"><label for="size-${safeId}" class="cursor-pointer border border-gray-300 text-gray-700 bg-white font-bold px-3 py-1.5 text-xs rounded-md shadow-sm hover:border-yellow-500 transition block text-center min-w-[40px]">${s}</label></div>`;
-                    }).join('') + `</div>`;
-                }
-            } else {
-                let hasShirt = !!product.shirtSizes && product.shirtSizes.trim() !== "";
-                let hasJeans = !!product.jeansSizes && product.jeansSizes.trim() !== "";
-
-                if (hasShirt) {
-                    let sArr = product.shirtSizes.split(',').map(s => s.trim());
-                    sizeHTML += `<div class="flex flex-wrap gap-2 mb-3">${sArr.map(s => {
-                        let safeId = s.replace(/\s+/g, '-');
-                        return `<div><input type="radio" name="comboShirt" id="cs1-${safeId}" value="${s}" class="hidden size-radio" onchange="selectComboSize1('${s}')"><label for="cs1-${safeId}" class="cursor-pointer border border-gray-300 text-gray-700 bg-white font-bold px-3 py-1.5 text-xs rounded-md shadow-sm hover:border-yellow-500 transition block text-center min-w-[40px]">${s}</label></div>`;
-                    }).join('')}</div>`;
-                }
-                if (hasJeans) {
-                    let jArr = product.jeansSizes.split(',').map(s => s.trim());
-                    sizeHTML += `<div class="flex flex-wrap gap-2 mb-3">${jArr.map(s => {
-                        let safeId = s.replace(/\s+/g, '-');
-                        return `<div><input type="radio" name="comboJeans" id="cs2-${safeId}" value="${s}" class="hidden size-radio" onchange="selectComboSize2('${s}')"><label for="cs2-${safeId}" class="cursor-pointer border border-gray-300 text-gray-700 bg-white font-bold px-3 py-1.5 text-xs rounded-md shadow-sm hover:border-yellow-500 transition block text-center min-w-[40px]">${s}</label></div>`;
-                    }).join('')}</div>`;
-                }
-                if (!hasShirt && !hasJeans) {
-                    sizeHTML += `<div class="flex flex-wrap gap-3"><div><input type="radio" name="productSize" id="size-Free" value="Free Size" class="hidden size-radio" onchange="selectSize('Free Size')"><label for="size-Free" class="cursor-pointer border border-gray-300 text-gray-700 bg-white font-bold px-4 py-2 rounded-md shadow-sm hover:border-yellow-500 transition block">Free Size</label></div></div>`;
-                }
-            }
-
-            let moreProducts = products.filter(p => p.id !== id).sort(() => 0.5 - Math.random()).slice(0, 4);
-            let moreProdHTML = moreProducts.map(item => `
-                <div class="bg-white border border-gray-200 rounded-lg shadow-sm relative flex flex-col justify-between overflow-hidden cursor-pointer" onclick="viewProduct('${item.id}')">
-                    <img src="${item.img}" loading="lazy" class="w-full h-40 object-cover hover:scale-105 transition duration-300">
-                    <div class="p-3 flex flex-col flex-grow border-t border-gray-100 bg-gray-50">
-                        <h3 class="text-[11px] font-bold truncate text-gray-800">${item.name}</h3>
-                        <span class="font-extrabold text-gray-900 text-sm mt-1">₹${item.price}</span>
-                    </div>
-                </div>
-            `).join('');
-
-            const discountVal = product.discount ? String(product.discount).replace(/OFF/gi, '').trim() : '';
-            const initialMainImage = currentSelectedColor ? currentSelectedColor.img : product.img;
-
-            appDiv.innerHTML = `
-                <div class="fade-in relative pb-24 bg-gray-50 min-h-screen">
-                    <button onclick="history.back()" class="absolute top-4 left-4 bg-white/90 border border-gray-200 text-gray-800 rounded-full w-10 h-10 z-10 flex items-center justify-center backdrop-blur-sm shadow-md hover:text-yellow-600 transition"><i class="fa-solid fa-arrow-left"></i></button>
-                    
-                    <div id="mainImageWrapper" onclick="openImage('${initialMainImage}')" class="relative cursor-zoom-in bg-white border-b border-gray-200 shadow-sm">
-                        <img id="mainProductImage" src="${initialMainImage}" class="w-full h-[450px] object-cover">
-                        <div class="absolute bottom-3 right-3 bg-white/90 rounded-full w-8 h-8 flex items-center justify-center text-gray-800 border border-gray-200 shadow-md"><i class="fa-solid fa-expand"></i></div>
-                    </div>
-                    
-                    <div class="p-5">
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-5 relative">
-                            <h1 class="text-xl font-extrabold text-gray-900 leading-tight pr-10">${product.name}</h1>
-                            
-                            <div class="mt-4 flex items-center gap-2.5">
-                                <span class="discount-text text-lg font-extrabold flex items-center tracking-tight"><i class="fa-solid fa-arrow-down text-[13px] mr-1"></i>${discountVal}</span>
-                                <span class="text-gray-400 font-bold text-lg strike-anim tracking-tight">₹${product.mrp}</span>
-                                <span class="font-black text-gray-900 text-3xl ml-1 tracking-tight">₹${product.price}</span>
-                            </div>
-                        </div>
-
-                        ${colorHTML}
-
-                        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
-                            <h3 class="font-extrabold text-gray-800 mb-3 text-sm flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-yellow-500"></i> SELECT SIZE</h3>
-                            <div id="dynamicSizeContainer">${sizeHTML}</div>
-                        </div>
-
-                        <div class="flex items-center gap-2 mb-4 mt-8">
-                            <div class="w-1 h-5 bg-yellow-500 rounded"></div>
-                            <h3 class="font-extrabold text-gray-800 uppercase tracking-wide">More Products</h3>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3 mb-6">
-                            ${moreProdHTML}
-                        </div>
-                    </div>
-                    
-                    <div class="fixed bottom-[64px] left-0 w-full bg-white border-t border-gray-200 p-3 max-w-md mx-auto flex gap-3 z-40 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
-                        <button id="addBtn-${product.id}" onclick="addToCart('${product.id}')" class="w-1/2 bg-white border-2 border-yellow-500 text-yellow-600 font-extrabold py-3.5 rounded-lg hover:bg-yellow-50 transition text-[11px] shadow-sm"><i class="fa-solid fa-cart-plus mr-1"></i> ADD TO CART</button>
-                        <button onclick="handleBuyNow('${product.id}')" class="w-1/2 bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-3.5 rounded-lg text-center block shadow-md text-[11px] hover:shadow-lg transition">BUY NOW <i class="fa-solid fa-bolt ml-1"></i></button>
-                    </div>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-
-        function openImage(url) {
-            const container = document.getElementById('imageModalContainer');
-            container.innerHTML = `
-                <div class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center fade-in backdrop-blur-md">
-                    <button onclick="closeImage()" class="absolute top-6 right-6 text-white text-xl z-[101] bg-gray-800 border-2 border-gray-600 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"><i class="fa-solid fa-xmark"></i></button>
-                    <img src="${url}" class="max-w-full max-h-full object-contain p-2">
-                </div>
-            `;
-        }
-        function closeImage() { document.getElementById('imageModalContainer').innerHTML = ''; }
-
-        // --- CART SYSTEM ---
-        function _showCart() {
-            showNavs();
-            if (cart.length === 0) {
-                appDiv.innerHTML = `
-                    <div class="fade-in p-5 text-center flex flex-col items-center justify-center min-h-[70vh] bg-gray-50">
-                        <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md mb-6 border border-gray-100">
-                            <i class="fa-solid fa-cart-shopping text-5xl text-gray-300"></i>
-                        </div>
-                        <h2 class="text-xl text-gray-800 font-extrabold mb-2">Your Cart is Empty!</h2>
-                        <p class="text-gray-500 text-sm mb-6">Looks like you haven't added anything yet.</p>
-                        <button onclick="history.back()" class="bg-gradient-to-r from-yellow-500 to-yellow-400 text-white px-8 py-3.5 rounded-lg font-extrabold shadow-md hover:shadow-lg transition transform active:scale-95">Start Shopping</button>
-                    </div>
-                `;
-                return;
-            }
-
-            let total = 0;
-            let cartHTML = cart.map((item, index) => {
-                total += item.price;
-                const discountVal = item.discount ? String(item.discount).replace(/OFF/gi, '').trim() : '';
-                return `
-                    <div class="flex gap-4 items-center bg-white p-3 rounded-xl border border-gray-200 mb-3 shadow-sm relative">
-                        <img src="${item.img}" loading="lazy" class="w-20 h-20 object-cover rounded-lg border border-gray-100">
-                        <div class="flex-grow pr-8">
-                            <p class="font-bold text-gray-800 text-sm leading-tight mb-1">${item.name}</p>
-                            <p class="text-[11px] text-gray-500 font-medium mb-1.5">Size: <span class="text-yellow-600 font-bold bg-yellow-50 px-1 rounded">${item.size}</span> ${item.color ? `| Color: <span class="text-gray-800 font-bold">${item.color}</span>` : ''}</p>
-                            
-                            <div class="flex items-center gap-1.5">
-                                <span class="discount-text text-[10px] font-extrabold flex items-center tracking-tight"><i class="fa-solid fa-arrow-down text-[8px] mr-0.5"></i>${discountVal}</span>
-                                <span class="text-gray-400 font-bold text-[11px] strike-anim tracking-tight">₹${item.mrp}</span>
-                                <span class="font-black text-gray-900 text-base tracking-tight ml-0.5">₹${item.price}</span>
-                            </div>
-                        </div>
-                        <button onclick="removeFromCart(${index})" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-red-500 p-2 transition bg-gray-50 rounded-full"><i class="fa-solid fa-trash"></i></button>
-                    </div>
-                `;
-            }).join('');
-
-            appDiv.innerHTML = `
-                <div class="fade-in p-5 pb-24 bg-gray-50 min-h-screen">
-                    <button onclick="history.back()" class="mb-4 text-gray-600 text-xl"><i class="fa-solid fa-arrow-left"></i></button>
-                    <div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3">
-                        <div class="w-1.5 h-6 bg-yellow-500 rounded"></div>
-                        <h1 class="text-xl font-extrabold text-gray-800 uppercase tracking-wide">Your Cart</h1>
-                    </div>
-                    
-                    ${cartHTML}
-                    
-                    <div class="mt-6 p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
-                        <div class="flex justify-between font-extrabold text-gray-900 text-lg">
-                            <span>Total Amount</span>
-                            <span class="text-yellow-600">₹${total}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="fixed bottom-[64px] left-0 w-full bg-white border-t border-gray-200 p-3 max-w-md mx-auto z-40 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
-                        <button onclick="goToAddress('cart')" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-3.5 rounded-xl shadow-md tracking-wide hover:shadow-lg transition transform active:scale-95 text-sm">PROCEED TO CHECKOUT <i class="fa-solid fa-arrow-right ml-1"></i></button>
-                    </div>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-
-        function getValidatedSize(product) {
-            if(product.colorSizes && product.colorSizes.trim() !== "") {
-                if(!currentSelectedSize) return null;
-                return currentSelectedSize;
-            }
-
-            let hasShirt = !!product.shirtSizes && product.shirtSizes.trim() !== "";
-            let hasJeans = !!product.jeansSizes && product.jeansSizes.trim() !== "";
-            
-            if (hasShirt && hasJeans) {
-                if(!currentComboSize1 || !currentComboSize2) return null;
-                return `Top: ${currentComboSize1}, Bottom: ${currentComboSize2}`;
-            } else if (hasShirt) {
-                if(!currentComboSize1) return null;
-                return currentComboSize1;
-            } else if (hasJeans) {
-                if(!currentComboSize2) return null;
-                return currentComboSize2;
-            } else {
-                if(!currentSelectedSize) return null;
-                return currentSelectedSize;
-            }
-        }
-
-        function addToCart(id) {
-            const product = products.find(p => p.id === id);
-            const finalSize = getValidatedSize(product);
-            
-            if(!finalSize) { alert("Please select required sizes first!"); return; }
-
-            const finalColor = currentSelectedColor ? currentSelectedColor.name : null;
-            const finalImg = currentSelectedColor ? currentSelectedColor.img : product.img;
-
-            cart.push({ ...product, size: finalSize, color: finalColor || '', img: finalImg || '', cartId: Date.now(), isFlipkart: product.isFlipkart || 'false' });
-            localStorage.setItem('uf_cart', JSON.stringify(cart));
-            updateCartBadge();
-            
-            const btn = document.getElementById(`addBtn-${id}`);
-            if(btn) {
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-check"></i> ADDED';
-                btn.classList.add('bg-green-50', 'text-green-600', 'border-green-500');
-                btn.classList.remove('bg-white', 'text-yellow-600', 'border-yellow-500');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('bg-green-50', 'text-green-600', 'border-green-500');
-                    btn.classList.add('bg-white', 'text-yellow-600', 'border-yellow-500');
-                }, 1500);
-            }
-        }
-
-        function handleBuyNow(id) {
-            const product = products.find(p => p.id === id);
-            const finalSize = getValidatedSize(product);
-
-            if(!finalSize) { alert("Please select required sizes first!"); return; }
-            currentSelectedSize = finalSize; 
-            
-            goToAddress(id);
-        }
-
-        function removeFromCart(index) { 
-            cart.splice(index, 1); 
-            localStorage.setItem('uf_cart', JSON.stringify(cart));
-            updateCartBadge(); 
-            _showCart(); 
-        }
-
-        function updateCartBadge() {
-            const b1 = document.getElementById('bottomCartCount');
-            const b2 = document.getElementById('topCartBadge');
-            if (cart.length > 0) { 
-                if(b1) { b1.innerText = cart.length; b1.classList.remove('hidden'); }
-                if(b2) { b2.innerText = cart.length; b2.classList.remove('hidden'); }
-            } else { 
-                if(b1) b1.classList.add('hidden'); 
-                if(b2) b2.classList.add('hidden'); 
-            }
-        }
-
-        async function fetchPinCodeDetails(pincode) {
-            const statusEl = document.getElementById('pinStatus');
-            const districtEl = document.getElementById('custDistrict');
-            const stateEl = document.getElementById('custState');
-            const villageEl = document.getElementById('custVillage');
-            
-            if (pincode.length === 6) {
-                statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
-                try {
-                    let response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
-                    let data = await response.json();
-                    
-                    if (data[0].Status === "Success") {
-                        let postOffices = data[0].PostOffice;
-                        districtEl.value = postOffices[0].District;
-                        stateEl.value = postOffices[0].State;
-                        
-                        villageEl.innerHTML = '<option value="" disabled selected>Select Village / Area</option>';
-                        postOffices.forEach(po => {
-                            villageEl.innerHTML += `<option value="${po.Name}">${po.Name}</option>`;
-                        });
-                        villageEl.classList.remove('bg-gray-100', 'text-gray-500');
-                        villageEl.classList.add('bg-white', 'text-gray-900', 'border-yellow-500');
-                        statusEl.innerHTML = '<i class="fa-solid fa-check text-green-600"></i> Found';
-                    } else {
-                        statusEl.innerHTML = '<span class="text-red-500">Not found, type manually</span>';
-                        districtEl.value = ""; stateEl.value = "";
-                        villageEl.innerHTML = '<option value="" disabled selected>Enter valid PIN first</option>';
-                        villageEl.classList.add('bg-gray-100', 'text-gray-500'); villageEl.classList.remove('bg-white', 'text-gray-900', 'border-yellow-500');
-                    }
-                } catch (e) {
-                    statusEl.innerHTML = '<span class="text-red-500">Error, type manually</span>';
-                }
-            } else {
-                statusEl.innerHTML = ''; districtEl.value = ""; stateEl.value = "";
-                villageEl.innerHTML = '<option value="" disabled selected>Enter PIN to select Village</option>';
-                villageEl.classList.add('bg-gray-100', 'text-gray-500'); villageEl.classList.remove('bg-white', 'text-gray-900', 'border-yellow-500');
-            }
-        }
-
-        // --- SPLIT CHECKOUT ---
-        function _goToAddress(source) {
-            let total = 0; let productNames = ""; let orderItems = []; let primaryImg = "";
-
-            if (source === 'cart') {
-                total = cart.reduce((sum, item) => sum + item.price, 0);
-                productNames = cart.map(i => `${i.name} (Size: ${i.size}${i.color ? `, Color: ${i.color}` : ''})`).join(", ");
-                primaryImg = cart[0].img;
-                orderItems = cart.map(i => ({ name: i.name || '', size: i.size || '', color: i.color || '', price: i.price || 0, img: i.img || '', isFlipkart: i.isFlipkart || 'false' }));
-            } else {
-                const product = products.find(p => p.id === source);
-                total = product.price;
-                const finalColorName = currentSelectedColor ? currentSelectedColor.name : '';
-                productNames = `${product.name} (Size: ${currentSelectedSize}${finalColorName ? `, Color: ${finalColorName}` : ''})`;
-                primaryImg = currentSelectedColor ? currentSelectedColor.img : product.img;
-                orderItems = [{ name: product.name || '', size: currentSelectedSize || '', color: finalColorName || '', price: product.price || 0, img: primaryImg || '', isFlipkart: product.isFlipkart || 'false' }];
-            }
-
-            let hasFlipkart = orderItems.some(item => item.isFlipkart === 'true' || item.isFlipkart === true);
-            tempCheckoutData = { names: productNames, price: total, img: primaryImg, items: orderItems, hasFlipkart: hasFlipkart };
-
-            appDiv.innerHTML = `
-                <div class="fade-in p-5 pb-24 bg-gray-50 min-h-screen">
-                    <button onclick="history.back()" class="mb-4 text-gray-600 text-xl"><i class="fa-solid fa-arrow-left"></i></button>
-                    <div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3">
-                        <div class="w-1.5 h-6 bg-yellow-500 rounded"></div>
-                        <h1 class="text-xl font-extrabold text-gray-800 uppercase tracking-wide">Delivery Details</h1>
-                    </div>
-                    
-                    <form onsubmit="processAddressAndGoToPayment(event)" class="flex flex-col gap-4">
-                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-3">
-                            <input type="text" id="custName" value="${currentUser ? currentUser.name : ''}" required placeholder="Full Name" class="bg-white border border-gray-300 focus:border-yellow-500 outline-none text-gray-900 p-3.5 rounded-lg w-full text-sm font-medium transition">
-                            <input type="tel" id="custPhone" value="${currentUser ? currentUser.phone : ''}" required placeholder="Phone Number" class="bg-white border border-gray-300 focus:border-yellow-500 outline-none text-gray-900 p-3.5 rounded-lg w-full text-sm font-medium transition">
-                            
-                            <div class="relative mt-2 border-t border-gray-100 pt-5">
-                                <label class="text-xs font-bold text-gray-500 mb-1 block">PIN CODE (Auto-fills below, or type manually)</label>
-                                <input type="number" id="custPincode" placeholder="6-Digit PIN" required pattern="[0-9]{6}" maxlength="6" onkeyup="fetchPinCodeDetails(this.value)" class="bg-white border border-gray-300 focus:border-yellow-500 outline-none text-gray-900 p-3.5 rounded-lg w-full text-sm font-bold tracking-widest transition">
-                                <p id="pinStatus" class="text-[10px] text-yellow-600 absolute right-4 top-[60px] font-bold"></p>
-                            </div>
-                            
-                            <div class="flex gap-3">
-                                <input type="text" id="custState" placeholder="State" required class="bg-white border border-gray-300 text-gray-900 p-3.5 rounded-lg w-1/2 text-sm font-medium focus:border-yellow-500 outline-none transition">
-                                <input type="text" id="custDistrict" placeholder="City / District" required class="bg-white border border-gray-300 text-gray-900 p-3.5 rounded-lg w-1/2 text-sm font-medium focus:border-yellow-500 outline-none transition">
-                            </div>
-                            
-                            <input type="text" id="custVillage" placeholder="Area / Village / Locality" required class="bg-white border border-gray-300 text-gray-900 p-3.5 rounded-lg w-full text-sm font-medium focus:border-yellow-500 outline-none transition mt-1">
-                            
-                            <textarea id="custAddress" placeholder="Complete Address (House No, Street, Landmark)" required class="bg-white border border-gray-300 focus:border-yellow-500 outline-none text-gray-900 p-3.5 rounded-lg w-full text-sm font-medium transition mt-2" rows="3"></textarea>
-                        </div>
-                        
-                        <div class="fixed bottom-[64px] left-0 w-full bg-white border-t border-gray-200 p-3 max-w-md mx-auto z-40 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
-                            <button type="submit" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-3.5 rounded-xl shadow-md tracking-wide hover:shadow-lg transition transform active:scale-95 text-sm">NEXT: PAYMENT <i class="fa-solid fa-arrow-right ml-1"></i></button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            window.scrollTo(0,0);
-        }
-
-        function processAddressAndGoToPayment(event) {
-            event.preventDefault();
-            
-            tempCheckoutData.name = document.getElementById('custName').value;
-            tempCheckoutData.phone = document.getElementById('custPhone').value;
-            const district = document.getElementById('custDistrict').value;
-            const state = document.getElementById('custState').value;
-            const village = document.getElementById('custVillage').value;
-            const pincode = document.getElementById('custPincode').value;
-            const baseAddress = document.getElementById('custAddress').value;
-            
-            if(!district || !state || !village) {
-                alert("Please enter your State and City properly!");
-                return;
-            }
-            tempCheckoutData.address = `${baseAddress}, ${village}, ${district}, ${state} (PIN: ${pincode})`;
-            
-            if (!currentUser || currentUser.phone !== tempCheckoutData.phone) {
-                const phoneStr = tempCheckoutData.phone;
-                db.ref('users/' + phoneStr).once('value').then(snap => {
-                    if(!snap.exists()){
-                        const newUser = { name: tempCheckoutData.name, phone: phoneStr, password: "guest_user", linkedEmail: "uniquefashion@gmail.com" };
-                        db.ref('users/' + phoneStr).set(newUser);
-                        currentUser = newUser;
-                    } else {
-                        currentUser = snap.val();
-                    }
-                    localStorage.setItem('uf_currentUser', JSON.stringify(currentUser));
-                });
-            }
-
-            goToPaymentScreen();
-        }
-
-        function _renderPaymentScreen() {
-            appDiv.innerHTML = `
-                <div class="fade-in p-5 pb-24 bg-gray-50 min-h-screen">
-                    <button onclick="history.back()" class="mb-4 text-gray-600 text-xl"><i class="fa-solid fa-arrow-left"></i></button>
-                    <div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3">
-                        <div class="w-1.5 h-6 bg-yellow-500 rounded"></div>
-                        <h1 class="text-xl font-extrabold text-gray-800 uppercase tracking-wide">Select Payment</h1>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl border border-gray-200 mb-6 flex justify-between items-center shadow-sm">
-                        <span class="text-gray-500 font-bold text-sm uppercase">Total to Pay</span>
-                        <span class="font-black text-2xl text-gray-900">₹${tempCheckoutData.price}</span>
-                    </div>
-                    
-                    <form onsubmit="confirmOrder(event)">
-                        <div class="mb-6">
-                            <label class="flex items-center gap-3 bg-white p-4 rounded-xl border border-gray-200 mb-3 cursor-pointer shadow-sm hover:border-yellow-500 transition">
-                                <input type="radio" id="prepaid" name="payment" value="Prepaid" onchange="renderPaymentUI()" class="accent-yellow-500 w-5 h-5 cursor-pointer" checked>
-                                <span class="text-gray-800 font-bold text-sm w-full">Prepaid (Full Payment)</span>
-                            </label>
-                            
-                            <div id="paymentUI" class="mt-5 p-5 bg-white border border-yellow-300 rounded-xl shadow-md hidden"></div>
-                        </div>
-                        
-                        <div class="fixed bottom-[64px] left-0 w-full bg-white border-t border-gray-200 p-3 max-w-md mx-auto z-40 shadow-[0_-4px_15px_rgba(0,0,0,0.05)]">
-                            <button type="submit" class="w-full bg-gradient-to-r from-yellow-500 to-yellow-400 text-white font-extrabold py-3.5 rounded-xl shadow-md tracking-wide hover:shadow-lg transition transform active:scale-95 text-sm">PLACE ORDER <i class="fa-solid fa-check ml-1"></i></button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            window.scrollTo(0,0);
-            renderPaymentUI();
-        }
-
-        // NEW: UPI ID visible in the UI
-        function renderPaymentUI() {
-            const uiDiv = document.getElementById('paymentUI');
-            uiDiv.classList.remove('hidden');
-            const totalAmount = tempCheckoutData.price;
-            
-            // FIX: Dynamic QR and UPI Logic based on Flipkart product presence
-            const qrUrl = tempCheckoutData.hasFlipkart && paymentSettings.flipkart_qr_url ? paymentSettings.flipkart_qr_url : paymentSettings.qr_url;
-            const activeUpi = tempCheckoutData.hasFlipkart && paymentSettings.flipkart_upi_id ? paymentSettings.flipkart_upi_id : paymentSettings.upi_id;
-
-            uiDiv.innerHTML = `
-                <p class="text-center text-sm text-gray-500 font-bold mb-1">Scan QR or Pay via UPI</p>
-                <p class="text-center font-black text-2xl text-gray-900 mb-2">₹${totalAmount}</p>
-                <p class="text-center text-xs font-bold text-gray-700 mb-4 bg-gray-100 py-1.5 rounded-md">UPI ID: <span class="text-green-600 select-all">${activeUpi || 'Not available'}</span></p>
-                <div class="flex justify-center mb-5"><img src="${qrUrl}" class="w-56 h-56 border-4 border-gray-100 rounded-xl p-2 bg-white shadow-md"></div>
-                <div class="bg-red-50 border border-red-200 p-3 rounded-lg mb-3">
-                    <p class="text-[11px] text-center text-red-600 font-bold">⚠️ Please complete the payment now.</p>
-                    <p class="text-[10px] text-center text-gray-600 mt-1 font-medium">You will need to send the screenshot on the next screen to confirm your order.</p>
-                </div>
-            `;
-        }
-
-        async function confirmOrder(event) {
-            event.preventDefault();
-            
-            const newOrderId = Date.now().toString(); // Direct ID generation
-            
-            const orderPayload = {
-                id: newOrderId,
-                date: new Date().toLocaleString(),
-                name: tempCheckoutData.name || '', 
-                phone: tempCheckoutData.phone || '',
-                address: tempCheckoutData.address || '', 
-                payment: 'Prepaid',
-                product_name: tempCheckoutData.names || '', 
-                price: tempCheckoutData.price || 0,
-                img: tempCheckoutData.img || '', 
-                items: tempCheckoutData.items || [],
-                status: "Pending Verification"
-            };
-
-            appDiv.innerHTML = `<div class="min-h-[70vh] flex flex-col items-center justify-center text-yellow-500 bg-gray-50"><i class="fa-solid fa-spinner fa-spin text-5xl mb-4"></i><p class="font-bold tracking-widest text-gray-800">PLACING ORDER...</p></div>`;
-            window.scrollTo(0,0);
-            
-            try {
-                // Direct Firebase par data save kar rahe hain
-                await db.ref('orders/' + newOrderId).set(orderPayload);
-                
-                cart = []; 
-                localStorage.setItem('uf_cart', JSON.stringify(cart)); 
-                updateCartBadge();
-
-                const waNum = paymentSettings.whatsapp;
-                const waText = encodeURIComponent(`Hello Unique Fashion, here is my payment screenshot for Order ID: ${newOrderId}`);
-
-                history.replaceState({ page: 'home', param: null }, '', '#home');
-
-                appDiv.innerHTML = `
-                    <div class="fade-in flex flex-col items-center justify-center min-h-screen bg-gray-50 p-5 text-center pb-24">
-                        <div class="w-20 h-20 bg-white border-[3px] border-yellow-500 text-yellow-500 rounded-full flex items-center justify-center text-4xl mb-5 shadow-lg"><i class="fa-solid fa-clock"></i></div>
-                        <h1 class="text-2xl font-extrabold text-gray-900 uppercase">Verification Pending!</h1>
-                        <p class="text-gray-500 mt-2 text-sm font-medium">Thank you, <span class="text-gray-800 font-bold">${tempCheckoutData.name}</span>.</p>
-                        <p class="text-gray-500 mt-1 text-sm font-medium">Order ID: <b class="text-gray-900 text-xs">${newOrderId}</b></p>
-                        
-                        <div class="bg-white border-2 border-red-100 p-5 rounded-xl mt-6 mb-6 w-full max-w-sm shadow-md">
-                            <p class="text-sm text-red-500 font-extrabold mb-4 leading-snug">⚠️ Order will NOT be dispatched until payment screenshot is received.</p>
-                            <a href="https://wa.me/${waNum}?text=${waText}" target="_blank" class="flex w-full items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md animate-pulse transition">
-                                <i class="fa-brands fa-whatsapp text-2xl"></i> SEND SCREENSHOT NOW
-                            </a>
-                        </div>
-
-                        <button onclick="showMyOrders()" class="mt-2 bg-gradient-to-r from-yellow-500 to-yellow-400 text-white px-8 py-3.5 rounded-xl font-extrabold shadow-md transition-all w-full max-w-xs uppercase text-sm">View My Orders</button>
-                        <button onclick="goHome()" class="mt-4 bg-white border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3.5 rounded-xl font-extrabold shadow-sm transition-all w-full max-w-xs uppercase text-sm">Continue Shopping</button>
-                    </div>
-                `;
-            } catch (error) { 
-                alert("Transaction Error! " + (error.message || "")); 
-                goHome(); 
-            }
-        }
-
-        // --- MY ORDERS PAGE ---
-        function _showMyOrders() {
-            showNavs();
-            
-            if (!currentUser) {
-                appDiv.innerHTML = `
-                    <div class="fade-in p-5 text-center flex flex-col items-center justify-center min-h-[70vh] bg-gray-50">
-                        <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-md mb-6 border border-gray-100">
-                            <i class="fa-solid fa-box-open text-5xl text-gray-300"></i>
-                        </div>
-                        <h2 class="text-xl text-gray-800 font-extrabold mb-2">No Orders Found</h2>
-                        <p class="text-gray-500 text-sm mb-6">Place an order to see your history here.</p>
-                        <button onclick="history.back()" class="bg-gradient-to-r from-yellow-500 to-yellow-400 text-white px-8 py-3.5 rounded-lg font-extrabold shadow-md hover:shadow-lg transition transform active:scale-95">Start Shopping</button>
-                    </div>
-                `;
-                window.scrollTo(0,0);
-                return;
-            }
-
-            appDiv.innerHTML = `<div class="min-h-[70vh] flex flex-col items-center justify-center text-yellow-500 bg-gray-50"><i class="fa-solid fa-spinner fa-spin text-5xl mb-4"></i><p class="font-bold tracking-widest text-gray-800">LOADING ORDERS...</p></div>`;
-            window.scrollTo(0,0);
-            db.ref('orders').orderByChild('phone').equalTo(currentUser.phone).once('value').then(snapshot => {
-                let userOrders = []; snapshot.forEach(child => { userOrders.push(child.val()); });
-                userOrders.sort((a, b) => b.id - a.id);
-                let myOrdersHTML = "";
-                if (userOrders.length > 0) {
-                    userOrders.forEach(order => {
-                        let paymentStatus = ""; let tokenAmount = 0; let remainingAmount = 0;
-                        if(order.payment === "COD") {
-                            tokenAmount = Math.round(order.price * 0.30); remainingAmount = order.price - tokenAmount;
-                            paymentStatus = `<p class="text-xs text-gray-500 mt-1 font-medium">Total: <span class="text-gray-800 font-bold">₹${order.price}</span></p><p class="text-xs text-green-600 font-bold mt-0.5">Paid Token: ₹${tokenAmount}</p><p class="text-xs text-red-500 font-bold mt-0.5">To Pay on Delivery: ₹${remainingAmount}</p>`;
-                        } else {
-                            paymentStatus = `<p class="text-xs text-gray-500 mt-1 font-medium">Total: <span class="text-gray-800 font-bold">₹${order.price}</span></p><p class="text-xs text-green-600 font-bold mt-0.5">Paid: ₹${order.price} (Full Payment)</p>`;
-                        }
-                        
-                        let statusBadge = "";
-                        let currentStatus = order.status || "Pending Verification";
-                        if(currentStatus === "Confirmed") {
-                            statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-600 text-[9px] rounded border border-green-200 uppercase font-extrabold"><i class="fa-solid fa-check"></i> Confirmed</span>`;
-                        } else if(currentStatus === "Rejected") {
-                            statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-500 text-[9px] rounded border border-red-200 uppercase font-extrabold"><i class="fa-solid fa-xmark"></i> Rejected</span>`;
-                        } else {
-                            statusBadge = `<span class="inline-flex items-center gap-1 px-2 py-1 bg-yellow-50 text-yellow-600 text-[9px] rounded border border-yellow-200 uppercase font-extrabold"><i class="fa-solid fa-clock"></i> ${currentStatus}</span>`;
-                        }
-
-                        let itemsHTML = "";
-                        if (order.items && order.items.length > 0) {
-                            itemsHTML = `<div class="mt-3 flex flex-col gap-2">` + order.items.map(item => `
-                                <div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
-                                    <img src="${item.img}" loading="lazy" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white">
-                                    <div class="flex-grow overflow-hidden">
-                                        <p class="font-bold text-gray-800 text-[11px] leading-tight break-words">${item.name}</p>
-                                        <p class="text-[10px] text-gray-500 mt-1 font-medium">Size: <span class="text-yellow-600 font-bold">${item.size}</span> ${item.color ? `| Color: <span class="text-gray-800 font-bold">${item.color}</span>` : ''} | ₹${item.price}</p>
-                                    </div>
-                                </div>
-                            `).join('') + `</div>`;
-                        } else {
-                            itemsHTML = `<div class="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100 mt-3"><img src="${order.img}" loading="lazy" class="w-12 h-12 object-cover rounded border border-gray-200 bg-white"><div class="flex-grow overflow-hidden"><p class="font-bold text-gray-800 text-[11px] leading-tight break-words">${order.product_name}</p></div></div>`;
-                        }
-
-                        let trackingHTML = "";
-                        if (order.status === "Confirmed") {
-                            if (order.tracking_id && order.tracking_link) {
-                                trackingHTML = `
-                                    <div class="mt-3 bg-blue-50 border border-blue-200 p-3 rounded-lg flex flex-col gap-2 shadow-sm">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-[10px] font-extrabold text-blue-800 uppercase tracking-wide"><i class="fa-solid fa-truck-fast mr-1"></i> Order Dispatched</span>
-                                            <span class="text-[11px] font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-blue-100 shadow-sm uppercase">ID: ${order.tracking_id}</span>
-                                        </div>
-                                        <a href="${order.tracking_link}" target="_blank" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2 rounded-md text-[10px] text-center shadow-md transition transform active:scale-95 flex items-center justify-center gap-1">
-                                            <i class="fa-solid fa-location-crosshairs"></i> TRACK MY ORDER
-                                        </a>
-                                    </div>
-                                `;
-                            } else {
-                                trackingHTML = `
-                                    <div class="mt-3 bg-gray-100 border border-gray-200 p-2.5 rounded-lg flex items-center justify-between shadow-sm">
-                                        <span class="text-[10px] font-bold text-gray-600"><i class="fa-solid fa-box-packing mr-1"></i> Packing in progress...</span>
-                                        <span class="text-[9px] font-extrabold text-gray-500 uppercase tracking-widest">Tracking Info Soon</span>
-                                    </div>
-                                `;
-                            }
-                        }
-
-                        myOrdersHTML += `
-                            <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-sm mb-4">
-                                <div class="border-b border-gray-100 pb-3 mb-3">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <div><p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Order ID</p><p class="text-[11px] text-gray-800 font-bold mt-0.5">${order.id}</p><p class="text-[9px] text-gray-400 mt-1 font-medium">${order.date}</p></div>
-                                        <div class="text-right flex flex-col items-end">${statusBadge}<span class="inline-block mt-2 px-2 py-0.5 bg-gray-100 text-gray-600 text-[9px] font-bold rounded uppercase w-max">${order.payment}</span></div>
-                                    </div>
-                                    ${itemsHTML}
-                                    ${trackingHTML}
-                                </div>
-                                <div class="mb-3"><p class="text-xs text-gray-800 font-bold mb-1 flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-yellow-500"></i> Deliver To</p><p class="text-[11px] text-gray-600 ml-5 font-semibold">${order.name}</p><p class="text-[11px] text-gray-500 ml-5 leading-relaxed">${order.address}</p></div>
-                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100"><p class="text-xs text-gray-800 font-bold mb-2 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-yellow-500"></i> Payment Details</p>${paymentStatus}</div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    myOrdersHTML = `<div class="text-center p-10 bg-white rounded-xl border border-gray-200 mt-4 shadow-sm"><div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100"><i class="fa-solid fa-box-open text-4xl text-gray-300"></i></div><h2 class="text-gray-800 font-extrabold text-lg">No Orders Found</h2><p class="text-gray-500 text-xs mt-1 mb-6">You haven't placed any orders yet.</p><button onclick="goHome()" class="bg-white border border-yellow-500 text-yellow-600 px-8 py-2.5 rounded-lg text-sm font-extrabold shadow-sm hover:bg-yellow-50 transition">Start Shopping</button></div>`;
-                }
-                appDiv.innerHTML = `<div class="fade-in p-5 pb-24 bg-gray-50 min-h-screen"><button onclick="history.back()" class="mb-4 text-gray-600 text-xl"><i class="fa-solid fa-arrow-left"></i></button><div class="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3"><div class="w-1.5 h-6 bg-red-500 rounded"></div><h1 class="text-xl font-extrabold text-gray-800 uppercase tracking-wide">My Orders</h1></div>${myOrdersHTML}</div>`;
-            }).catch(() => { appDiv.innerHTML = `<div class="p-10 text-center text-red-500 font-bold">Error connecting to database.</div>`; });
-        }
-
-        // Init App 
-        initApp();
+        fetchProducts();
     </script>
 </body>
 </html>
