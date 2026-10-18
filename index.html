@@ -3,59 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Shop Frontend</title>
+    <title>AI Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .banner-container { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .banner-container::-webkit-scrollbar { display: none; }
-        .banner-slide { scroll-snap-align: center; flex: none; width: 100%; }
-    </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-100 p-4">
 
-    <!-- Navbar -->
-    <nav class="bg-white shadow-md p-4 sticky top-0 z-50 flex justify-between items-center">
-        <div class="flex items-center gap-2">
-            <img src="https://via.placeholder.com/40" alt="Logo" class="rounded-full w-10 h-10">
-            <span class="font-bold text-lg">My Shop</span>
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-bold text-gray-800">Add Product</h1>
+            <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2 py-1 rounded">Admin Mode</span>
         </div>
-        <div class="flex gap-4 text-sm font-semibold text-gray-700 overflow-x-auto">
-            <a href="#" class="hover:text-blue-600">Home</a>
-            <a href="#" class="hover:text-blue-600">Products</a>
-            <a href="#" class="hover:text-blue-600">Order</a>
-            <a href="#" class="hover:text-blue-600">Support</a>
-        </div>
-    </nav>
 
-    <!-- Auto Swiping Main Banner -->
-    <div class="w-full mt-2 relative">
-        <div class="banner-container" id="mainBanner">
-            <img src="https://via.placeholder.com/800x300/ff7f7f/333333?text=Main+Banner+1" class="banner-slide h-48 object-cover">
-            <img src="https://via.placeholder.com/800x300/7f7fff/333333?text=Main+Banner+2" class="banner-slide h-48 object-cover">
-        </div>
-    </div>
+        <form id="addProductForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Product Title</label>
+                <input type="text" id="title" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="e.g. Women's High-Waist Jeans">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Selling Price (₹)</label>
+                    <input type="number" id="sellingPrice" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="899">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">MRP (₹)</label>
+                    <input type="number" id="mrp" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="1299">
+                </div>
+            </div>
 
-    <!-- Two Vertical Banners Side by Side -->
-    <div class="grid grid-cols-2 gap-2 p-2 mt-2">
-        <img src="https://via.placeholder.com/400x500/7fff7f/333333?text=Ad+Banner+1" class="w-full h-40 object-cover rounded-lg shadow">
-        <img src="https://via.placeholder.com/400x500/ffff7f/333333?text=Ad+Banner+2" class="w-full h-40 object-cover rounded-lg shadow">
-    </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Image URL</label>
+                <input type="url" id="imageUrl" required class="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="https://link-to-image.jpg">
+            </div>
 
-    <!-- Products Section -->
-    <div class="p-2">
-        <h2 class="text-gray-500 text-xs font-bold mb-3 uppercase tracking-wider">Strictly Matches Found</h2>
-        
-        <!-- Product Grid -->
-        <div class="grid grid-cols-2 gap-3" id="productGrid">
-            <!-- Products will be injected here by Firebase -->
-        </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Shop Name</label>
+                <input type="text" id="shopName" class="mt-1 w-full border border-gray-300 rounded-md p-2" value="WOW COLLECTION PVR CINEMALL">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Sizes / Specs</label>
+                <input type="text" id="sizes" class="mt-1 w-full border border-gray-300 rounded-md p-2" value="S, M, L, XL">
+            </div>
+
+            <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-lg hover:bg-teal-700 mt-4">
+                Publish Product to Firestore
+            </button>
+        </form>
     </div>
 
     <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBEp2fwJmNajreNUcXqGTY_sYhzWryxAUY",
@@ -69,68 +69,42 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Auto Banner Swipe Logic
-        const banner = document.getElementById('mainBanner');
-        setInterval(() => {
-            if(banner.scrollLeft >= (banner.scrollWidth - banner.clientWidth)) {
-                banner.scrollLeft = 0;
-            } else {
-                banner.scrollLeft += banner.clientWidth;
-            }
-        }, 3000);
-
-        // Fetch Products from Firebase
-        async function fetchProducts() {
-            const productGrid = document.getElementById('productGrid');
-            const querySnapshot = await getDocs(collection(db, "products"));
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            productGrid.innerHTML = ''; // Clear loading state
-            
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                // Creating exact card structure as your reference image
-                const cardHtml = `
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden relative pb-2">
-                    <div class="absolute top-2 left-2 bg-[#1a237e] text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">IN STOCK</div>
-                    <button class="absolute top-2 right-2 bg-white rounded-full p-1.5 shadow z-10">
-                        <i class="fa-regular fa-heart text-gray-500 text-sm"></i>
-                    </button>
-                    <img src="${data.imageUrl || 'https://via.placeholder.com/150'}" class="w-full h-40 object-cover" alt="Product">
-                    
-                    <div class="px-2 mt-2">
-                        <div class="flex items-center gap-1 mb-1">
-                            <i class="fa-solid fa-star text-yellow-400 text-xs"></i>
-                            <span class="text-xs font-bold">${data.rating || '5.0'}</span>
-                            <span class="text-xs text-gray-400">(${data.reviews || '0'})</span>
-                        </div>
-                        <h3 class="text-sm font-bold text-gray-800 line-clamp-1">${data.title}</h3>
-                        <div class="flex items-center gap-1 mt-1">
-                            <span class="font-bold text-base">₹${data.sellingPrice}.00</span>
-                            <span class="text-xs text-gray-400 line-through">₹${data.mrp}</span>
-                        </div>
-                        <div class="mt-1">
-                            <span class="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded">-${data.discount || '10'}%</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-2 text-[10px] text-gray-500 font-semibold border-b pb-2">
-                            <span>${data.sizes || 'S, M, L, XL'}</span>
-                            <span class="text-teal-500 flex items-center gap-1"><div class="w-1.5 h-1.5 rounded-full bg-teal-500"></div> INSTOCK</span>
-                        </div>
-                        <div class="flex items-center gap-1 mt-2 text-[10px] text-gray-600 font-bold">
-                            <i class="fa-solid fa-shop text-teal-500"></i> ${data.shopName || 'WOW COLLECTION'}
-                        </div>
-                    </div>
-                </div>
-                `;
-                productGrid.innerHTML += cardHtml;
-            });
+            const btn = e.target.querySelector('button');
+            btn.innerHTML = 'Publishing...';
+            btn.disabled = true;
 
-            // If no data, show placeholder
-            if(querySnapshot.empty) {
-                productGrid.innerHTML = '<p class="text-sm text-gray-500 col-span-2 text-center mt-5">No products found. Add from Admin.</p>';
+            try {
+                // Calculate discount automatically
+                const sp = Number(document.getElementById('sellingPrice').value);
+                const mrp = Number(document.getElementById('mrp').value);
+                const discount = Math.round(((mrp - sp) / mrp) * 100);
+
+                await addDoc(collection(db, "products"), {
+                    title: document.getElementById('title').value,
+                    sellingPrice: sp,
+                    mrp: mrp,
+                    discount: discount,
+                    imageUrl: document.getElementById('imageUrl').value,
+                    shopName: document.getElementById('shopName').value,
+                    sizes: document.getElementById('sizes').value,
+                    rating: '5.0',
+                    reviews: '0',
+                    timestamp: new Date()
+                });
+
+                alert("Product Published Successfully!");
+                e.target.reset();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                alert("Error: Check console");
+            } finally {
+                btn.innerHTML = 'Publish Product to Firestore';
+                btn.disabled = false;
             }
-        }
-
-        fetchProducts();
+        });
     </script>
 </body>
 </html>
